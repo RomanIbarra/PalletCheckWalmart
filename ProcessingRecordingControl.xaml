@@ -1,0 +1,30 @@
+﻿<Window x:Class="PalletCheck.ProcessRecordingControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:scottplot="clr-namespace:ScottPlot;assembly=ScottPlot"
+        xmlns:local="clr-namespace:PalletCheck"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        Title="Review Pallets" Height="450" Width="1200" Background="Black">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="tbCount" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="18">
+            Processing 1 of 100
+        </TextBlock>
+
+        <WpfPlot Grid.Row="1" Name="Stats" />
+
+        <Button x:Name="btnCancel" Grid.Row="2" Margin="30,3,30,3">
+            Cancel
+        </Button>
+
+    </Grid>
+</Window>
