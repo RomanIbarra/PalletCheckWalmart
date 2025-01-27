@@ -1,0 +1,145 @@
+D:\Projects\PalletCheck\bin\Debug\PalletCheck.exe.config
+D:\Projects\PalletCheck\bin\Debug\PalletCheck.exe
+D:\Projects\PalletCheck\bin\Debug\PalletCheck.pdb
+D:\Projects\PalletCheck\obj\Debug\Controls\CaptureBufferBrowser.g.cs
+D:\Projects\PalletCheck\obj\Debug\MainWindow.g.cs
+D:\Projects\PalletCheck\obj\Debug\App.g.cs
+D:\Projects\PalletCheck\obj\Debug\PalletCheck_MarkupCompile.cache
+D:\Projects\PalletCheck\obj\Debug\PalletCheck_MarkupCompile.lref
+D:\Projects\PalletCheck\obj\Debug\Controls\CaptureBufferBrowser.baml
+D:\Projects\PalletCheck\obj\Debug\MainWindow.baml
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.g.resources
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.Properties.Resources.resources
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.csproj.GenerateResource.cache
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.csproj.CoreCompileInputs.cache
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.exe
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.pdb
+D:\Projects\PalletCheck\bin\Debug\Sick.GenIStreamDotNet.dll
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.csproj.CopyComplete
+D:\Projects\PalletCheck\bin\Debug\System.Drawing.Common.dll
+D:\Projects\PalletCheck\bin\Debug\System.ValueTuple.dll
+D:\Projects\PalletCheck\bin\Debug\System.ValueTuple.xml
+D:\Projects\PalletCheck\obj\Debug\ProcessingWindow.g.cs
+D:\Projects\PalletCheck\obj\Debug\ProcessingWindow.baml
+D:\Projects\PalletCheck\bin\Debug\ScottPlot.WPF.dll
+D:\Projects\PalletCheck\obj\Debug\CapView.ParamConfig.resources
+D:\Projects\PalletCheck\obj\Debug\PalletCheck.csproj.AssemblyReference.cache
+D:\Projects\PalletCheck\obj\Debug\Password.g.cs
+D:\Projects\PalletCheck\obj\Debug\Password.baml
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\PalletCheck.exe.config
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\PalletCheck.exe
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\PalletCheck.pdb
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\ScottPlot.WPF.dll
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\Sick.GenIStreamDotNet.dll
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\System.Drawing.Common.dll
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\System.ValueTuple.dll
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\bin\Debug\System.ValueTuple.xml
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.AssemblyReference.cache
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.SuggestedBindingRedirects.cache
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.g.cs
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\MainWindow.g.cs
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\Password.g.cs
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\ProcessingWindow.g.cs
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\App.g.cs
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.cache
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.lref
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.baml
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\MainWindow.baml
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\Password.baml
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\ProcessingWindow.baml
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.g.resources
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\CapView.ParamConfig.resources
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.Properties.Resources.resources
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.GenerateResource.cache
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CoreCompileInputs.cache
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CopyComplete
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.exe
+C:\Projects\Desktop\PalletCheck\PalletCheckWPF\obj\Debug\PalletCheck.pdb
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\PalletCheck.exe.config
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\PalletCheck.exe
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\PalletCheck.pdb
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\ScottPlot.WPF.dll
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\Sick.GenIStreamDotNet.dll
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\System.Drawing.Common.dll
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\System.ValueTuple.dll
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\bin\Debug\System.ValueTuple.xml
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.csproj.AssemblyReference.cache
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.csproj.SuggestedBindingRedirects.cache
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.g.cs
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\MainWindow.g.cs
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\Password.g.cs
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\ProcessingWindow.g.cs
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\App.g.cs
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.cache
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.lref
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.baml
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\MainWindow.baml
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\Password.baml
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\ProcessingWindow.baml
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.g.resources
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\CapView.ParamConfig.resources
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.Properties.Resources.resources
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.csproj.GenerateResource.cache
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CoreCompileInputs.cache
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CopyComplete
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.exe
+C:\Users\thiesan\Documents\+_Projects\2022 Projects\P&G_PalletInspection_New\Software_Progress\PalletCheck_06062022\PalletCheckWPF\obj\Debug\PalletCheck.pdb
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\PalletCheck.exe.config
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\PalletCheck.exe
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\PalletCheck.pdb
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\ScottPlot.WPF.dll
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\Sick.GenIStreamDotNet.dll
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\System.Drawing.Common.dll
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\System.Runtime.InteropServices.RuntimeInformation.dll
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\System.ValueTuple.dll
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\bin\Debug\System.ValueTuple.xml
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.csproj.AssemblyReference.cache
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.g.cs
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\MainWindow.g.cs
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\Password.g.cs
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\ProcessingWindow.g.cs
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\App.g.cs
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.cache
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.lref
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.baml
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\MainWindow.baml
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\Password.baml
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\ProcessingWindow.baml
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.g.resources
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\CapView.ParamConfig.resources
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.Properties.Resources.resources
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.csproj.GenerateResource.cache
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CoreCompileInputs.cache
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CopyComplete
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.exe
+F:\LucidCloud\Projects\PalletInspection\PalletCheckWPF\obj\Debug\PalletCheck.pdb
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\PalletCheck.exe.config
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\PalletCheck.exe
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\PalletCheck.pdb
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\ScottPlot.WPF.dll
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\Sick.GenIStreamDotNet.dll
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\System.Drawing.Common.dll
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\System.ValueTuple.dll
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\bin\Debug\System.ValueTuple.xml
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.AssemblyReference.cache
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.SuggestedBindingRedirects.cache
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.g.cs
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\MainWindow.g.cs
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\Password.g.cs
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\ProcessingRecordingControl.g.cs
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\App.g.cs
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.cache
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck_MarkupCompile.lref
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\Controls\CaptureBufferBrowser.baml
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\MainWindow.baml
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\Password.baml
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\ProcessingRecordingControl.baml
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.g.resources
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.ParamConfig.resources
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.Properties.Resources.resources
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.StatusWindow.resources
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.GenerateResource.cache
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CoreCompileInputs.cache
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.csproj.CopyComplete
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.exe
+F:\LucidCloud\Projects\SICK_PalletCheck\palletcheck\PalletCheckWPF\obj\Debug\PalletCheck.pdb

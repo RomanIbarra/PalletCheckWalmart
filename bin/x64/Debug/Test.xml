@@ -1,0 +1,223 @@
+<icon_data_format name="" valuetype="">
+    <parameter name="size">3764</parameter>
+    <parameter name="version">1</parameter>
+    <parameter name="layout">SUBCOMPONENT</parameter>
+    <component name="Ranger3Range" valuetype="Hi3D">
+        <parameter name="size">3764</parameter>
+        <parameter name="height">1</parameter>
+        <worldrangetraits>
+            <parameter name="lower bound x">428.10177612304688</parameter>
+            <parameter name="upper bound x">779.14507493376732</parameter>
+            <parameter name="lower bound r">498.7360748834908</parameter>
+            <parameter name="upper bound r">631.38399652764201</parameter>
+            <parameter name="coordinate unit"></parameter>
+        </worldrangetraits>
+        <genistreamtraits>
+            <parameter name="region id">scan 3d extraction 1</parameter>
+            <parameter name="extraction method">hi 3d</parameter>
+            <parameter name="output mode">rectified c</parameter>
+            <parameter name="width">1696</parameter>
+            <parameter name="height">320</parameter>
+            <parameter name="offset X">448</parameter>
+            <parameter name="offset Y">68</parameter>
+            <parameter name="a axis range scale">0.28151026368141174</parameter>
+            <parameter name="a axis range offset">428.10177612304688</parameter>
+            <parameter name="a axis range min">0</parameter>
+            <parameter name="a axis range max">1247</parameter>
+            <parameter name="a axis range missing">false</parameter>
+            <parameter name="a axis range missing value">0</parameter>
+            <parameter name="b axis range scale">0.32749998569488525</parameter>
+            <parameter name="b axis range offset">0</parameter>
+            <parameter name="b axis range min">-inf</parameter>
+            <parameter name="b axis range max">inf</parameter>
+            <parameter name="b axis range missing">false</parameter>
+            <parameter name="b axis range missing value">0</parameter>
+            <parameter name="c axis range scale">0.032400567084550858</parameter>
+            <parameter name="c axis range offset">498.70367431640625</parameter>
+            <parameter name="c axis range min">1</parameter>
+            <parameter name="c axis range max">4095</parameter>
+            <parameter name="c axis range missing">true</parameter>
+            <parameter name="c axis range missing value">0</parameter>
+            <parameter name="unit">millimeter</parameter>
+        </genistreamtraits>
+        <subcomponent name="Range" valuetype="WORD">
+            <parameter name="size">2496</parameter>
+            <parameter name="width">1248</parameter>
+        </subcomponent>
+        <subcomponent name="Intensity" valuetype="BYTE">
+            <parameter name="size">1248</parameter>
+            <parameter name="width">1248</parameter>
+        </subcomponent>
+        <subcomponent name="Mark" valuetype="INT">
+            <parameter name="size">20</parameter>
+            <parameter name="width">5</parameter>
+        </subcomponent>
+    </component>
+    <genistream>
+        <parameter name="version">4.0.0.19</parameter>
+        <parameter name="save time">2024-11-15T21:44:58Z</parameter>
+        <parameter name="frame id">6</parameter>
+        <parameter name="frame completeness">complete</parameter>
+        <parameter name="delivered frame height">4600</parameter>
+        <parameter name="camera laser angle">23</parameter>
+        <framemetadata>
+            <parameter name="frame trigger counter">271</parameter>
+        </framemetadata>
+    </genistream>
+    <additionalinfo>
+        <parameter name="acquisition start time">2024-11-15T21:43:37Z</parameter>
+        <parameter name="grab time">2024-11-15T21:44:58Z</parameter>
+        <parameter name="gentl producer">SICKGigEVisionTL</parameter>
+        <parameter name="gentl producer version">3.1.0.25</parameter>
+        <parameter name="device model">Ruler3060</parameter>
+        <parameter name="device serial number">22290005</parameter>
+        <parameter name="device name">SICK AG Ruler3060 (SICKGigEVisionTL_DEV_00067743b455)</parameter>
+        <parameter name="device firmware">FW:4.0.0.13,FPGA:3.7.4639 (RELEASE 20240612T19:59Z+02 rev: d1c5477bdc1bca7d790f7667bbec56c3f508e7ed)</parameter>
+        <parameter name="device manufacturer info">Type:V3DU3-060RM21A Part:1122973</parameter>
+        <parameter name="device boot path">Primary</parameter>
+        <parameter name="gev stream channel packet size">4144</parameter>
+        <cameraconfig>
+            #Version,1
+            #Root
+            #DeviceControl
+            DeviceScanType,Linescan3D
+            DeviceLinkThroughputLimit,118750000
+            #ImageFormatControl
+            ExposureTime_RegionSelector_Region0,400
+            TestPattern_ComponentSelector_Intensity_RegionSelector_Region0,Off
+            ExposureTime_RegionSelector_Region1,400
+            Width_RegionSelector_Region1,1696
+            Height_RegionSelector_Region1,320
+            OffsetX_RegionSelector_Region1,448
+            OffsetY_RegionSelector_Region1,68
+            ExposureTime_RegionSelector_Region1DualExposure,3
+            Height_RegionSelector_Scan3dExtraction1,4600
+            ComponentEnable_ComponentSelector_Range_RegionSelector_Scan3dExtraction1,1
+            PixelFormat_ComponentSelector_Range_RegionSelector_Scan3dExtraction1,Coord3D_C12p
+            TestPattern_ComponentSelector_Range_RegionSelector_Scan3dExtraction1,Off
+            ComponentEnable_ComponentSelector_Reflectance_RegionSelector_Scan3dExtraction1,1
+            ComponentEnable_ComponentSelector_Scatter_RegionSelector_Scan3dExtraction1,0
+            PixelFormat_ComponentSelector_Scatter_RegionSelector_Scan3dExtraction1,Mono16
+            #Scan3dControl
+            Scan3dExtractionMethod_Scan3dExtractionSelector_Scan3dExtraction1,Hi3D
+            WamSize_Scan3dExtractionSelector_Scan3dExtraction1,Normal
+            SearchMode3D_Scan3dExtractionSelector_Scan3dExtraction1,GlobalMax
+            RangeAxis_Scan3dExtractionSelector_Scan3dExtraction1,Standard
+            RangeResolution_Scan3dExtractionSelector_Scan3dExtraction1,SixteenthPixel
+            DetectionThreshold_Scan3dExtractionSelector_Scan3dExtraction1,20
+            SearchDirection_Scan3dExtractionSelector_Scan3dExtraction1,Standard
+            ReflectanceFilter_Scan3dExtractionSelector_Scan3dExtraction1,1
+            ScatterMode_Scan3dExtractionSelector_Scan3dExtraction1,SymmetricSideBand
+            ScatterOffset_Scan3dExtractionSelector_Scan3dExtraction1,6
+            ScatterWidth_Scan3dExtractionSelector_Scan3dExtraction1,4
+            ScatterGain_Scan3dExtractionSelector_Scan3dExtraction1,4
+            ScatterReductionCurve_Scan3dExtractionSelector_Scan3dExtraction1,Linear
+            ScatterReductionLowerLimit_Scan3dExtractionSelector_Scan3dExtraction1,0
+            ScatterReductionUpperLimit_Scan3dExtractionSelector_Scan3dExtraction1,1500
+            ScatterReductionKnee1Input_Scan3dExtractionSelector_Scan3dExtraction1,22
+            ScatterReductionKnee1Output_Scan3dExtractionSelector_Scan3dExtraction1,12
+            ScatterReductionKnee2Input_Scan3dExtractionSelector_Scan3dExtraction1,54
+            ScatterReductionKnee2Output_Scan3dExtractionSelector_Scan3dExtraction1,39
+            Scan3dOutputMode_Scan3dExtractionSelector_Scan3dExtraction1,RectifiedC
+            Scan3dCalibrationModel_Scan3dExtractionSelector_Scan3dExtraction1,FactoryCalibration
+            Scan3dRectificationWidth_Scan3dExtractionSelector_Scan3dExtraction1,1248
+            Scan3dRectificationMethod_Scan3dExtractionSelector_Scan3dExtraction1,TopMost
+            Scan3dRectificationSpread_Scan3dExtractionSelector_Scan3dExtraction1,1.20000005
+            Scan3dDualExposure_Scan3dExtractionSelector_Scan3dExtraction1,Off
+            Scan3dBlendingThreshold_Scan3dExtractionSelector_Scan3dExtraction1,170
+            DetectionThreshold_Scan3dExtractionSelector_Scan3dExtraction1DualExposure,20
+            #AcquisitionControl
+            AcquisitionMode,Continuous
+            AcquisitionStopMode,Complete
+            AcquisitionFrameRate,20
+            AcquisitionLineRate,1000
+            TriggerMode_TriggerSelector_LineStart,On
+            TriggerSource_TriggerSelector_LineStart,Encoder
+            TriggerMode_TriggerSelector_FrameStart,On
+            TriggerSource_TriggerSelector_FrameStart,FrameTriggerInput
+            TriggerActivation_TriggerSelector_FrameStart,RisingEdge
+            TriggerMode_TriggerSelector_AreascanFrameStart,Off
+            TriggerSource_TriggerSelector_AreascanFrameStart,Encoder
+            TriggerSource_TriggerSelector_Region1ExposureStart,LineStart
+            TriggerDelay_TriggerSelector_Region1ExposureStart,1.375
+            HoldFrameLevelOneLineAfterPulseEnd,0
+            MultiSlopeMode,PresetMedium
+            MultiSlopeKneePointCount,1
+            #DigitalIOControl
+            LineFormat_LineSelector_EncoderAInput,RS422
+            LineFormat_LineSelector_EncoderBInput,RS422
+            LineSource_LineSelector_LaserStrobe1Output,All3dExposures
+            LineInverter_LineSelector_LaserStrobe2Output,1
+            LineSource_LineSelector_LaserStrobe2Output,LaserStrobe2Timer
+            LineRiseTime_LineSelector_LaserStrobe2Output,0
+            LineInverter_LineSelector_FrameSynchronizationOutput,0
+            SignalConfiguration_IOPinSelector_IO4,Input
+            #CounterAndTimerControl
+            TimerDuration_TimerSelector_LaserStrobe1Timer,0
+            TimerDelay_TimerSelector_LaserStrobe1Timer,0
+            TimerTriggerSource_TimerSelector_LaserStrobe1Timer,Off
+            TimerDuration_TimerSelector_LaserStrobe2Timer,0
+            TimerDelay_TimerSelector_LaserStrobe2Timer,0
+            TimerTriggerSource_TimerSelector_LaserStrobe2Timer,Off
+            TimerDuration_TimerSelector_FrameSynchronizationTimer,2
+            TimerTriggerSource_TimerSelector_FrameSynchronizationTimer,FrameStart
+            #EncoderControl
+            EncoderResolution,0.0327499993
+            EncoderMode,FourPhase
+            EncoderDivider,10
+            EncoderOutputMode,DirectionUp
+            EncoderResetSource,Off
+            #EventControl
+            EventNotification_EventSelector_LogMessage,On
+            #LogMessageData
+            #EventTestData
+            #UserSetControl
+            #FileAccessControl
+            #ChunkDataControl
+            ChunkModeActive,1
+            #TestControl
+            TestPayloadFormatMode,Off
+            #TransportLayerControl
+            #GigEVision
+            GevSCPD,0
+            #Capabilities
+            #CalibrationConditions
+            #ImagerControl
+            ImagerScheduler,Standard
+            ImagerExposureStartAlignment,Off
+            #ProductConfiguration
+            #LaserControl
+            LaserPower,100
+            #FirmwareUpdate
+            #FrameBufferStatus
+            #PartSyncStatus
+            #MultipartFrontendStatus
+            #DescramblerStatus
+            #PostProcessingStatus
+            #CalibrationStatus
+            #RectificationStatus
+            #ImagerInterfaceStatus
+            #M30Debug
+            #M30RegisterPeekPoke
+            #DataDumper
+            #LogEventTest
+            #DataTypesTest
+            #ValidationTest
+            #AvailableTest
+        </cameraconfig>
+        <datastreamstatistics>
+            <parameter name="seen packet count">21198</parameter>
+            <parameter name="lost packet count">0</parameter>
+            <parameter name="resend command count">0</parameter>
+            <parameter name="resend packet count">0</parameter>
+            <parameter name="delivered packet count">21198</parameter>
+            <parameter name="unavailable packet count">0</parameter>
+            <parameter name="duplicate packet count">0</parameter>
+            <parameter name="skipped block count">0</parameter>
+            <parameter name="engine underrun count">0</parameter>
+            <parameter name="discarded block count">0</parameter>
+            <parameter name="incomplete block count">0</parameter>
+            <parameter name="oversized block count">0</parameter>
+        </datastreamstatistics>
+    </additionalinfo>
+</icon_data_format>
