@@ -37,6 +37,7 @@ namespace PalletCheck.Controls
         int COUNT = 0;
         Point PanPoint;
         Point PanXPoint;
+        ParamStorage paramStorageCapture = new ParamStorage();
 
         bool RedrawBuffer;
 
@@ -365,10 +366,10 @@ namespace PalletCheck.Controls
         }
 
         //=====================================================================
-        public void Load(string Filename)
+        public void Load(string Filename,ParamStorage paramStorage)
         {
             CaptureBuffer CB = new CaptureBuffer();
-            CB.Load(Filename);
+            CB.Load(Filename, paramStorage);
             SetCB(CB);
             RedrawBuffer = true;
         }
@@ -441,7 +442,7 @@ namespace PalletCheck.Controls
 
         }
 
- 
+
 
 
         //=====================================================================
@@ -477,34 +478,34 @@ namespace PalletCheck.Controls
         //}
 
 
-        private void SetScale(double Scale, double CX, double CY)
+        private void SetScale(double scale, double centerX, double centerY)
         {
-            if (Scale == 0 && CX==0 && CY==0)
+            if (scale == 0 && centerX == 0 && centerY == 0)
             {
-                Scale = OuterCanvas.ActualWidth / CapBufImg.ActualWidth;
+                // 保持图像的纵横比
+                double scaleX = OuterCanvas.ActualWidth / CapBufImg.ActualWidth;
+                double scaleY = OuterCanvas.ActualHeight / CapBufImg.ActualHeight;
 
-                renderScale.ScaleX = Scale;
-                renderScale.ScaleY = Scale;
+                // 选择较小的缩放值，以保持纵横比并适应容器
+                scale = Math.Min(scaleX, scaleY);
 
-                //double scaledW = OuterCanvas.ActualWidth / Scale;
-                //double scaledH = OuterCanvas.ActualHeight / Scale;
+                renderScale.ScaleX = scale;
+                renderScale.ScaleY = scale*1.4;
 
-                //if (CX == 0) CX = CapBufImg.ActualWidth / 2;
-                //if (CY == 0) CY = CapBufImg.ActualHeight / 2;
-
-                myXfrm.X = 0;// (CX - scaledW / 2);
-                myXfrm.Y = 0;// (CY - scaledH / 2);
+                // 设置初始位移
+                myXfrm.X = 0;
+                myXfrm.Y = 0;
             }
             else
             {
-                renderScale.ScaleX = Scale;
-                renderScale.ScaleY = Scale;
+                renderScale.ScaleX = scale;
+                renderScale.ScaleY = scale;
 
-                double scaledW = OuterCanvas.ActualWidth / Scale;
-                double scaledH = OuterCanvas.ActualWidth / Scale;
+                double scaledWidth = OuterCanvas.ActualWidth / scale;
+                double scaledHeight = OuterCanvas.ActualHeight / scale;
 
-                myXfrm.X = -(CX - scaledW / 2);
-                myXfrm.Y = -(CY - scaledH / 2);
+                myXfrm.X = -(centerX - scaledWidth / 2);
+                myXfrm.Y = -(centerY - scaledHeight / 2);
             }
         }
 
@@ -603,6 +604,17 @@ namespace PalletCheck.Controls
         //=====================================================================
         private void ImageCanvas_MouseMove(object sender, MouseEventArgs e)
         {
+            Canvas canvas = sender as Canvas;
+
+            if (canvas != null)
+            {
+                // 获取控件的名称
+                string controlName = canvas.Name;
+
+                // 输出控件名称
+                Console.WriteLine($"The sender's name is: {controlName}");
+            }
+
             if (FB == null)
                 FB = CB.BuildFastBitmap();
 
@@ -615,12 +627,12 @@ namespace PalletCheck.Controls
 
             Canvas.SetLeft(SelRect, Math.Min(MouseDownCanvasPos1.X, MouseDownCanvasPos2.X));
             Canvas.SetTop(SelRect, Math.Min(MouseDownCanvasPos1.Y, MouseDownCanvasPos2.Y));
-            SelRect.Width = Math.Abs(MouseDownCanvasPos1.X-MouseDownCanvasPos2.X);
+            SelRect.Width = Math.Abs(MouseDownCanvasPos1.X - MouseDownCanvasPos2.X);
             SelRect.Height = Math.Abs(MouseDownCanvasPos1.Y - MouseDownCanvasPos2.Y);
 
             // Get Z value in the capture buffer
             UInt16 BPZ2 = 0;
-            int BPX2=0, BPY2=0;
+            int BPX2 = 0, BPY2 = 0;
             if (true && (CB != null))
             {
                 BPX2 = (int)((MouseDownBufferPos2.X / CapBufImg.ActualWidth) * (CapBufImg.Source as BitmapSource).PixelWidth);
@@ -628,7 +640,7 @@ namespace PalletCheck.Controls
                 if (BPX2 >= 0 && BPX2 < CB.Width && BPY2 >= 0 && BPY2 < FB.Height)
                     BPZ2 = CB.Buf[BPY2 * CB.Width + BPX2];
             }
-            double BPZ2mm = Math.Round(BPZ2 * ParamStorage.GetFloat("MM Per Pixel Z"),1);
+            double BPZ2mm = Math.Round(BPZ2 * paramStorageCapture.GetFloat("MM Per Pixel Z"), 1);
 
 
 
@@ -658,7 +670,7 @@ namespace PalletCheck.Controls
                     if (BPX1 >= 0 && BPX1 < CB.Width && BPY1 >= 0 && BPY1 < FB.Height)
                         BPZ1 = CB.Buf[BPY1 * CB.Width + BPX1];
                 }
-                double BPZ1mm = Math.Round(BPZ1 * ParamStorage.GetFloat("MM Per Pixel Z"), 1);
+                double BPZ1mm = Math.Round(BPZ1 * paramStorageCapture.GetFloat("MM Per Pixel Z"), 1);
 
                 int DX = (BPX2 - BPX1);
                 int DY = (BPY2 - BPY1);
@@ -667,22 +679,18 @@ namespace PalletCheck.Controls
 
                 if (BPZ2 == 0 || BPZ1 == 0) DZ = 0;
 
-                double DXin = Math.Round(DX * ParamStorage.GetFloat("MM Per Pixel X") / 25.4, 4);
-                double DYin = Math.Round(DY * ParamStorage.GetFloat("MM Per Pixel Y") / 25.4, 4);
-                double DZin = Math.Round(DZ * ParamStorage.GetFloat("MM Per Pixel Z") / 25.4, 4);
+                double DXin = Math.Round(DX * paramStorageCapture.GetFloat("MM Per Pixel X") / 25.4, 4);
+                double DYin = Math.Round(DY * paramStorageCapture.GetFloat("MM Per Pixel Y") / 25.4, 4);
+                double DZin = Math.Round(DZ * paramStorageCapture.GetFloat("MM Per Pixel Z") / 25.4, 4);
                 double Lin = Math.Round(Math.Sqrt((double)DXin * DXin + (double)DYin * DYin), 4);
                 //text += String.Format(" | dx dy dz ");
                 text += String.Format("       | PX dxyz | {0:0.00} {1:0.00} {2:0.00} |", DX, DY, DZ);
                 text += String.Format("       | IN dxyz | {0:0.00} {1:0.00} {2:0.00} |", DXin, DYin, DZin);
-                text += String.Format("       | MM dxyz | {0:0.00} {1:0.00} {2:0.00} |", DXin*25.4, DYin*25.4, DZin*25.4);
+                text += String.Format("       | MM dxyz | {0:0.00} {1:0.00} {2:0.00} |", DXin * 25.4, DYin * 25.4, DZin * 25.4);
 
-                //text += String.Format(" | dx dy dz ");
-                //text += String.Format(" | PX | dx:{0:0.00} dy:{1:0.00} dz:{2:0.00}", DX, DY, DZ);
-                //text += String.Format(" | IN | dx:{0:0.00} dy:{1:0.00} dz:{2:0.00}", DXin, DYin, DZin);
-                //text += String.Format(" | MM | dx:{0:0.00} dy:{1:0.00} dz:{2:0.00}", DXin * 25.4, DYin * 25.4, DZin * 25.4);
 
             }
-            else if ( RightMouseIsDown )
+            else if (RightMouseIsDown)
             {
                 Vector Delta = PanPoint - MouseDownBufferPos2;
 
@@ -766,32 +774,42 @@ namespace PalletCheck.Controls
 
         private void ImageCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            //double ScaleStep = 0.05;
-            //double CurrScale = renderScale.ScaleX;
-            //double NewScale = 0.0;
-            //if (e.Delta > 0)
-            //{
-            //    NewScale = Math.Min(20.0, Math.Max(0.01, renderScale.ScaleX * (1 + ScaleStep)));
-            //    renderScale.ScaleX = NewScale;
-            //    renderScale.ScaleY = NewScale;
-            //    myXfrm.X *= (1 + ScaleStep);
-            //    myXfrm.Y *= (1 + ScaleStep);
-            //}
-            //if (e.Delta < 0)
-            //{
-            //    NewScale = Math.Min(20.0, Math.Max(0.01, renderScale.ScaleX * (1 - ScaleStep)));
-            //    renderScale.ScaleX = NewScale;
-            //    renderScale.ScaleY = NewScale;
-            //    myXfrm.X *= (1 - ScaleStep);
-            //    myXfrm.Y *= (1 - ScaleStep);
-            //}
+            double ScaleStep = 0.05;
+            double CurrScale = renderScale.ScaleX;
+            double NewScale = 0.0;
+            if (e.Delta > 0)
+            {
+                NewScale = Math.Min(20.0, Math.Max(0.01, renderScale.ScaleX * (1 + ScaleStep)));
+                renderScale.ScaleX = NewScale;
+                renderScale.ScaleY = NewScale * 1.4;
+                myXfrm.X *= (1 + ScaleStep);
+                myXfrm.Y *= (1 + ScaleStep);
+            }
+            if (e.Delta < 0)
+            {
+                NewScale = Math.Min(20.0, Math.Max(0.01, renderScale.ScaleX * (1 - ScaleStep)));
+                renderScale.ScaleX = NewScale;
+                renderScale.ScaleY = NewScale * 1.4;
+                myXfrm.X *= (1 - ScaleStep);
+                myXfrm.Y *= (1 - ScaleStep);
+            }
 
-            //Logger.WriteLine(String.Format("MouseWheel Scale  {0}  {1}  {2}", e.Delta, CurrScale, NewScale));
+            Logger.WriteLine(String.Format("MouseWheel Scale  {0}  {1}  {2}", e.Delta, CurrScale, NewScale));
 
         }
 
 
-
+        public void SetParamStorage(ParamStorage paramStorage)
+        {
+            if (paramStorage != null)
+            {
+                paramStorageCapture = paramStorage;
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(paramStorage), "ParamStorage cannot be null.");
+            }
+        }
 
         private void sldLowRange_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {

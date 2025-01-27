@@ -31,12 +31,13 @@ namespace PalletCheck
         {
             this.tabCategories = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btnCalcBaseline = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.btnLoadSettings = new System.Windows.Forms.Button();
             this.btnSaveSettings = new System.Windows.Forms.Button();
-            this.btnCalcBaseline = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tabCategories.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -47,28 +48,46 @@ namespace PalletCheck
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabCategories.Controls.Add(this.tabPage1);
             this.tabCategories.Controls.Add(this.tabPage2);
-            this.tabCategories.Location = new System.Drawing.Point(0, 73);
+            this.tabCategories.Location = new System.Drawing.Point(0, 112);
+            this.tabCategories.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabCategories.Name = "tabCategories";
             this.tabCategories.SelectedIndex = 0;
-            this.tabCategories.Size = new System.Drawing.Size(760, 557);
+            this.tabCategories.Size = new System.Drawing.Size(1140, 857);
             this.tabCategories.TabIndex = 0;
             // 
             // tabPage1
             // 
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.BackColor = System.Drawing.SystemColors.Highlight;
+            this.tabPage1.Controls.Add(this.btnCalcBaseline);
+            this.tabPage1.Location = new System.Drawing.Point(4, 29);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(752, 531);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage1.Size = new System.Drawing.Size(1132, 824);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btnCalcBaseline
+            // 
+            this.btnCalcBaseline.BackColor = System.Drawing.SystemColors.Control;
+            this.btnCalcBaseline.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCalcBaseline.Location = new System.Drawing.Point(839, 155);
+            this.btnCalcBaseline.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnCalcBaseline.Name = "btnCalcBaseline";
+            this.btnCalcBaseline.Size = new System.Drawing.Size(256, 54);
+            this.btnCalcBaseline.TabIndex = 3;
+            this.btnCalcBaseline.Text = "CALC BASELINE";
+            this.btnCalcBaseline.UseVisualStyleBackColor = false;
+            this.btnCalcBaseline.Visible = false;
+            this.btnCalcBaseline.Click += new System.EventHandler(this.btnCalcBaseline_Click);
             // 
             // tabPage2
             // 
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Location = new System.Drawing.Point(4, 29);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(752, 389);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage2.Size = new System.Drawing.Size(1132, 824);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -77,9 +96,10 @@ namespace PalletCheck
             // 
             this.btnLoadSettings.BackColor = System.Drawing.SystemColors.Control;
             this.btnLoadSettings.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLoadSettings.Location = new System.Drawing.Point(97, 9);
+            this.btnLoadSettings.Location = new System.Drawing.Point(294, 14);
+            this.btnLoadSettings.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnLoadSettings.Name = "btnLoadSettings";
-            this.btnLoadSettings.Size = new System.Drawing.Size(171, 35);
+            this.btnLoadSettings.Size = new System.Drawing.Size(256, 54);
             this.btnLoadSettings.TabIndex = 1;
             this.btnLoadSettings.Text = "LOAD SETTINGS";
             this.btnLoadSettings.UseVisualStyleBackColor = false;
@@ -89,51 +109,43 @@ namespace PalletCheck
             // 
             this.btnSaveSettings.BackColor = System.Drawing.SystemColors.Control;
             this.btnSaveSettings.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSaveSettings.Location = new System.Drawing.Point(291, 9);
+            this.btnSaveSettings.Location = new System.Drawing.Point(582, 14);
+            this.btnSaveSettings.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnSaveSettings.Name = "btnSaveSettings";
-            this.btnSaveSettings.Size = new System.Drawing.Size(171, 35);
+            this.btnSaveSettings.Size = new System.Drawing.Size(256, 54);
             this.btnSaveSettings.TabIndex = 2;
             this.btnSaveSettings.Text = "SAVE SETTINGS";
             this.btnSaveSettings.UseVisualStyleBackColor = false;
             this.btnSaveSettings.Click += new System.EventHandler(this.btnSaveSettings_Click);
             // 
-            // btnCalcBaseline
-            // 
-            this.btnCalcBaseline.BackColor = System.Drawing.SystemColors.Control;
-            this.btnCalcBaseline.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCalcBaseline.Location = new System.Drawing.Point(485, 9);
-            this.btnCalcBaseline.Name = "btnCalcBaseline";
-            this.btnCalcBaseline.Size = new System.Drawing.Size(171, 35);
-            this.btnCalcBaseline.TabIndex = 3;
-            this.btnCalcBaseline.Text = "CALC BASELINE";
-            this.btnCalcBaseline.UseVisualStyleBackColor = false;
-            this.btnCalcBaseline.Click += new System.EventHandler(this.btnCalcBaseline_Click);
-            // 
             // panel1
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.panel1.BackColor = System.Drawing.SystemColors.Highlight;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.btnCalcBaseline);
             this.panel1.Controls.Add(this.btnLoadSettings);
             this.panel1.Controls.Add(this.btnSaveSettings);
-            this.panel1.Location = new System.Drawing.Point(4, 12);
+            this.panel1.Location = new System.Drawing.Point(6, 18);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(743, 55);
+            this.panel1.Size = new System.Drawing.Size(1114, 84);
             this.panel1.TabIndex = 4;
             // 
             // ParamConfig
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(759, 630);
+            this.BackColor = System.Drawing.SystemColors.Highlight;
+            this.ClientSize = new System.Drawing.Size(1138, 969);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.tabCategories);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "ParamConfig";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Settings Editor";
             this.tabCategories.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 

@@ -18,8 +18,10 @@ namespace PalletCheck
         System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
         System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
         Color SaveSettingsButtonColor;
-
-        public ParamConfig()
+        //ParamStorage ParamStorageGeneral = MainWindow.ParamStorageGeneral;
+        ParamStorage ParamStorageCurrent;
+        string CurrentLastUsedFileName;
+        public ParamConfig(ParamStorage ParamStorageGeneral,string LastUsedFile)
         {
             InitializeComponent();
 
@@ -38,7 +40,8 @@ namespace PalletCheck
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-
+            ParamStorageCurrent = ParamStorageGeneral;
+            CurrentLastUsedFileName = LastUsedFile;
             BuildPagesFromParamStorage();
 
             System.Windows.Forms.Timer T = new System.Windows.Forms.Timer();
@@ -50,7 +53,7 @@ namespace PalletCheck
 
         private void SaveSettingsColorUpdate(object sender, EventArgs e)
         {
-            if (ParamStorage.HasChangedSinceLastSave)
+            if (ParamStorageCurrent.HasChangedSinceLastSave)
             {
                 if (btnSaveSettings.BackColor == SaveSettingsButtonColor)
                     btnSaveSettings.BackColor = Color.FromArgb(196, 196, 0);
@@ -67,9 +70,7 @@ namespace PalletCheck
         {
             tabCategories.TabPages.Clear();
 
-
-            // Build controls
-            foreach (KeyValuePair<string, Dictionary<string, string>> kvp in ParamStorage.Categories)
+            foreach (KeyValuePair<string, Dictionary<string, string>> kvp in ParamStorageCurrent.Categories)
             {
                 TabPage TP = new TabPage(kvp.Key);
                 TP.Tag = kvp.Value;
@@ -86,9 +87,33 @@ namespace PalletCheck
                 DGV.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
                 DGV.DefaultCellStyle = dataGridViewCellStyle2;
                 DGV.RowHeadersVisible = false;
-                TP.Controls.Add(DGV);
                 DGV.Dock = DockStyle.Fill;
+
+                // 设置表头高度
+                DGV.Columns[0].Width = 120;
+                DGV.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+                // 启用单元格文字换行
+                DGV.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+                // 自动调整行高
+                DGV.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
+                // 设置表头高度
+                DGV.ColumnHeadersHeight = 50;
+
+                // 设置交替行颜色
+                DGV.RowPrePaint += (sender, e) =>
+                {
+                    if (e.RowIndex % 2 == 0)
+                        DGV.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                    else
+                        DGV.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.LightBlue;
+                };
+
+                TP.Controls.Add(DGV);
                 DGV.Rows.Clear();
+
                 foreach (KeyValuePair<string, string> Params in kvp.Value)
                 {
                     if (string.IsNullOrEmpty(Params.Key))
@@ -103,6 +128,9 @@ namespace PalletCheck
             }
         }
 
+
+
+
         private void DGV_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             DataGridView DGV = (DataGridView)sender;
@@ -114,8 +142,8 @@ namespace PalletCheck
 
             //ParamStorage.Save(ParamStorage.LastFilename);
 
-            ParamStorage.HasChangedSinceLastSave = true;
-            ParamStorage.SaveInHistory("CHANGED");
+            ParamStorageCurrent.HasChangedSinceLastSave = true;
+            ParamStorageCurrent.SaveInHistory("CHANGED");
 
         }
 
@@ -133,10 +161,11 @@ namespace PalletCheck
             ofd.Filter = "Text files|*.txt";
             ofd.FileName = LastLoadedParamFile;
             ofd.InitialDirectory = MainWindow.ConfigRootDir;
+            MainWindow.SetLastUsedParamFileName(CurrentLastUsedFileName);
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                ParamStorage.Load(ofd.FileName);
+                ParamStorageCurrent.Load(ofd.FileName);
                 MainWindow.LastUsedParamFile = ofd.FileName;
                 BuildPagesFromParamStorage();
             }
@@ -150,11 +179,12 @@ namespace PalletCheck
             sfd.Filter = "Text files|*.txt";
             sfd.FileName = LastLoadedParamFile;
             sfd.InitialDirectory = MainWindow.ConfigRootDir;
+            MainWindow.SetLastUsedParamFileName(CurrentLastUsedFileName);
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 MainWindow.LastUsedParamFile = sfd.FileName;
-                ParamStorage.Save(sfd.FileName);
+                ParamStorageCurrent.Save(sfd.FileName);
             }
         }
 
@@ -168,7 +198,7 @@ namespace PalletCheck
         {
             Logger.ButtonPressed("ParamConfig.btnCalcBaseline");
 
-            const int Width = 2560;
+            int Width = ParamStorageCurrent.GetInt("StitchedWidth");;
 
             System.Windows.Forms.FolderBrowserDialog OFD = new System.Windows.Forms.FolderBrowserDialog();
             OFD.RootFolder = Environment.SpecialFolder.MyComputer;
@@ -223,22 +253,22 @@ namespace PalletCheck
 
 
                         // Apply cleanup values before gathering column values
-                        if (true)
-                        {
-                            int leftEdge = ParamStorage.GetInt("Raw Capture ROI Left (px)");
-                            int rightEdge = ParamStorage.GetInt("Raw Capture ROI Right (px)");
-                            int clipMin = ParamStorage.GetInt("Raw Capture ROI Min Z (px)");
-                            int clipMax = ParamStorage.GetInt("Raw Capture ROI Max Z (px)");
+                        //if (true)
+                        //{
+                        //    int leftEdge = ParamStorage.GetInt("Raw Capture ROI Left (px)");
+                        //    int rightEdge = ParamStorage.GetInt("Raw Capture ROI Right (px)");
+                        //    int clipMin = ParamStorage.GetInt("Raw Capture ROI Min Z (px)");
+                        //    int clipMax = ParamStorage.GetInt("Raw Capture ROI Max Z (px)");
                             
-                            for (int y = 0; y < Height; y++)
-                                for (int x = 0; x < Width; x++)
-                                {
-                                    int j = x + y * Width;
-                                    int v = Buf[j];
-                                    if ((v > clipMax) || (v < clipMin)) Buf[j] = 0;
-                                    if ((x < leftEdge) || (x > rightEdge)) Buf[j] = 0;
-                                }
-                        }
+                        //    for (int y = 0; y < Height; y++)
+                        //        for (int x = 0; x < Width; x++)
+                        //        {
+                        //            int j = x + y * Width;
+                        //            int v = Buf[j];
+                        //            if ((v > clipMax) || (v < clipMin)) Buf[j] = 0;
+                        //            if ((x < leftEdge) || (x > rightEdge)) Buf[j] = 0;
+                        //        }
+                        //}
 
 
                         for (int y = 0; y < Height; y++)
@@ -332,7 +362,7 @@ namespace PalletCheck
                         if (i< Width - 1) SB.Append(",");
                     }
 
-                    ParamStorage.Set("Baseline", "BaselineData", SB.ToString());
+                    ParamStorageCurrent.Set("Baseline", "BaselineData", SB.ToString());
                     BuildPagesFromParamStorage();
 
                     //ParamStorage.GetArray(" ") = 

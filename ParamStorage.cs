@@ -6,29 +6,25 @@ using System.Threading.Tasks;
 
 namespace PalletCheck
 {
-    public static class ParamStorage
+    public class ParamStorage
     {
+        public string LastFilename;
+        public bool HasChangedSinceLastSave;
+        public object ObjectLock = new object();
 
-        public static string LastFilename;
-        public static bool HasChangedSinceLastSave;
-        public static object ObjectLock = new object();
+        public Dictionary<string, Dictionary<string, string>> Categories = new Dictionary<string, Dictionary<string, string>>();
 
-        //=====================================================================
-        public static Dictionary<string, Dictionary<string, string>> Categories = new Dictionary<string, Dictionary<string, string>>();
-
-        //=====================================================================
-        public static void SaveInHistory(string Reason)
+        public void SaveInHistory(string Reason)
         {
             DateTime DT = DateTime.Now;
             string dt_str = String.Format("{0:0000}{1:00}{2:00}_{3:00}{4:00}{5:00}", DT.Year, DT.Month, DT.Day, DT.Hour, DT.Minute, DT.Second);
 
             string SaveDir = MainWindow.SettingsHistoryRootDir;
 
-            ParamStorage.Save(SaveDir + "\\" + dt_str + "_SETTINGS_" + Reason + ".txt", false);
+            Save(SaveDir + "\\" + dt_str + "_SETTINGS_" + Reason + ".txt", false);
         }
 
-        //=====================================================================
-        public static void Load(string FileName)
+        public void Load(string FileName)
         {
             lock (ObjectLock)
             {
@@ -37,7 +33,6 @@ namespace PalletCheck
                 Logger.WriteBorder("ParamStorage::Load()");
                 Logger.WriteLine(FileName);
 
-                // Early exit if no file exists
                 if (!System.IO.File.Exists(FileName))
                 {
                     Logger.WriteLine("No file exists");
@@ -58,8 +53,7 @@ namespace PalletCheck
                     if (L.Contains("["))
                     {
                         Category = L.Trim();
-                        Category = Category.Replace("[", "");
-                        Category = Category.Replace("]", "");
+                        Category = Category.Replace("[", "").Replace("]", "");
                     }
                     else
                     {
@@ -74,19 +68,17 @@ namespace PalletCheck
 
                 HasChangedSinceLastSave = false;
                 Logger.WriteBorder("ParamStorage::Load() COMPLETE");
-                ParamStorage.SaveInHistory("LOADED");
+                SaveInHistory("LOADED");
             }
         }
 
-        //=====================================================================
-        public static void Save(string FileName, bool ClearHasChanged=true)
+        public void Save(string FileName, bool ClearHasChanged = true)
         {
             lock (ObjectLock)
             {
                 Logger.WriteBorder("ParamStorage::Save()");
                 Logger.WriteLine(FileName);
 
-                // Save a backup of existing file
                 if (System.IO.File.Exists(FileName))
                 {
                     if (System.IO.File.Exists(FileName + ".bak"))
@@ -119,8 +111,7 @@ namespace PalletCheck
             }
         }
 
-        //=====================================================================
-        public static void Set(string Category, string fieldName, string Value, bool Loading=false)
+        public void Set(string Category, string fieldName, string Value, bool Loading = false)
         {
             lock (ObjectLock)
             {
@@ -139,8 +130,7 @@ namespace PalletCheck
             }
         }
 
-        //=====================================================================
-        public static string Get(string Category, string Field)
+        public string Get(string Category, string Field)
         {
             lock (ObjectLock)
             {
@@ -154,8 +144,7 @@ namespace PalletCheck
             }
         }
 
-        //=====================================================================
-        public static bool Contains(string Field)
+        public bool Contains(string Field)
         {
             lock (ObjectLock)
             {
@@ -170,8 +159,7 @@ namespace PalletCheck
             }
         }
 
-        //=====================================================================
-        static string FindCategory(string Field)
+        private string FindCategory(string Field)
         {
             lock (ObjectLock)
             {
@@ -185,9 +173,7 @@ namespace PalletCheck
             }
         }
 
-
-        //=====================================================================
-        public static int GetInt(string Field)
+        public int GetInt(string Field)
         {
             lock (ObjectLock)
             {
@@ -203,98 +189,7 @@ namespace PalletCheck
             }
         }
 
-        //=====================================================================
-
-        public static float GetPPIX()
-        {
-            return (1 / (GetFloat("MM Per Pixel X") / 25.4f));
-        }
-
-        public static float GetPPIY()
-        {
-            return (1 / (GetFloat("MM Per Pixel Y") / 25.4f));
-        }
-
-        public static float GetPPIZ()
-        {
-            return (1 / (GetFloat("MM Per Pixel Z") / 25.4f));
-        }
-
-        public static float GetInchesX(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(mm)")) f /= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel X")/25.4f;
-            return f;
-        }
-
-        public static float GetInchesY(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(mm)")) f /= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Y") / 25.4f;
-            return f;
-        }
-
-        public static float GetInchesZ(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(mm)")) f /= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Z") / 25.4f;
-            return f;
-        }
-
-        public static float GetMMX(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f *= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel X");
-            return f;
-        }
-
-        public static float GetMMY(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f *= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Y");
-            return f;
-        }
-
-        public static float GetMMZ(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f *= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Z");
-            return f;
-        }
-
-
-        public static int GetPixX(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel X")/25.4f);
-            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel X");
-            return (int)f;
-        }
-
-        public static int GetPixY(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel Y")/25.4f);
-            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel Y");
-            return (int)f;
-        }
-
-        public static int GetPixZ(string Field)
-        {
-            float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel Z")/25.4f);
-            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel Z");
-            return (int)f;
-        }
-
-        //=====================================================================
-        public static float GetFloat(string Field)
+        public float GetFloat(string Field)
         {
             lock (ObjectLock)
             {
@@ -309,8 +204,8 @@ namespace PalletCheck
                 return V;
             }
         }
-        //=====================================================================
-        public static string GetString(string Field)
+
+        public string GetString(string Field)
         {
             lock (ObjectLock)
             {
@@ -322,8 +217,7 @@ namespace PalletCheck
             }
         }
 
-        //=====================================================================
-        public static ushort[] GetArray(string Field)
+        public ushort[] GetArray(string Field)
         {
             lock (ObjectLock)
             {
@@ -342,6 +236,98 @@ namespace PalletCheck
                 return vals;
             }
         }
+
+        public  float GetPPIX()
+        {
+            return (1 / (GetFloat("MM Per Pixel X") / 25.4f));
+        }
+
+        public float GetPPIY()
+        {
+            return (1 / (GetFloat("MM Per Pixel Y") / 25.4f));
+        }
+
+        public   float GetPPIZ()
+        {
+            return (1 / (GetFloat("MM Per Pixel Z") / 25.4f));
+        }
+
+        public float GetInchesX(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(mm)")) f /= 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel X") / 25.4f;
+            return f;
+        }
+
+        public float GetInchesY(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(mm)")) f /= 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Y") / 25.4f;
+            return f;
+        }
+
+        public  float GetInchesZ(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(mm)")) f /= 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Z") / 25.4f;
+            return f;
+        }
+
+        public float GetMMX(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(in)")) f *= 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel X");
+            return f;
+        }
+
+        public float GetMMY(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(in)")) f *= 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Y");
+            return f;
+        }
+
+        public  float GetMMZ(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(in)")) f *= 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Z");
+            return f;
+        }
+
+
+        public  int GetPixX(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel X") / 25.4f);
+            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel X");
+            return (int)f;
+        }
+
+        public  int GetPixY(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel Y") / 25.4f);
+            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel Y");
+            return (int)f;
+        }
+
+        public  int GetPixZ(string Field)
+        {
+            float f = GetFloat(Field);
+            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel Z") / 25.4f);
+            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel Z");
+            return (int)f;
+        }
+
+        //=====================================================================
+
+
 
     }
 }

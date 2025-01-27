@@ -20,17 +20,35 @@ namespace PalletCheck
             possible_debris,
             board_too_short,
             missing_board,
-            board_segmentation_error
+            board_segmentation_error,
+            missing_blocks,  //Added by Jack
+            missing_chunks, //Added by Jack
+            excessive_angle, //Added by Jack
+            clearance,
         }
 
         public enum DefectLocation
         {
             Pallet,
-            H1,
-            H2,
-            H3,
-            V1,
-            V2
+            B_V1,
+            B_V2,
+            B_V3,
+            B_H1,
+            B_H2,
+            T_H1,
+            T_H2,
+            T_H3,
+            T_H4,
+            T_H5,
+            T_H6,
+            T_H7,
+            L_B1,
+            L_B2,
+            L_B3,
+            R_B1,
+            R_B2,
+            R_B3,
+            // For Left and Right //Added by Jack
         }
 
         public DefectType Type { get; set; }
@@ -133,6 +151,10 @@ namespace PalletCheck
                 case DefectType.board_too_short: return "SH";
                 case DefectType.missing_board: return "MB";
                 case DefectType.board_segmentation_error: return "ER";
+                case DefectType.missing_blocks:return "MO";  //Added by Jack
+                case DefectType.missing_chunks:return "MU";
+                case DefectType.excessive_angle:return "EA";
+                case DefectType.clearance: return "FC";
                 default: return "?";
             }
         }
@@ -151,6 +173,10 @@ namespace PalletCheck
                 case "SH": return "Board Too Short";
                 case "MB": return "Missing Board";
                 case "ER": return "Segmentation Error";
+                case "MO": return "Missing Blocks";
+                case "MU": return "Missing Chunks";
+                case "EA": return "Excessive Angle";
+                case "FC": return "Fork Clearance";
                 default: return "?";
             }
         }
@@ -170,19 +196,22 @@ namespace PalletCheck
                 case DefectType.board_too_short: return "Board Too Short";
                 case DefectType.missing_board: return "Missing Board";
                 case DefectType.board_segmentation_error: return "Segmentation Error";
+                case DefectType.missing_blocks: return "Missing Blocks";  //Jack Added
+                case DefectType.missing_chunks: return "Missing Chunks";  //Jack Added
+                case DefectType.excessive_angle: return "Excessive Angle"; //Jack Added
                 default: return "?";
             }
         }
 
         public static string[] GetCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" };
+            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC" };  //Jack added the last 3
             return list;
         }
 
         public static string[] GetPLCCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB" };
+            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC" };//Jack added the last 3
             return list;
         }
     }

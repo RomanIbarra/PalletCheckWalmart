@@ -4,55 +4,191 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input; 
+using System.Windows.Input;
 using System.Windows.Media;
 using PalletCheck.Controls;
 using System.IO;
 using System.Diagnostics;
 using static PalletCheck.Pallet;
-using Sick.EasyRanger;
-using Sick.EasyRanger.Base;
-using Sick.EasyRanger.Controls;
 using Sick.GenIStream;
-using Sick.StreamUI.ImageFormat;
-using Sick.StreamUI.UIImage;
 using IFrame = Sick.GenIStream.IFrame;
+using Frame = Sick.GenIStream.Frame;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.Data;
+using System.Runtime.CompilerServices;
+using static ScottPlot.Plottable.PopulationPlot;
+using Sick.EasyRanger;
+using Sick.EasyRanger.Controls;
+using Sick.EasyRanger.Base;
+using Sick.EasyRanger.Controls.Common;
+using Sick.StreamUI.ImageFormat;
+using System.Threading.Tasks;
+using System.Windows.Shapes;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using MahApps.Metro.Controls;
+using Sick.StreamUI.Viewer;
+using System.Windows.Media.Animation;
+using Sick.StreamUI.FrameSave;
+using System.Security.Cryptography;
+
+
+
+
+
 
 namespace PalletCheck
 {
+    using static FromGenIStreamFrameConverter;
+    using static PalletCheck.PalletDefect;
+    using static Sick.GenIStream.FrameGrabber;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    public enum PositionOfPallet
+    {
+        Top = 0,
+        Bottom = 1,
+        Left = 2,
+        Right=3
+    }
+    /// <summary>
+    /// Jack Add New Result
+    /// </summary>
+    public enum InspectionResult
+    {
+        PASS,
+        FAIL,
+        ERROR,
+        TIMEOUT
+    }
     public partial class MainWindow : Window
     {
-        public ProcessingEnvironment EzREnvironment;
-        //public static int           SensorWidth = 2560;
-        public R3Cam Camera1;
-        public R3Cam Camera2;
-        public R3Cam Camera3;
-        static CameraDiscovery discovery;
-        public static MainWindow    Singleton;
-        List<UInt16[]>              IncomingScan = new List<UInt16[]>();
-
+        public static MainWindow Singleton;
         public bool RecordModeEnabled { get; private set; }
         public string RecordDir = "";
+        public static MainWindow Instance { get; private set; }
+        public static ParamStorage ParamStorageGeneral { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageTop { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageBottom { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageLeft { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageRight { get; set; } = new ParamStorage();
 
+        string _FilenameDateTime { get; set; }
+        string _DirectoryDateHour { get; set; }
+
+        private readonly object _lockFileName = new object();// Define camera names
+        string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R" };
+        public static ParamStorage GetParamStorage(PositionOfPallet position)
+        {
+            // 根据 PositionOfPallet 枚举值返回对应的 ParamStorage
+            switch (position)
+            {
+                case PositionOfPallet.Top:
+                    return ParamStorageTop;
+                case PositionOfPallet.Bottom:
+                    return ParamStorageBottom;
+                case PositionOfPallet.Left:
+                    return ParamStorageLeft;
+                case PositionOfPallet.Right:
+                    return ParamStorageRight;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
+            }
+        }
+        private TextBlock GetPalletNameTextBlock(PositionOfPallet position)
+        {
+            switch (position)
+            {
+                case PositionOfPallet.Top:
+                    return PalletName0;
+                case PositionOfPallet.Bottom:
+                    return PalletName1;
+                case PositionOfPallet.Left:
+                    return PalletName2;
+                case PositionOfPallet.Right:
+                    return PalletName3;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
+            }
+        }
+        public StackPanel GetButtonList(PositionOfPallet position)
+        {
+            switch (position)
+            {
+                case PositionOfPallet.Top:
+                    return CBB_Button_List;
+                case PositionOfPallet.Bottom:
+                    return CBB_Button_List1;
+                case PositionOfPallet.Left:
+                    return CBB_Button_List2;
+                case PositionOfPallet.Right:
+                    return CBB_Button_List3;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
+            }
+        }
+        // 静态方法2：根据 PositionOfPallet 返回对应的 Grid
+        public Grid GetContainer(PositionOfPallet position)
+        {
+            switch (position)
+            {
+                case PositionOfPallet.Top:
+                    return CBB_Container;
+                case PositionOfPallet.Bottom:
+                    return CBB_Container1;
+                case PositionOfPallet.Left:
+                    return CBB_Container;
+                case PositionOfPallet.Right:
+                    return CBB_Container;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
+            }
+        }
         InspectionReport IR;
-        static PalletProcessor PProcessor;
+        JackSaveLog JackSaveLog = JackSaveLog.Instance();
+        private bool[] loadFrameFlags = new bool[6];
+
+        bool isSaveFrames = true;
+        string[] stringNameOfResultTitle = new string[] 
+        { "File Name",
+            "Top Raised Nail", "Top Missing Planks", "Top Crack across width", "Top Missing Wood", 
+            "Bottom Raised Nail", "Bottom Missing Planks", "Bottom Crack across width", "Bottom Missing Wood", 
+            "Left Missing Block", "Left Rotated Block(s)", "Left Missing Wood Chunk", 
+            "Right Missing Block", "Right Rotated Block(s)", "Right Missing Wood Chunk" , "Result"};
+        HashSet<string> bottomLocations = new HashSet<string>
+                {
+                    "B_V1", "B_V2", "B_V3", "_H1", "B_H2"
+                };
+
+        HashSet<string> topLocations = new HashSet<string>
+                {
+                    "T_H1", "T_H2", "T_H3", "T_H4", "T_H5", "T_H6", "T_H7"
+                };
+
+        HashSet<string> leftLocations = new HashSet<string>
+                {
+                    "L_B1", "L_B2", "L_B3"
+                };
+
+        HashSet<string> rightLocations = new HashSet<string>
+                {
+                    "R_B1", "R_B2", "R_B3"
+                };
+        static PalletProcessor PProcessorTop;
+        static PalletProcessor PProcessorBottom;
 
         Statistics Stats = new Statistics();
-
         Brush SaveSettingsButtonBrush;
-
         string[] AllFilesInFolder;
         int LastFileIdx = -1;
-
         bool BypassModeEnabled = false;
         //static string LastPalletSavedName = "";
 
-        public static string Version = "v2.0";
+        public static string Version = "V3.0";
         public static string RootDir = "";
         public static string ConfigRootDir = "";
         public static string HistoryRootDir = "";
@@ -64,12 +200,17 @@ namespace PalletCheck
         public static string CameraConfigHistoryRootDir = "";
         public static string SnapshotsRootDir = "";
         public static string ExeRootDir = "";
-        public static string SiteName = "";
+        public static string SiteName = "Walmart";
 
-       // UInt16[] IncomingBuffer;
+        // UInt16[] IncomingBuffer;
         delegate CaptureBufferBrowser addBufferCB(string s, CaptureBuffer CB);
 
         PLCComms PLC;
+        PLCComms PLCShort;
+
+        // Calculate the Process Time
+        Stopwatch stopwatchProcess = new Stopwatch();
+
         StorageWatchdog Storage;
         Logger Log = new Logger();
 
@@ -84,6 +225,7 @@ namespace PalletCheck
         Brush ButtonBackgroundBrush;
 
         public static string _LastUsedParamFile = "";
+        private static string _lastUsedParamFileName = "LastUsedParamFile.txt";
         public static string LastUsedParamFile
         {
             get
@@ -93,8 +235,13 @@ namespace PalletCheck
             set
             {
                 _LastUsedParamFile = value;
-                System.IO.File.WriteAllText(HistoryRootDir + "\\LastUsedParamFile.txt", _LastUsedParamFile);
+                System.IO.File.WriteAllText(HistoryRootDir + "\\" + _lastUsedParamFileName, _LastUsedParamFile);
             }
+        }
+
+        public static void SetLastUsedParamFileName(string lastName)
+        {
+            _lastUsedParamFileName = lastName;
         }
 
         // Production stats
@@ -112,7 +259,6 @@ namespace PalletCheck
                 Fail = 0;
             }
         }
-
         public List<PalletStat> PalletStats = new List<PalletStat>();
 
         public static Process PriorProcess()
@@ -138,7 +284,7 @@ namespace PalletCheck
             Process prior = PriorProcess();
             if (prior != null)
             {
-                if(MessageBox.Show("Another instance of PalletCheck is already running!\n\nDo you want to start a NEW instance?","PALLETCHECK Already Running",MessageBoxButton.YesNo)==MessageBoxResult.Yes)
+                if (MessageBox.Show("Another instance of PalletCheck is already running!\n\nDo you want to start a NEW instance?", "PALLETCHECK Already Running", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     prior.Kill();
                     System.Threading.Thread.Sleep(2000);
@@ -158,17 +304,18 @@ namespace PalletCheck
 
 
             // Setup root directories
-            RootDir = Environment.GetEnvironmentVariable("PALLETCHECK_ROOT_DIR");
+            RootDir = Environment.GetEnvironmentVariable("SICK_PALLETCHECK_ROOT_DIR");
             if (RootDir == null)
             {
-                MessageBox.Show("Could not find PALLETCHECK_ROOT_DIR env var");
-                Close();
-                return;
+                RootDir = "C:\\PalletCheck";
+                //MessageBox.Show("Could not find SICK_PALLETCHECK_ROOT_DIR env var");
+                //Close();
+                //return;
             }
 
             ConfigRootDir = RootDir + "\\Config";
             HistoryRootDir = RootDir + "\\History";
-            RecordingRootDir = RootDir + "\\Recordings";
+            RecordingRootDir = "C:\\PalletCheck" + "\\Recordings";
             SegmentationErrorRootDir = RecordingRootDir + "\\SegmentationErrors";
             LoggingRootDir = RootDir + "\\Logging";
             ExceptionsRootDir = RootDir + "\\Logging\\Exceptions";
@@ -202,10 +349,23 @@ namespace PalletCheck
 
             SiteName = Environment.GetEnvironmentVariable("PALLETCHECK_SITE_NAME");
             if (SiteName == null)
-                SiteName = "";
+                SiteName = "Walmart";
+
 
             InitializeComponent();
+            Instance = this;
+            for (int i = 0; i < 6; i++)
+            {
+                string statusTextName = $"Camera{i + 1}StatusText";
+                string indicatorName = $"Camera{i + 1}StatusIndicator";
 
+                // Get the status indicator and status text control for the camera
+                var statusText = (TextBlock)this.FindName(statusTextName);
+                var indicator = (Ellipse)this.FindName(indicatorName);
+                statusText.Text = $"{cameraNames[i]}: Searching"; // Use camera name
+                indicator.Fill = Brushes.Yellow; // Green indicates the camera has started
+
+            }
             //MainWindow.Icon = BitmapFrame.Create(Application.GetResourceStream(new Uri("LiveJewel.png", UriKind.RelativeOrAbsolute)).Stream);
         }
 
@@ -218,7 +378,7 @@ namespace PalletCheck
 
             string errorMessage = string.Format("An application error occurred.\nPlease check whether your data is correct and repeat the action. If this error occurs again there seems to be a more serious malfunction in the application, and you better close it.\n\nError: {0}\n\nDo you want to continue?\n(if you click Yes you will continue with your work, if you click No the application will close)",
 
-            exception.Message + (exception.InnerException != null ? "\n" +exception.InnerException.Message : null));
+            exception.Message + (exception.InnerException != null ? "\n" + exception.InnerException.Message : null));
 
             if (MessageBox.Show(errorMessage, "Application Error", MessageBoxButton.YesNoCancel, MessageBoxImage.Error) == MessageBoxResult.No)
             {
@@ -229,233 +389,333 @@ namespace PalletCheck
             }
         }
 
+        private void LoadParameters(PositionOfPallet position)
+        {
+            // Construct the file path based on the enum value
+            string lastUsedParamFilePath = HistoryRootDir + $"\\LastUsedParamFile{position}.txt";
+            string defaultParamFilePath = ConfigRootDir + "\\DefaultParams.txt";
+            string lastUsedParamFile = null;
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+            // Check if the history file exists
+            if (File.Exists(lastUsedParamFilePath))
+            {
+                lastUsedParamFile = File.ReadAllText(lastUsedParamFilePath);
+                // If the parameter file referenced in the history exists, load it
+                if (File.Exists(lastUsedParamFile))
+                {
+                    GetParamStorageByPosition(position).Load(lastUsedParamFile);
+                }
+                else
+                {
+                    MessageBox.Show($"Can't open the last known config file for {position}. It was supposed to be at {lastUsedParamFile}");
+                }
+            }
+            else
+            {
+                // Otherwise, load the default parameters
+                GetParamStorageByPosition(position).Load(defaultParamFilePath);
+            }
+        }
+
+
+        private ParamStorage GetParamStorageByPosition(PositionOfPallet position)
+        {
+            // Return the corresponding parameter storage object based on the enumeration value.
+            switch (position)
+            {
+                case PositionOfPallet.Left:
+                    return ParamStorageLeft;
+                case PositionOfPallet.Right:
+                    return ParamStorageRight;
+                case PositionOfPallet.Top:
+                    return ParamStorageTop;
+                case PositionOfPallet.Bottom:
+                    return ParamStorageBottom;
+                default:
+                    throw new ArgumentException("Invalid position", nameof(position));
+            }
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
-            this.Title = "PalletCheck  " + Version + " - " + SiteName;
+
+
+            this.Title = "PalletCheck Stitching Inside " + Version + " - " + SiteName;
             StatusStorage.Set("Version Number", Version);
 
             ButtonBackgroundBrush = btnStart.Background;
 
 
             // Try to load starting parameters
-            if (File.Exists(HistoryRootDir + "\\LastUsedParamFile.txt"))
+            if (File.Exists(HistoryRootDir + "\\LastUsedParamFileGeneral.txt"))
             {
-                _LastUsedParamFile = File.ReadAllText(HistoryRootDir + "\\LastUsedParamFile.txt");
+                _LastUsedParamFile = File.ReadAllText(HistoryRootDir + "\\LastUsedParamFileGeneral.txt");
                 if (File.Exists(_LastUsedParamFile))
                 {
-                    ParamStorage.Load(_LastUsedParamFile);
+                    ParamStorageGeneral.Load(_LastUsedParamFile);
                 }
                 else
                     MessageBox.Show("Can't open the last known config file. It was supposed to be at " + _LastUsedParamFile);
             }
             else
             {
-                ParamStorage.Load(ConfigRootDir + "\\DefaultParams.txt");
+                ParamStorageGeneral.Load(ConfigRootDir + "\\DefaultParams.txt");
             }
+            LoadParameters(PositionOfPallet.Top);
+            LoadParameters(PositionOfPallet.Bottom);
+            LoadParameters(PositionOfPallet.Left);
+            LoadParameters(PositionOfPallet.Right);
 
-            //int PPIX = ParamStorage.GetInt("Pixels Per Inch X");
+
 
 
             // Open PLC connection port
-            int Port = ParamStorage.GetInt("TCP Server Port");
-            string IP = ParamStorage.GetString("TCP Server IP");
-            PLC = new PLCComms(IP,Port);
+            int Port = ParamStorageGeneral.GetInt("TCP Server Port");
+            int PortShort = ParamStorageGeneral.GetInt("TCP Server Port For Short Result");
+            string IP = ParamStorageGeneral.GetString("TCP Server IP");
+            bool isServer = Convert.ToBoolean(ParamStorageGeneral.GetInt("Server"));
+            PLC = new PLCComms(IP, Port, isServer);
             PLC.Start();
+            PLCShort = new PLCComms(IP, PortShort, isServer);
+            PLCShort.Start();
 
             Storage = new StorageWatchdog();
             Storage.Start();
 
             System.Windows.Forms.Timer T = new System.Windows.Forms.Timer();
-            T.Interval = 500;
+            T.Interval = 1000;
             T.Tick += TimerUpdate500ms;
             T.Start();
 
-            imgPassSymbol.Visibility = Visibility.Hidden;
-            imgPassText.Visibility = Visibility.Hidden;
-            imgFailSymbol.Visibility = Visibility.Hidden;
-            imgFailText.Visibility = Visibility.Hidden;
 
             System.Windows.Forms.Timer T2 = new System.Windows.Forms.Timer();
             T2.Interval = 5000;
             T2.Tick += Timer5Sec;
             T2.Start();
-            ClearAnalysisResults();
-            ProgressBar_Clear();
+            ClearAnalysisResults(PositionOfPallet.Top);
+            //ProgressBar_Clear();
 
-            PProcessor = new PalletProcessor(3, 3);
+            PProcessorTop = new PalletProcessor(7, 7);
+            PProcessorBottom = new PalletProcessor(5, 5);
 
 
-            ParamStorage.HasChangedSinceLastSave = false;
+            ParamStorageGeneral.HasChangedSinceLastSave = false;
             SaveSettingsButtonBrush = btnSettingsControl.Background;
             System.Windows.Forms.Timer T3 = new System.Windows.Forms.Timer();
             T3.Interval = 500;
             T3.Tick += SaveSettingsColorUpdate;
             T3.Start();
 
-            //if (Camera1 == null)
-            //{
-            //    string CameraIP = ParamStorage.GetString("Camera1 IP");
-            //    Camera1 = new R3Cam();
-            //    Camera1.Startup("Camera1", CameraIP, OnNewFrameReceived, OnConnectionStateChange, OnCaptureStateChange);
-            //    System.Threading.Thread.Sleep(1000);
-            //}
-            //ParamStorage.SaveInHistory("STARTUP");
-            //Camera1.SaveInHistory("STARTUP");
+            Singleton = this;
 
-            discovery = CameraDiscovery.CreateFromProducerFile("SICKGigEVisionTL.cti");
-            InitializeCamera(ref Camera1, "Camera1", "Camera1 IP", OnNewFrameReceived1, OnConnectionStateChange, OnCaptureStateChange);
-            InitializeCamera(ref Camera2, "Camera2", "Camera2 IP", OnNewFrameReceived2, OnConnectionStateChange, OnCaptureStateChange);
-            InitializeCamera(ref Camera3, "Camera3", "Camera3 IP", OnNewFrameReceived3, OnConnectionStateChange, OnCaptureStateChange);
-        
 
-            if (ParamStorage.GetInt("Auto Start Capturing")==1)
+
+            _discovery = CameraDiscovery.CreateFromProducerFile("SICKGigEVisionTL.cti");
+
+            // Read the number of cameras from the configuration file
+            cameraCount = ParamStorageGeneral.GetInt("CameraCount");
+            StatusStorage.Set("SICK Cameras Count", cameraCount.ToString());
+
+            await Task.Run(() =>
             {
-                System.Threading.Thread.Sleep(2000);
-                btnStart_Click(null, null);
-            }
+                InitializeCamerasAndParameters();
+            });
+            ViewerLeft.Environment = _envLeft;
+            ViewerRight.Environment = _envRight;
+           
+            btnLoad_Right.IsEnabled = true; btnLoad_Left.IsEnabled = true;
+            btnLoad_Top.IsEnabled = true; btnLoad_Bottom.IsEnabled = true;
+            btnProcessRecording.IsEnabled = true;
+            btnProcessPallet.IsEnabled = true;
         }
 
 
-        static void InitializeCamera(ref R3Cam camera, string cameraName, string cameraIPKey, R3Cam.NewFrameReceivedCB onNewFrameReceived, R3Cam.ConnectionStateChangeCB onConnectionStateChange, R3Cam.CaptureStateChangeCB onCaptureStateChange)
+
+        private void ProcessFrameForCameraTopCallback(GrabResult result)
         {
-            if (camera == null)
+            stopwatchProcess.Reset();
+            stopwatchProcess.Start();
+            UpdateTextBlock(LogText, "Top New Frame", MessageState.Normal);
+            UpdateTextBlock(PalletName0, "▲");
+            //TryGenerateFilenameDateTime();
+            result.IfCompleteFrame(frame =>
             {
-                string CameraIP = ParamStorage.GetString(cameraIPKey);
-                camera = new R3Cam();
-                camera.Startup(cameraName, CameraIP, discovery, onNewFrameReceived, onConnectionStateChange, onCaptureStateChange);
-                Thread.Sleep(1000);
-            }
-        }
-
-
-        private void OnConnectionStateChange(R3Cam Cam, R3Cam.ConnectionState NewState)
-        {
-            // !!! THIS IS CALLED FROM THE R3CAM THREAD !!!!
-            Logger.WriteLine(Cam.CameraName + "  ConnectionState: " + NewState.ToString());
-            StatusStorage.Set("Camera."+Cam.CameraName+".ConnState", NewState.ToString());
-        }
-
-        private void OnCaptureStateChange(R3Cam Cam, R3Cam.CaptureState NewState)
-        {
-            // !!! THIS IS CALLED FROM THE R3CAM THREAD !!!!
-            Logger.WriteLine(Cam.CameraName + "  CaptureState: " + NewState.ToString());
-            StatusStorage.Set("Camera." + Cam.CameraName + ".CaptureState", NewState.ToString());
-        }
-
-        private void OnNewFrameReceived1(R3Cam cam, R3Cam.Frame frame)
-        {
-            ProcessFrame(cam, frame, "Camera1");
-        }
-
-        private void OnNewFrameReceived2(R3Cam cam, R3Cam.Frame frame)
-        {
-            ProcessFrame(cam, frame, "Camera2");
-        }
-
-        private void OnNewFrameReceived3(R3Cam cam, R3Cam.Frame frame)
-        {
-            ProcessFrame(cam, frame, "Camera3");
-        }
-        private ConcurrentDictionary<string, R3Cam.Frame> FrameBuffer = new ConcurrentDictionary<string, R3Cam.Frame>();
-        private void ProcessFrame(R3Cam cam, R3Cam.Frame frame, string cameraName)
-        {
-            Logger.WriteBorder($"NEW SCAN RECEIVED from {cameraName} Frame: {frame.FrameID}");
-            FrameBuffer[cameraName] = frame;
-
-            if (FrameBuffer.Count == 3)
-            {
-                MergeFrames();
-                FrameBuffer.Clear();
-            }
-
-            Logger.WriteLine("OnNewFrameReceived is finished.");
-        }
-
-        private void MergeFrames()
-        {
-            R3Cam.Frame frame1, frame2, frame3;
-            if (FrameBuffer.TryGetValue("Camera1", out frame1) &&
-                FrameBuffer.TryGetValue("Camera2", out frame2) &&
-                FrameBuffer.TryGetValue("Camera3", out frame3))
-            {
-                // Specify the start and end columns for each image
-                int startX1 = 0, endX1 = 1111; // Assume Camera1 starts at column 0 and ends at column 1111
-                int startX2 = 186, endX2 = 1225; // Assume Camera2 starts at column 186 and ends at column 1225
-                int startX3 = 485, endX3 = 1471; // Assume Camera3 starts at column 485 and ends at column 1471
-
-                // Calculate the total width and height of the merged image
-                int totalWidth = (endX1 - startX1) + (endX2 - startX2) + (endX3 - startX3); // Calculate total width
-                int totalHeight = frame1.Height; // Assume height is the same for all frames
-
-                ushort[] combinedRange = new ushort[totalWidth * totalHeight];
-                byte[] combinedReflectance = new byte[totalWidth * totalHeight];
-
-                // Copy image data and apply offsets
-                CopyFrameData(frame1, combinedRange, combinedReflectance, startX1, endX1, totalWidth, 0, 0); // targetStartX is 0
-                CopyFrameData(frame2, combinedRange, combinedReflectance, startX2, endX2, totalWidth, 6, endX1 - startX1); // targetStartX is the width of the first image
-                CopyFrameData(frame3, combinedRange, combinedReflectance, startX3, endX3, totalWidth, 3, (endX1 - startX1) + (endX2 - startX2)); // targetStartX is the sum of the widths of the first two images
-
-                // Process the merged image data
-                CaptureBuffer NewBuf = new CaptureBuffer(combinedRange, totalWidth, totalHeight);
-                CaptureBuffer ReflBuf = new CaptureBuffer(combinedReflectance, totalWidth, totalHeight);
-                ReflBuf.PaletteType = CaptureBuffer.PaletteTypes.Gray;
-
-                Pallet P = new Pallet(NewBuf, ReflBuf);
-                PProcessor.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete);
-            }
-        }
-
-        private void CopyFrameData(R3Cam.Frame frame, ushort[] combinedRange, byte[] combinedReflectance, int startX, int endX, int totalWidth, int offset, int targetStartX)
-        {
-            int frameWidth = endX - startX;
-            for (int y = 0; y < frame.Height; y++)
-            {
-                for (int x = startX; x < endX; x++)
+                try
                 {
-                    int sourceIndex = y * frame.Width + x;
-                    int targetIndex = y * totalWidth + (targetStartX + (x - startX));
+                    SickFrames[0] = frame.Copy();
 
-                    // Offset and copy non-zero range data
-                    if (frame.Range[sourceIndex] != 0)
-                    {
-                        combinedRange[targetIndex] = (ushort)((frame.Range[sourceIndex] * frame.zScale + (offset + frame.zOffset)) * 20);
-                    }
+                    var pallet = CreateTopPallet();
 
-                    // Copy non-zero reflectance data
-                  
-                        combinedReflectance[targetIndex] = frame.Reflectance[sourceIndex];
-                    
+                    PProcessorTop.ProcessPalletHighPriority(pallet, Pallet_OnLivePalletAnalysisComplete, PositionOfPallet.Top);
+                    // ProcessTop(FrameBuffer[cameraName]);
                 }
-            }
+                catch (Exception ex)
+                {
+                    UpdateTextBlock(PalletName0, $"Error: {ex.Message}", MessageState.Critical);
+                }
+            });
+
+
         }
 
-
-
-        private void OnNewFrameReceived(R3Cam Cam, R3Cam.Frame Frame)
+        private void ProcessFrameForCameraBottomLeftCallback(GrabResult result)
         {
-            Logger.WriteBorder("NEW SCAN RECEIVED    Frame: " + Frame.FrameID.ToString());
 
-            CaptureBuffer NewBuf = new CaptureBuffer(Frame.Range,Frame.Width,Frame.Height);
-            CaptureBuffer ReflBuf = new CaptureBuffer(Frame.Reflectance, Frame.Width, Frame.Height);
-            ReflBuf.PaletteType = CaptureBuffer.PaletteTypes.Gray;
+            UpdateTextBlock(LogText, "BottomLeft New Frame", MessageState.Normal);
+            UpdateTextBlock(PalletName1, "▲");
+            //TryGenerateFilenameDateTime();
+            result.IfCompleteFrame(frame =>
+            {
+                try
+                {
 
-            Pallet P = new Pallet(NewBuf, ReflBuf);
-            //P.NotLive = true;
-            PProcessor.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete);
+                    SickFrames[1] = frame.Copy();  // Bottom Left
+                    framesReceivedCount++;
 
-            Logger.WriteLine("OnNewFrameReceived is finished.");
+                    if (framesReceivedCount == 3)
+                    {
+                        framesReceivedCount = 0;  // Reset counter
+                        OnAllFramesReceived?.Invoke();  // Trigger the merge event
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UpdateTextBlock(LogText, $"Bottom1 Error processing frame: {ex.Message}", MessageState.Critical);
+                }
+            });
+
         }
+        private void ProcessFrameForCameraBottomMidCallback(GrabResult result)
+        {
+            //TryGenerateFilenameDateTime();
+
+
+            UpdateTextBlock(LogText, "BottomMiddle New Frame", MessageState.Normal);
+            result.IfCompleteFrame(frame =>
+            {
+                try
+                {
+                    SickFrames[2] = frame.Copy(); // Bottom Middle
+                    framesReceivedCount++;
+
+                    if (framesReceivedCount == 3)
+                    {
+                        framesReceivedCount = 0;  // Reset counter
+                        OnAllFramesReceived?.Invoke();  // Trigger the merge event
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UpdateTextBlock(LogText, $"Bottom2 Error processing frame: {ex.Message}", MessageState.Critical);
+                }
+            });
+        }
+        private void ProcessFrameForCameraBottomRightCallback(GrabResult result)
+        {
+            //TryGenerateFilenameDateTime();
+
+            UpdateTextBlock(LogText, "BottomRight New Frame", MessageState.Normal);
+            result.IfCompleteFrame(frame =>
+            {
+                try
+                {
+
+                    SickFrames[3] = frame.Copy();  // Bottom Right
+                    framesReceivedCount++;
+
+                    if (framesReceivedCount == 3)
+                    {
+                        framesReceivedCount = 0;  // Reset counter
+                        OnAllFramesReceived?.Invoke();  // Trigger the merge event
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 记录异常日志，防止程序崩溃
+                    UpdateTextBlock(LogText, $"Bottom3 Error processing frame: {ex.Message}", MessageState.Critical);
+                }
+            });
+        }
+
+        private readonly object _envLeftLock = new object();
+        private readonly object _envRightLock = new object();
+        /// <summary>
+        /// For the Left
+        /// </summary>
+        /// <param name="result"></param>
+        private void ProcessFrameForCameraLeftCallback(GrabResult result)
+        {
+            //TryGenerateFilenameDateTime();
+
+            UpdateTextBlock(LogText, "Left New Frame", MessageState.Normal);
+            UpdateTextBlock(PalletName2, "▲");
+            result.IfCompleteFrame(frame =>
+            {
+                SickFrames[4] = frame.Copy();
+         
+                lock (_envLeftLock)
+                {
+
+                    AddFrameToEnvironment(frame, "Image", _envLeft);
+                }
+
+               
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        ProcessMeasurement(_status =>
+                        {
+                        }, PositionOfPallet.Left);
+                    }
+                    catch (Exception ex)
+                    {
+
+                        Logger.WriteLine($"Error: {ex.Message}");
+                    }
+                });
+
+            });
+        }
+
+        private void ProcessFrameForCameraRightCallback(GrabResult result)
+        {
+            //TryGenerateFilenameDateTime();
+            UpdateTextBlock(LogText, "Bottom New Frame", MessageState.Normal);
+            UpdateTextBlock(PalletName3, "▲");
+            result.IfCompleteFrame(frame =>
+            {
+                SickFrames[5] = frame.Copy();
+                
+                lock (_envRightLock)
+                {
+                    AddFrameToEnvironment(frame, "Image", _envRight);
+
+                }
+
+                try
+                {
+                    ProcessMeasurement(_status =>
+                    {
+                    }, PositionOfPallet.Right);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine($"Error: {ex.Message}");
+                }
+            });
+        }
+
 
 
 
         private void SaveSettingsColorUpdate(object sender, EventArgs e)
         {
-            if (ParamStorage.HasChangedSinceLastSave)
+            if (ParamStorageGeneral.HasChangedSinceLastSave)
             {
                 if (btnSettingsControl.Background == SaveSettingsButtonBrush)
-                    btnSettingsControl.Background = new SolidColorBrush(Color.FromArgb(255,196, 196, 0));
+                    btnSettingsControl.Background = new SolidColorBrush(Color.FromArgb(255, 196, 196, 0));
                 else
                     btnSettingsControl.Background = SaveSettingsButtonBrush;
             }
@@ -465,29 +725,11 @@ namespace PalletCheck
             }
         }
 
-        //private void UpdatePalletProcessQueue(object sender, EventArgs e)
-        //{
-        //    int MaxThreads = 2;
-
-        //    if(PalletProcessInputQueue.Count > 0)
-        //    {
-        //        // Can we kick off another thread
-        //        if(PalletInProgressList.Count < MaxThreads)
-        //        {
-        //            Pallet P = PalletProcessInputQueue[0];
-        //            PalletProcessInputQueue.RemoveAt(0);
-        //            PalletInProgressList.Add(P);
-        //            P.DoAsynchronousAnalysis();
-        //        }
-        //    }
-
-        //}
-
         private void Timer5Sec(object sender, EventArgs e)
         {
             Logger.WriteHeartbeat();
 
-            if (ParamStorage.GetInt("TCP Server Heartbeat") == 1)
+            if (ParamStorageGeneral.GetInt("TCP Server Heartbeat") == 1)
             {
                 DateTime D = DateTime.Now;
                 string Text = D.ToShortDateString() + " " + D.ToLongTimeString();
@@ -501,42 +743,87 @@ namespace PalletCheck
             //Logger.WriteLine(String.Format("Current Memory Usage: {0:N0}", GC.GetTotalMemory(false)));
         }
 
+        private bool flashState = true; //  Global state used to control red-black flashing
+        private bool _colonVisible = true;
         private void TimerUpdate500ms(object sender, EventArgs e)
         {
-            DateTime D = DateTime.Now;
-            string Text = D.ToShortDateString() + " " + D.ToLongTimeString();
-            CurDateTime.Text = Text;
-            StatusStorage.Set("Date/Time", Text);
-            StatusStorage.Set("SettingsChanged", ParamStorage.HasChangedSinceLastSave.ToString());
+            // Update the current date and time
+            DateTime now = DateTime.Now;
+            string currentDateTime = $"{now.ToShortDateString()} {now.ToLongTimeString()}";
+            _colonVisible = !_colonVisible; // 切换冒号显示状态
+            CurDateTime.Text = currentDateTime;
+            //UpdateDigitalClock(CurDateTime, _colonVisible);
+            //CurDateTime.Text = currentDateTime;
+            StatusStorage.Set("Date/Time", currentDateTime);
+            StatusStorage.Set("SettingsChanged", ParamStorageGeneral.HasChangedSinceLastSave.ToString());
 
+            bool allCamerasConnected = true; // Assume all cameras are connected
 
-            if (Camera1.CameraConnectionState != R3Cam.ConnectionState.Connected)
+            // Iterate through all cameras and check their status
+            for (int i = 0; i < Cameras.Count; i++)
             {
-                if (btnStatusControl.Background == SaveSettingsButtonBrush)
-                    btnStatusControl.Background = new SolidColorBrush(Color.FromArgb(255, 196, 196, 0));
-                else
-                    btnStatusControl.Background = SaveSettingsButtonBrush;
+                var camera = Cameras[i];
+                bool isConnected = camera.CameraConnectionState == R3Cam.ConnectionState.Connected;
+                bool isStarted = camera.CameraCaptureState == R3Cam.CaptureState.Capturing;
+                string statusTextName = $"Camera{i + 1}StatusText";
+                string indicatorName = $"Camera{i + 1}StatusIndicator";
+
+                // Get the status indicator and status text control for the camera
+                var statusText = (TextBlock)this.FindName(statusTextName);
+                var indicator = (Ellipse)this.FindName(indicatorName);
+
+
+
+                if (statusText != null && indicator != null)
+                {
+                    // Update the status text and indicator color
+                    if (isConnected)
+                    {
+                        if (isStarted)
+                        {
+                            statusText.Text = $"{cameraNames[i]}: Started"; // Use camera name
+                            indicator.Fill = Brushes.Green; // Green indicates the camera has started
+                        }
+                        else
+                        {
+                            statusText.Text = $"{cameraNames[i]}: Stopped"; // Use camera name
+                            indicator.Fill = Brushes.Blue; // Blue indicates the camera is connected but not started
+                        }
+                    }
+                    else
+                    {
+                        // Red and black flashing indicates the camera is disconnected
+                        statusText.Text = $"{cameraNames[i]}: Disconnected"; // Use camera name
+                        indicator.Fill = flashState ? Brushes.Red : Brushes.Black;
+                        allCamerasConnected = false; // Set to false if any camera is disconnected
+                    }
+                }
+
+            }
+
+            // Toggle the red-black flashing state
+            flashState = !flashState;
+
+            // Update the button background color based on the overall connection status
+            if (!allCamerasConnected)
+            {
+                // Switch between two colors when there are disconnected cameras
+                btnStatusControl.Background =
+                    (btnStatusControl.Background == SaveSettingsButtonBrush)
+                        ? new SolidColorBrush(Color.FromArgb(255, 196, 196, 0)) // Yellow indicates some cameras are disconnected
+                        : SaveSettingsButtonBrush;
+                btnStatusControl.Foreground = (btnStatusControl.Background == SaveSettingsButtonBrush)
+                        ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             }
             else
             {
+                // Restore the default background color when all cameras are connected
                 btnStatusControl.Background = SaveSettingsButtonBrush;
+                btnStatusControl.Foreground = new SolidColorBrush(Colors.White);
             }
+
         }
 
-        public void ProgressBar_SetText(string text)
-        {
-            ProgressBarText.Text = text;
-        }
-
-        public void ProgressBar_SetProgress( double Current, double Total )
-        {
-            ProgressBar.Value = Math.Round(100 * (Current / Total), 0);
-        }
-        public void ProgressBar_Clear()
-        {
-            ProgressBar.Value = 0;
-            ProgressBarText.Text = "";
-        }
 
 
         //=====================================================================
@@ -546,25 +833,25 @@ namespace PalletCheck
 
             Logger.ButtonPressed(btnStart.Content.ToString());
 
-            ParamStorage.SaveInHistory("LINESTART");
-            Camera1.SaveInHistory("LINESTART");
-            Camera2.SaveInHistory("LINESTART");
-            Camera3.SaveInHistory("LINESTART");
+            ParamStorageGeneral.SaveInHistory("LINESTART");
+
 
             if (btnStart.Content.ToString() == "START")
             {
-                Camera1.StartCapturingFrames();
-                Camera2.StartCapturingFrames();
-                Camera3.StartCapturingFrames();
+                foreach (var cam in Cameras)
+                {
+                    cam.StartCapturingFrames();
+                }
                 btnStart.Content = "STOP";
                 ModeStatus.Text = "RUNNING";
-                btnStart.Background = Brushes.Green;
+                btnStart.Background = System.Windows.Media.Brushes.Green;
             }
             else if (btnStart.Content.ToString() == "STOP")
             {
-                Camera1.StopCapturingFrames();
-                Camera2.StopCapturingFrames();
-                Camera3.StopCapturingFrames();
+                foreach (var cam in Cameras)
+                {
+                    cam.StopCapturingFrames();
+                }
                 btnStart.Content = "START";
                 ModeStatus.Text = "IDLING";
                 btnStart.Background = ButtonBackgroundBrush;
@@ -572,63 +859,124 @@ namespace PalletCheck
 
         }
 
-
         //=====================================================================
-        public static CaptureBufferBrowser AddCaptureBufferBrowser(string Name, CaptureBuffer CB, string SelectName)
+        public CaptureBufferBrowser AddCaptureBufferBrowser(string Name, CaptureBuffer CB, string SelectName, PositionOfPallet position)
         {
-            //bool isLive = (string.Compare(Name, "Live") == 0);
+            // Set the name of the CaptureBuffer
             CB.Name = Name;
 
+            // Create an instance of CaptureBufferBrowser
             CaptureBufferBrowser CBB = new CaptureBufferBrowser();
+            CBB.SetParamStorage(ParamStorageTop);
             CBB.SetCB(CB);
+            //CBB.SetScale(CB.xScale, CB.yScale);
 
-            Button B = new Button();
-            B.Content = Name;
-            B.Click += Singleton.ImageTab_Click;
-            B.Margin = new Thickness(5);
-            B.Background = Singleton.btnProcessPallet.Background;
-            B.Foreground = Singleton.btnProcessPallet.Foreground;
-            B.FontSize = 16;
-            B.Tag = CBB;
+            // Create a button and set its properties
+            Button B = new Button
+            {
+                Content = Name,
+                Margin = new Thickness(1),
+                Height = 20,
+                Background = Singleton.btnProcessPallet.Background,
+                Foreground = Singleton.btnProcessPallet.Foreground,
+                FontSize = 14,
+                Tag = CBB // Keep Tag as CBB
+            };
 
-            Singleton.CBB_Button_List.Children.Add(B);
-            Singleton.CBB_Container.Children.Add(CBB);
+            // Use a Lambda expression to pass the position to the Click event
+            B.Click += (s, e) => Singleton.ImageTab_Click(s, e, position);
 
+            // Dynamically retrieve the Button List and Container based on position and add controls
+            GetButtonList(position).Children.Add(B);
+            GetContainer(position).Children.Add(CBB);
+
+            // Refresh the CaptureBufferBrowser and set its visibility to hidden
             CBB.Refresh();
             CBB.Visibility = Visibility.Hidden;
 
-            if ((Name == SelectName))
-                Singleton.ImageTab_Click(B, new RoutedEventArgs());
+            // If the name matches SelectName, trigger the ImageTab_Click event
+            if (Name == SelectName)
+                Singleton.ImageTab_Click(B, new RoutedEventArgs(), position);
 
+            // Return the instance of CaptureBufferBrowser
             return CBB;
         }
 
         //=====================================================================
-
-        void ClearAnalysisResults()
+        void ClearAnalysisResults(PositionOfPallet position)
         {
-            imgPassSymbol.Visibility = Visibility.Hidden;
-            imgPassText.Visibility = Visibility.Hidden;
-            imgFailSymbol.Visibility = Visibility.Hidden;
-            imgFailText.Visibility = Visibility.Hidden;
-
-            foreach (CaptureBufferBrowser CBC in CBB_Container.Children)
+            try
             {
-                CBC.Clear();
-            }
-            CBB_Container.Children.Clear();
-            CBB_Button_List.Children.Clear();
-            PalletName.Text = "";
+                TotalResultTextBlock.Text = "";
+                //// Ensure controls are initialized and updated on the UI thread
+                //if (imgPassSymbol == null || imgPassText == null || imgFailSymbol == null || imgFailText == null)
+                //{
+                //    throw new InvalidOperationException("One or more visibility-related UI elements are null.");
+                //}
 
-            defectTable.Items.Clear();
+                var container = this.GetContainer(position);
+                if (container == null)
+                {
+                    throw new InvalidOperationException("Container is null.");
+                }
+
+                var buttonList = this.GetButtonList(position);
+                if (buttonList == null)
+                {
+                    throw new InvalidOperationException("Button list container is null.");
+                }
+
+                var palletNameTextBlock = this.GetPalletNameTextBlock(position);
+                //if (palletNameTextBlock == null)
+                //{
+                //    throw new InvalidOperationException("PalletName TextBlock is null.");
+                //}
+
+                if (defectTable == null)
+                {
+                    throw new InvalidOperationException("Defect table is null.");
+                }
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // Clear child controls
+                    foreach (var child in container.Children)
+                    {
+                        var CBC = child as CaptureBufferBrowser;
+                        if (CBC != null)
+                        {
+                            CBC.Clear();
+                        }
+                        else
+                        {
+                            Logger.WriteLine($"Unexpected child type in container: {child.GetType()}");
+                        }
+                    }
+
+                    // Clear child controls in button list and container
+                    buttonList.Children.Clear();
+                    container.Children.Clear();
+
+                    //// Clear PalletName
+                    //palletNameTextBlock.Text = "";
+
+                    // Clear items in DefectTable
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"Error clearing UI elements: {ex.Message}");
+                throw;
+            }
         }
 
         //=====================================================================
-        private void LoadAndProcessCaptureFile(string FileName, bool RebuildList = false)
+        private void LoadAndProcessCaptureFile(PositionOfPallet position, string FileName, bool RebuildList = false)
         {
             Logger.WriteLine("Loading CaptureBuffer from: " + FileName);
 
-            ClearAnalysisResults();
+            ClearAnalysisResults(position);
+
 
             if (RebuildList)
             {
@@ -644,24 +992,265 @@ namespace PalletCheck
                 LastFileIdx = AllFilesInFolder.ToList().IndexOf(FileName);
             }
 
-            ////Jack Try Stitch
-            ///
-            
-
-            Pallet P = new Pallet(FileName);
-
-            
-
+            Pallet P = new Pallet(FileName, position);
 
             //P.NotLive = true;
-            PProcessor.ProcessPalletHighPriority(P, Pallet_OnProcessSinglePalletAnalysisComplete);
+            PProcessorTop.ProcessPalletHighPriority(P, Pallet_OnProcessSinglePalletAnalysisComplete, position);
+            //PProcessor.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete);
+
         }
 
 
-        //=====================================================================
-        private void UpdateProductivityStats(Pallet P)
+        public Pallet CreateTopPallet()
         {
-            Stats.OnNewPallet(P);
+            try
+            {
+                // Add frame to the environment
+                AddFrameToEnvironment(SickFrames[0], "Image", _envTop);
+                _envTop.GetStepProgram("Main").RunFromBeginning();
+
+                // Retrieve image data
+                float[] floatArray = MainWindow._envTop.GetImageBuffer("CropImage")._range;
+                byte[] byteArray = MainWindow._envTop.GetImageBuffer("CropImage")._intensity;
+
+                // Convert to ushort array (float -> ushort)
+                ushort[] ushortArray = new ushort[floatArray.Length];
+                for (int i = 0; i < floatArray.Length; i++)
+                {
+                    ushortArray[i] = (ushort)(floatArray[i] + 1000);
+                }
+
+                // Create a new buffer
+                CaptureBuffer NewBuf = new CaptureBuffer
+                {
+                    Buf = ushortArray,
+                    Width = MainWindow._envTop.GetImageBuffer("CropImage").Info.Width,
+                    Height = MainWindow._envTop.GetImageBuffer("CropImage").Info.Height,
+                    xScale = MainWindow._envTop.GetImageBuffer("CropImage").Info.XResolution,
+                    yScale = MainWindow._envTop.GetImageBuffer("CropImage").Info.YResolution
+                };
+
+                // Convert to ushort array (byte -> ushort)
+                ushort[] ushortArrayRef = new ushort[byteArray.Length];
+                for (int i = 0; i < ushortArrayRef.Length; i++)
+                {
+                    ushortArrayRef[i] = byteArray[i];
+                }
+
+                // Create a reference buffer
+                CaptureBuffer ReflBuf = new CaptureBuffer
+                {
+                    Buf = ushortArrayRef,
+                    PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                    Width = MainWindow._envTop.GetImageBuffer("CropImage").Info.Width,
+                    Height = MainWindow._envTop.GetImageBuffer("CropImage").Info.Height,
+                    xScale = MainWindow._envTop.GetImageBuffer("CropImage").Info.XResolution,
+                    yScale = MainWindow._envTop.GetImageBuffer("CropImage").Info.YResolution
+                };
+
+                // Return the created Pallet object
+                return new Pallet(NewBuf, ReflBuf, PositionOfPallet.Top);
+            }
+            catch (NullReferenceException ex)
+            {
+                Logger.WriteLine("Null reference error: " + ex.Message);
+                throw new InvalidOperationException("A null reference occurred while processing the pallet.", ex);
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                Logger.WriteLine("Index out of range error: " + ex.Message);
+                throw new InvalidOperationException("An index was out of range during pallet processing.", ex);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("General error: " + ex.Message);
+                UpdateTextBlock(LogText, ex.Message, MessageState.Warning);
+                throw new InvalidOperationException("An unexpected error occurred while processing the pallet.", ex);
+            }
+        }
+
+
+
+
+        public Pallet CreateBottomPallet()
+        {
+            // Add frames to the environment
+            AddFrameToEnvironment(SickFrames[1], "Left", _envBottom);
+            AddFrameToEnvironment(SickFrames[2], "Mid", _envBottom);
+            AddFrameToEnvironment(SickFrames[3], "Right", _envBottom);
+
+            // Set environment variables
+            for (int i = 0; i < 3; i++)
+            {
+                string startXName = $"StartX{i}";
+                string endXName = $"EndX{i}";
+                string offsetZName = $"OffsetZ{i}";
+
+                _envBottom.SetInteger(startXName, StartX[i]);
+                _envBottom.SetInteger(endXName, EndX[i]);
+                _envBottom.SetDouble(offsetZName, OffsetZ[i]);
+            }
+            // Run the program and save the environment
+            _envBottom.GetStepProgram("Main").RunFromBeginning();
+
+            // Retrieve image data
+            float[] floatArray = MainWindow._envBottom.GetImageBuffer("ComImage")._range;
+            byte[] byteArray = MainWindow._envBottom.GetImageBuffer("ComImage")._intensity;
+
+            // Convert to ushort array (float -> ushort)
+            ushort[] ushortArray = new ushort[floatArray.Length];
+            for (int i = 0; i < floatArray.Length; i++)
+            {
+                ushortArray[i] = (ushort)(floatArray[i] + 1000);
+            }
+
+            // Create a new buffer
+            CaptureBuffer NewBuf = new CaptureBuffer
+            {
+                Buf = ushortArray,
+                Width = MainWindow._envBottom.GetImageBuffer("Image").Info.Width,
+                Height = MainWindow._envBottom.GetImageBuffer("Image").Info.Height,
+                xScale = MainWindow._envBottom.GetImageBuffer("Image").Info.XResolution,
+                yScale = MainWindow._envBottom.GetImageBuffer("Image").Info.YResolution
+            };
+
+            // Convert to ushort array (byte -> ushort)
+            ushort[] ushortArrayRef = new ushort[byteArray.Length];
+            for (int i = 0; i < ushortArrayRef.Length; i++)
+            {
+                ushortArrayRef[i] = byteArray[i];
+            }
+
+            // Create a reference buffer
+            CaptureBuffer ReflBuf = new CaptureBuffer
+            {
+                Buf = ushortArrayRef,
+                PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                Width = MainWindow._envBottom.GetImageBuffer("Image").Info.Width,
+                Height = MainWindow._envBottom.GetImageBuffer("Image").Info.Height,
+                xScale = MainWindow._envBottom.GetImageBuffer("Image").Info.XResolution,
+                yScale = MainWindow._envBottom.GetImageBuffer("Image").Info.YResolution
+            };
+
+            // Create and return the Pallet object
+            return new Pallet(NewBuf, ReflBuf, PositionOfPallet.Bottom);
+        }
+
+
+        private void LoadAndProcessCapture6FileFrame()
+        {
+            isSaveFrames = false;
+            //Logger.WriteLine("Loading CaptureBuffer from: " + FileName);
+            OpenFileDialog OFD = new OpenFileDialog
+            {
+                Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*", 
+                InitialDirectory = MainWindow.RecordingRootDir,        
+                Title = "Select Bottom Images"                           
+            };
+
+            if (OFD.ShowDialog() != true)
+            {
+
+                Logger.WriteLine("File dialog cancelled by user.");
+                return; 
+            }
+
+            try
+            {
+
+                string filePath = OFD.FileName;
+
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    Logger.WriteLine("No valid file selected.");
+                    return; 
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"Error loading file: {ex.Message}");
+            }
+
+            
+           
+
+            string selectedFile = OFD.FileName;
+
+            string directory = System.IO.Path.GetDirectoryName(selectedFile);
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);
+            
+
+            string baseName = fileName.Substring(0, fileName.LastIndexOf('_') + 1);
+            UpdateTextBlock(ModeStatus, "Loading: " + fileName.Substring(0, fileName.LastIndexOf('_')));
+            _FilenameDateTime = fileName.Substring(0, fileName.LastIndexOf('_'));
+            string file0 = System.IO.Path.Combine(directory, baseName + "T.xml");
+            string file1 = System.IO.Path.Combine(directory, baseName + "B1.xml");
+            string file2 = System.IO.Path.Combine(directory, baseName + "B2.xml");
+            string file3 = System.IO.Path.Combine(directory, baseName + "B3.xml");
+            string file4 = System.IO.Path.Combine(directory, baseName + "L.xml");
+            string file5 = System.IO.Path.Combine(directory, baseName + "R.xml");
+            try
+            {
+                if (loadFrameFlags[0])
+                {
+
+                    ProcessFrameForCameraTopCallback(GrabResult.CreateWithFrame(IFrame.Load(file0)));
+                    Logger.WriteLine("Loaded file0");
+                }
+
+                if (loadFrameFlags[1])
+                {
+
+                    ProcessFrameForCameraBottomLeftCallback(GrabResult.CreateWithFrame(IFrame.Load(file1)));
+                    Logger.WriteLine("Loaded file1");
+                }
+
+                if (loadFrameFlags[2])
+                {
+
+                    ProcessFrameForCameraBottomMidCallback(GrabResult.CreateWithFrame(IFrame.Load(file2)));
+                    Logger.WriteLine("Loaded file2");
+                }
+
+                if (loadFrameFlags[3])
+                {
+                    ProcessFrameForCameraBottomRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file3)));
+                    Logger.WriteLine("Loaded file3");
+                }
+
+                if (loadFrameFlags[4])
+                {
+                    ProcessFrameForCameraLeftCallback(GrabResult.CreateWithFrame(IFrame.Load(file4)));
+                    Logger.WriteLine("Loaded file4");
+                }
+
+                if (loadFrameFlags[5])
+                {
+                    ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file5)));
+                    Logger.WriteLine("Loaded file5");
+                }
+
+                Logger.WriteLine("Load Offline Images Completed");
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Error loading files: " + ex.Message);
+            }
+
+
+        }
+        private void SetLoadFlags(params int[] indices)
+        {
+            for (int i = 0; i < loadFrameFlags.Length; i++)
+            {
+                loadFrameFlags[i] = indices.Contains(i); // 如果索引在传入的数组中，则设置为 true
+            }
+        }
+        //=====================================================================
+        private void UpdateProductivityStats(bool isPass)
+        {
+            Stats.OnNewPallet(isPass);
             statisticsTable.Items.Clear();
 
             // Send defects to the defectTable
@@ -671,81 +1260,67 @@ namespace PalletCheck
             }
         }
 
-
         //=====================================================================
-        private void ImageTab_Click(object sender, RoutedEventArgs e)
+        private void ImageTab_Click(object sender, RoutedEventArgs e, PositionOfPallet position)
         {
             try
             {
+                // Get the button that triggered the event
                 Button B = (Button)sender;
+
+                // Retrieve the button's Tag and convert it to a CaptureBufferBrowser
                 CaptureBufferBrowser CBB = (CaptureBufferBrowser)B.Tag;
 
-                Logger.ButtonPressed("CaptureBuffer." + B.Content.ToString());
+                // Log the button press event
+                Logger.ButtonPressed("CaptureBuffer." + B.Content.ToString() + " at position " + position.ToString());
 
+                // If FastBitmap is null, create it
                 if (CBB.FB == null)
                     CBB.FB = CBB.CB.BuildFastBitmap();
 
-                for (int i = 0; i < CBB_Container.Children.Count; i++)
-                    CBB_Container.Children[i].Visibility = Visibility.Hidden;
+                // Hide all child elements of the Container
+                var container = GetContainer(position); // Retrieve the Container based on the position
+                for (int i = 0; i < container.Children.Count; i++)
+                    container.Children[i].Visibility = Visibility.Hidden;
 
+                // Make the current CaptureBufferBrowser visible
                 CBB.Visibility = Visibility.Visible;
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
+                // Log the exception details
                 Logger.WriteException(exp);
             }
+
         }
 
-
-        private void btn_LoadEzR_Click(object sender, RoutedEventArgs e)
-        {
-            ClearAnalysisResults();
-
-            EzREnvironment = new ProcessingEnvironment();
-            EzREnvironment.Load("Env\\Pallet Stitching.env");
-
-            CaptureBuffer NewBuf = new CaptureBuffer();
-            CaptureBuffer ReflBuf = new CaptureBuffer();
-            float[] floats = EzREnvironment.GetImageBuffer("Pallet")._range;
-            ushort[] uintArray = Array.ConvertAll(EzREnvironment.GetImageBuffer("Pallet")._range, element => (ushort)element);
-            NewBuf = new CaptureBuffer(uintArray, EzREnvironment.GetImageProperties("Pallet").Width, EzREnvironment.GetImageProperties("Pallet").Height);
-
-            ushort[] uintArrayRef = Array.ConvertAll(EzREnvironment.GetImageBuffer("Pallet")._intensity, element => (ushort)element);
-            ReflBuf = new CaptureBuffer(uintArrayRef, EzREnvironment.GetImageProperties("Pallet").Width, EzREnvironment.GetImageProperties("Pallet").Height);
-
-
-            ReflBuf.PaletteType = CaptureBuffer.PaletteTypes.Gray;
-
-            Pallet P = new Pallet(NewBuf, ReflBuf);
-            //P.NotLive = true;
-            PProcessor.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete);
-            //PProcessor.ProcessPalletHighPriority(P, Pallet_OnProcessSinglePalletAnalysisComplete);
-
-            //Dispatcher.Invoke(new addBufferCB(MainWindow.AddCaptureBufferBrowser), new object[] { "Live", IncomingBuffer });
-            // Console.WriteLine("BUFFER RECEIVED! " + DateTime.Now.ToString());
-            Logger.WriteLine("OnNewFrameReceived is finished.");
-        }
-        //=====================================================================
         private void btnProcessPallet_Click(object sender, RoutedEventArgs e)
         {
             Logger.ButtonPressed(btnProcessPallet.Content.ToString());
+            //TryGenerateFilenameDateTime();
+            SetLoadFlags(0,1,2,3,4,5);
+            LoadAndProcessCapture6FileFrame();
+        }
 
-            OpenFileDialog OFD = new OpenFileDialog();
-
-            OFD.Filter = "R3 Files|*rng.r3";
-            OFD.InitialDirectory = MainWindow.RecordingRootDir;
-            if (OFD.ShowDialog() == true)
+        //=============Jack Note: Jack Added sending short result using another Port1========================================================
+        private void SendPLCTotalResult(Pallet P)
+        {
+            if (P.AllDefects.Count > 0)
             {
-                LoadAndProcessCaptureFile(OFD.FileName, true);
+                PLCShort.SendMessage("FAIL");
             }
             else
             {
-                Logger.ButtonPressed("btnProcessPallet_Click open file dialog cancelled");
+                PLCShort.SendMessage("PASS");
             }
 
         }
 
-        //=====================================================================
+        private void SendPLCTotalResult(string result)
+        {
+                PLCShort.SendMessage(result);
+
+        }
         private void SendPLCResults(Pallet P)
         {
             segmentation_error = P.BList.Count == 5 ? false : true;
@@ -794,194 +1369,121 @@ namespace PalletCheck
 
         //=====================================================================
 
-        private void Pallet_OnProcessSinglePalletAnalysisComplete(Pallet P)
+        private void Pallet_OnProcessSinglePalletAnalysisComplete(Pallet P, PositionOfPallet position)
         {
             Logger.WriteLine("Pallet_OnProcessSinglePalletAnalysisComplete");
+          //  UpdateProductivityStats(P);
+            //SendPLCResults(P);
+            //SendPLCTotalResult(P);
 
-
-            UpdateUIWithPalletResults(P);
+            UpdateUIWithPalletResults(P, position);
         }
 
-        private void Pallet_OnProcessMultiplePalletAnalysisComplete(Pallet P)
+        private void Pallet_OnProcessMultiplePalletAnalysisComplete(Pallet P, PositionOfPallet position)
         {
             Logger.WriteLine("Pallet_OnProcessMultiplePalletAnalysisComplete");
 
-            ProcessRecordingFinishedPalletCount += 1;
-            ProgressBar_SetText(string.Format("Processing Recording... Finished {0} of {1}", ProcessRecordingFinishedPalletCount, ProcessRecordingTotalPalletCount));
-            ProgressBar_SetProgress(ProcessRecordingFinishedPalletCount, ProcessRecordingTotalPalletCount);
+            //ProcessRecordingFinishedPalletCount += 1;
+            //ProgressBar_SetText(string.Format("Processing Recording... Finished {0} of {1}", ProcessRecordingFinishedPalletCount, ProcessRecordingTotalPalletCount));
+            //ProgressBar_SetProgress(ProcessRecordingFinishedPalletCount, ProcessRecordingTotalPalletCount);
 
-            IR.AddPallet(P);
+            //IR.AddPallet(P);
 
-            if (ProcessRecordingFinishedPalletCount >= ProcessRecordingTotalPalletCount)
-            {
-                ProgressBar_SetText("Processing Recording... COMPLETE");
-                IR.Save();
-            }
+            //if (ProcessRecordingFinishedPalletCount >= ProcessRecordingTotalPalletCount)
+            //{
+            //    ProgressBar_SetText("Processing Recording... COMPLETE");
+            //    IR.Save();
+            //    ShowCsvData(RootDir + "\\InspectionReport.csv");
+            //}
         }
 
-        
-        //=====================================================================
-
-        private void UpdateUIWithPalletResults(Pallet P)
+        private void Pallet_OnLivePalletAnalysisComplete(Pallet P, PositionOfPallet position)
         {
-            ClearAnalysisResults();
-
-            string fullDir = System.IO.Path.GetDirectoryName(P.Filename);
-            string lastDir = fullDir.Split(System.IO.Path.DirectorySeparatorChar).Last();
-            Logger.WriteLine("pallet filename: "+ P.Filename);
-            //Logger.WriteLine("fullDir: "+ fullDir);
-            //Logger.WriteLine("lastDir: "+ lastDir);
-            PalletName.Text = lastDir + "\\" + System.IO.Path.GetFileName(P.Filename);
-
-
-            // Send defects to the defectTable
-            int c = 0;
-            if (P.BList != null)
+            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Start");
+            if (!BypassModeEnabled)
             {
-                for (int i = 0; i < P.BList.Count; i++)
-                {
-                    List<PalletDefect> BoardDefects = P.BList[i].AllDefects;
-                    for (int j = 0; j < BoardDefects.Count; j++)
-                    {
-                        PalletDefect PD = BoardDefects[j];
-                        defectTable.Items.Add(PD);
-                        c += 1;
-                        Logger.WriteLine(string.Format("DEFECT | {0:>2} | {1:>2}  {2:>4}  {3:>8}  {4}", c, P.BList[i].BoardName, PD.Code, PD.Name, PD.Comment));
-                    }
-                }
+                // Update production stats
+          //      UpdateProductivityStats(P);
             }
 
+            // Notify PLC of pallet results
+            //SendPLCResults(P);
+            //SendPLCTotalResult(P);
+            UpdateUIWithPalletResults(P, position);
+
+            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete");
+            //Logger.WriteBorder("PALLET COMPLETE: " + P.Filename);
+
+        }
+        //=====================================================================
+        private void UpdateUIWithPalletResults(Pallet P, PositionOfPallet position)
+        {
+
+            ClearAnalysisResults(position);
+
+            Logger.WriteLine("pallet filename: " + P.Filename);
+
+            int c = 0;
             List<PalletDefect> FullPalletDefects = P.PalletLevelDefects;
             for (int j = 0; j < FullPalletDefects.Count; j++)
             {
                 PalletDefect PD = FullPalletDefects[j];
                 defectTable.Items.Add(PD);
                 c += 1;
-                Logger.WriteLine(string.Format("DEFECT | {0:>2} | {1:>2}  {2:>4}  {3:>8}  {4}", c,"Pallet", PD.Code, PD.Name, PD.Comment));
+                Logger.WriteLine(string.Format("DEFECT | {0:>2} | {1:>2}  {2:>4}  {3:>8}  {4}", c, "Pallet", PD.Code, PD.Name, PD.Comment));
             }
 
             Logger.WriteLine(string.Format("DEFECT COUNT {0}", c));
 
-            // Show Pass/Fail Icons
-            if (P.AllDefects.Count > 0)
-            {
-                imgPassSymbol.Visibility = Visibility.Hidden;
-                imgPassText.Visibility = Visibility.Hidden;
-                imgFailSymbol.Visibility = Visibility.Visible;
-                imgFailText.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                imgPassSymbol.Visibility = Visibility.Visible;
-                imgPassText.Visibility = Visibility.Visible;
-                imgFailSymbol.Visibility = Visibility.Hidden;
-                imgFailText.Visibility = Visibility.Hidden;
-            }
-
+            ProcessCameraResult((int)position, result: P.AllDefects.Count == 0 ? InspectionResult.PASS : InspectionResult.FAIL);
 
             // Build CaptureBufferBrowsers
             if (true)
             {
                 // Check if segmentation error
                 bool HasSegmentationError = false;
-                if((P.PalletLevelDefects.Count>0) && (P.PalletLevelDefects[0].Type == PalletDefect.DefectType.board_segmentation_error))
+                if ((P.PalletLevelDefects.Count > 0) && (P.PalletLevelDefects[0].Type == PalletDefect.DefectType.board_segmentation_error))
                 {
                     HasSegmentationError = true;
                 }
 
-
                 foreach (CaptureBuffer CB in P.CBList)
                 {
-                    CaptureBufferBrowser CBB = AddCaptureBufferBrowser(CB.Name, CB, HasSegmentationError ? "Original" : "Filtered");
+                    CaptureBufferBrowser CBB = AddCaptureBufferBrowser(CB.Name, CB, HasSegmentationError ? "Original" : "Filtered", position);
 
                     foreach (PalletDefect PD in P.AllDefects)
                     {
                         if (PD.MarkerRadius > 0)
                         {
                             CBB.MarkDefect(new Point(PD.MarkerX1, PD.MarkerY1), PD.MarkerRadius, PD.MarkerTag);
+                            IRoi roi0 = new Roi(
+                               (uint)PD.MarkerX1,
+                               (uint)PD.MarkerY1,
+                               (uint)(PD.MarkerX1 + PD.MarkerRadius),
+                               (uint)(PD.MarkerY1 + PD.MarkerRadius),
+                               RoiType.Ellipse
+                           );
+
                         }
-                        else
-                        if ((PD.MarkerRadius == 0) && (PD.MarkerX1 != 0))
+                        else if ((PD.MarkerRadius == 0) && (PD.MarkerX1 != 0))
                         {
                             CBB.MarkDefect(new Point(PD.MarkerX1, PD.MarkerY1), new Point(PD.MarkerX2, PD.MarkerY2), PD.MarkerTag);
+                            IRoi roi = new Roi(
+                                (uint)PD.MarkerX1,
+                                (uint)PD.MarkerY1,
+                                (uint)PD.MarkerX2,
+                                (uint)PD.MarkerY2,
+                                RoiType.Rectangle
+                            );
                         }
                     }
-
-                    //CBB.RedrawDefects();
-                    //CBB.MarkDefect()
                 }
+
+
             }
 
         }
 
-         private void Pallet_OnLivePalletAnalysisComplete(Pallet P)
-        {
-            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Start");
-            if (!BypassModeEnabled)
-            {
-                // Update production stats
-                UpdateProductivityStats(P);
-            }
-
-            // Notify PLC of pallet results
-            SendPLCResults(P);
-
-            UpdateUIWithPalletResults(P);
-
-            // Save Results to Disk
-            {
-                try
-                {
-                    string FullDirectory = RecordingRootDir + "\\" + P.Directory;
-
-                    if (RecordModeEnabled && (RecordDir != ""))
-                        FullDirectory = RecordingRootDir + "\\" + RecordDir;
-
-                    System.IO.Directory.CreateDirectory(FullDirectory);
-                    string FullFilename = FullDirectory + "\\" + P.Filename;
-                    Logger.WriteLine("Saving Pallet to " + FullFilename);
-
-                    if( P.AllDefects.Count > 0 )
-                    {
-                        P.Original.Save(FullFilename.Replace(".r3", "_F_rng.r3"));
-                        P.Original.SaveImage(FullFilename.Replace(".r3", "_F_rng.png"), false);
-                        P.ReflectanceCB.Save(FullFilename.Replace(".r3", "_F_rfl.r3"));
-                        P.ReflectanceCB.SaveImage(FullFilename.Replace(".r3", "_F_rfl.png"), true);
-                    }
-                    else
-                    {
-                        P.Original.Save(FullFilename.Replace(".r3", "_P_rng.r3"));
-                        P.Original.SaveImage(FullFilename.Replace(".r3", "_P_rng.png"), false);
-                        P.ReflectanceCB.Save(FullFilename.Replace(".r3", "_P_rfl.r3"));
-                        P.ReflectanceCB.SaveImage(FullFilename.Replace(".r3", "_P_rfl.png"), true);
-                    }
-
-
-                    bool HasSegmentationError = false;
-                    foreach (PalletDefect PD in P.AllDefects)
-                        if (PD.Code == "ER")
-                            HasSegmentationError = true;
-
-                    if (HasSegmentationError)
-                    {
-                        FullFilename = SegmentationErrorRootDir + "\\" + P.Filename;
-                        Logger.WriteLine("Saving Pallet to " + FullFilename);
-                        P.Original.Save(FullFilename.Replace(".r3", "_rng.r3"));
-                        P.Original.SaveImage(FullFilename.Replace(".r3", "_rng.png"), false);
-                        P.ReflectanceCB.Save(FullFilename.Replace(".r3", "_rfl.r3"));
-                        P.ReflectanceCB.SaveImage(FullFilename.Replace(".r3", "_rfl.png"), true);
-                    }
-                }
-                catch(Exception e)
-                {
-                    Logger.WriteException(e);
-                }
-            }
-
-            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete");
-            Logger.WriteBorder("PALLET COMPLETE: " + P.Filename);
-
-        }
 
 
         //=====================================================================
@@ -989,11 +1491,11 @@ namespace PalletCheck
         {
             Logger.ButtonPressed(btnRecord.Content.ToString());
 
-            if(RecordModeEnabled)
+            if (RecordModeEnabled)
             {
                 RecordModeEnabled = false;
                 btnRecord.Background = ButtonBackgroundBrush;
-                
+
             }
             else
             {
@@ -1001,7 +1503,7 @@ namespace PalletCheck
                 btnRecord.Background = Brushes.Green;
 
                 DateTime DT = DateTime.Now;
-                RecordDir = String.Format("RECORDING_{0:0000}{1:00}{2:00}_{3:00}{4:00}{5:00}",DT.Year, DT.Month, DT.Day, DT.Hour, DT.Minute, DT.Second);
+                RecordDir = String.Format("RECORDING_{0:0000}{1:00}{2:00}_{3:00}{4:00}{5:00}", DT.Year, DT.Month, DT.Day, DT.Hour, DT.Minute, DT.Second);
             }
         }
 
@@ -1023,75 +1525,263 @@ namespace PalletCheck
 
         private void btnStatistics_Click(object sender, RoutedEventArgs e)
         {
+            Stats.Reset();
+            statisticsTable.Items.Clear();
+            for (int i = 0; i < Stats.Entries.Count; i++)
+            {
+                statisticsTable.Items.Add(Stats.Entries[i]);
+            }
             Logger.ButtonPressed(btnStatistics.Content.ToString());
         }
 
         //=====================================================================
 
-        private void btnProcessRecording_Click(object sender, RoutedEventArgs e)
+        private async void btnProcessRecording_Click(object sender, RoutedEventArgs e)
         {
+            ProgressBar.Visibility = Visibility.Visible;
             Logger.ButtonPressed(btnProcessRecording.Content.ToString());
 
-            //if (ProcessRecordingWindow != null)
-            //    return;
-
-            IR = new InspectionReport(RootDir+"\\InspectionReport.csv");
-
-            System.Windows.Forms.FolderBrowserDialog OFD = new System.Windows.Forms.FolderBrowserDialog();
-            OFD.RootFolder = Environment.SpecialFolder.MyComputer;
-            OFD.SelectedPath = RecordingRootDir;
-            OFD.ShowNewFolderButton = false;
-            if (OFD.ShowDialog() == System.Windows.Forms.DialogResult.OK )
+            using (System.Windows.Forms.FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                if (System.IO.Directory.Exists(OFD.SelectedPath))
+                folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
+                folderBrowserDialog.SelectedPath = RecordingRootDir; // Default selected path
+                folderBrowserDialog.ShowNewFolderButton = false;
+
+                if (folderBrowserDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 {
-                    DirectoryInfo info = new DirectoryInfo(OFD.SelectedPath);
-                    FileInfo[] files = info.GetFiles("*_rng.r3", SearchOption.AllDirectories).OrderBy(p => p.LastWriteTime).ToArray();
+                    Console.WriteLine("User canceled folder selection.");
+                }
+                else
+                {
+                    string selectedPath = folderBrowserDialog.SelectedPath;
 
-                    List<string> ProcessFileList = new List<string>();
-                    ProcessFileList.Clear();
-                    foreach (FileInfo F in files)
-                        ProcessFileList.Add(F.FullName);
-
-                    if ( ProcessFileList.Count == 0 )
+                    if (Directory.Exists(selectedPath))
                     {
-                        MessageBox.Show("No pallets were found in this folder.");
-                        return;
-                    }
+                        DirectoryInfo directoryInfo = new DirectoryInfo(selectedPath);
 
-                    System.Windows.Forms.Timer T = new System.Windows.Forms.Timer();
+                        // Get all subfolders
+                        DirectoryInfo[] subDirectories = directoryInfo.GetDirectories();
 
-                    Logger.WriteLine("ProcessRecordingWindow_ProcessPalletGroup START");
-                    //StartProcessingRecordedFile(ProcessFileList);
-
-                    ProgressBar_Clear();
-                    ProgressBar_SetText("Processing Recording");
-                    ProcessRecordingTotalPalletCount = ProcessFileList.Count;
-                    ProcessRecordingFinishedPalletCount = 0;
-
-                    for (int iFile = 0; iFile < ProcessFileList.Count; iFile++)
-                    {
-                        string Filename = ProcessFileList[iFile];
-                        
-                        string ImageFilename = Filename.Replace(".r3", ".png");
-
-                        if (true)//(!File.Exists(ImageFilename))
+                        if (subDirectories.Length == 0)
                         {
-                            Pallet P = new Pallet(Filename);
-                            PProcessor.ProcessPalletLowPriority(P, Pallet_OnProcessMultiplePalletAnalysisComplete);
+                            System.Windows.MessageBox.Show("No subfolders found.");
+                            return;
                         }
+
+                        Console.WriteLine("Processing subfolders...");
+                        int totalSubDirs = subDirectories.Length;
+                        int processedCount = 0;
+
+                        foreach (var subDirectory in subDirectories)
+                        {
+                            Console.WriteLine($"Processing subfolder: {subDirectory.FullName}");
+                            UpdateTextBlock(ModeStatus, "Loading: " + subDirectory.Name);
+                            _FilenameDateTime = subDirectory.Name;
+
+                            // Search for files matching the pattern
+                            FileInfo[] files = subDirectory.GetFiles("*_T.xml")
+                                                            .Union(subDirectory.GetFiles("*_B1.xml"))
+                                                            .Union(subDirectory.GetFiles("*_B2.xml"))
+                                                            .Union(subDirectory.GetFiles("*_B3.xml"))
+                                                            .Union(subDirectory.GetFiles("*_L.xml"))
+                                                            .Union(subDirectory.GetFiles("*_R.xml"))
+                                                            .ToArray();
+
+                            if (files.Length > 0)
+                            {
+                                Console.WriteLine($"Found {files.Length} files in subfolder {subDirectory.Name}...");
+                                ProcessFiles(files);
+                                isSaveFrames = false;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"No matching files found in subfolder {subDirectory.Name}.");
+                            }
+
+                            // Update progress bar
+                            processedCount++;
+                            double progress = (double)processedCount / totalSubDirs * 100;
+                            UpdateProgressBar(progress, processedCount, totalSubDirs);
+
+                            // Wait 10 seconds
+                            Console.WriteLine("Waiting 10 seconds...");
+                            await Task.Delay(10000);
+                        }
+
+                        Console.WriteLine("All subfolders processed.");
                     }
-
-                    ProcessFileList.Clear();
-
-                    Logger.WriteLine("ProcessRecordingWindow_ProcessPalletGroup STOP");
+                    else
+                    {
+                        System.Windows.MessageBox.Show("The selected path does not exist!");
+                    }
                 }
             }
-            else
+            ProgressBar.Visibility = Visibility.Hidden;
+        }
+
+        private void UpdateProgressBar(double progress, int current, int total)
+        {
+            Dispatcher.Invoke(() =>
             {
-                Logger.WriteLine("btnProcessRecording_Click cancelled directory selection");
+                // Update progress bar value
+                ProgressBar.Value = progress;
+
+                // Access ProgressText inside the ProgressBar.Template
+                var progressText = (TextBlock)ProgressBar.Template.FindName("ProgressText", ProgressBar);
+                if (progressText != null)
+                {
+                    progressText.Text = $"{progress:F1}% ({current} of {total})";
+                }
+            });
+        }
+
+        private void ProcessFiles(FileInfo[] files)
+        {
+            foreach (var file in files)
+            {
+                try
+                {
+                    string fileName = file.Name.ToUpper(); // 获取文件名并转换为大写
+
+                    if (fileName.Contains("_T.XML"))
+                    {
+                        ProcessFrameForCameraTopCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded Top file: " + file.FullName);
+                    }
+                    else if (fileName.Contains("_B1.XML"))
+                    {
+                        ProcessFrameForCameraBottomLeftCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded BottomLeft file: " + file.FullName);
+                    }
+                    else if (fileName.Contains("_B2.XML"))
+                    {
+                        ProcessFrameForCameraBottomMidCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded BottomMid file: " + file.FullName);
+                    }
+                    else if (fileName.Contains("_B3.XML"))
+                    {
+                        ProcessFrameForCameraBottomRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded BottomRight file: " + file.FullName);
+                    }
+                    else if (fileName.Contains("_L.XML"))
+                    {
+                        ProcessFrameForCameraLeftCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded Left file: " + file.FullName);
+                    }
+                    else if (fileName.Contains("_R.XML"))
+                    {
+                        ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded Right file: " + file.FullName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"处理文件 {file.FullName} 时发生错误: {ex.Message}");
+                }
             }
         }
+
+        private void SaveDataToFile(string totalResult)
+        {
+            string strWrite = string.Empty;
+
+            try
+            {
+                string szTime = DateTime.Now.ToString("yyyyMMdd");
+                string path = RecordingRootDir + "\\" + szTime + ".csv";
+                string strNewHeader = null;
+                for (int i = 0; i < stringNameOfResultTitle.Length; i++) { strNewHeader += stringNameOfResultTitle[i] + ","; }
+                new System.Threading.Thread(() =>
+                {
+                    JackSaveLog.DataLog(path, strNewHeader, totalResult);
+                })
+                { IsBackground = true }.Start();
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Saveing Result:" + ex.Message);
+            }
+        }
+
+
+        // Jack Note: New added method to read the CSV file and display the results.
+        public static void ShowCsvData(string filePath)
+        {
+            // Check if the file exists
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("CSV file does not exist!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Create a window and set it to be centered on the screen
+            Window window = new Window
+            {
+                Title = "CSV Data Viewer",
+                Width = 1200, // Adjust window width to accommodate more columns
+                Height = 600,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen // Set to center display
+            };
+
+            // Create a DataGrid
+            DataGrid dataGrid = new DataGrid
+            {
+                AutoGenerateColumns = true,  // Automatically generate columns
+                //HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+
+            // Read CSV data and bind it to the DataGrid
+            DataTable dataTable = ReadCsvToDataTable(filePath);
+
+            // Remove invalid empty columns
+            var columnsToRemove = dataTable.Columns.Cast<DataColumn>()
+                .Where(c => c.ColumnName.Contains("Unnamed")).ToList();
+            foreach (var column in columnsToRemove)
+            {
+                dataTable.Columns.Remove(column);
+            }
+
+            dataGrid.ItemsSource = dataTable.DefaultView;
+
+            // Add the DataGrid to the window content
+            window.Content = dataGrid;
+
+            // Show the window
+            window.ShowDialog();
+        }
+
+        // Read CSV file and convert it to DataTable
+        private static DataTable ReadCsvToDataTable(string filePath)
+        {
+            DataTable dt = new DataTable();
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                // Read the first line as header
+                string[] headers = sr.ReadLine().Split(',');
+                foreach (string header in headers)
+                {
+                    dt.Columns.Add(header.Trim()); // Add column names and trim extra spaces
+                }
+
+                // Read each subsequent line of data
+                while (!sr.EndOfStream)
+                {
+                    string[] rows = sr.ReadLine().Split(',');
+
+                    // If the number of columns is inconsistent, add empty columns
+                    while (rows.Length < dt.Columns.Count)
+                    {
+                        Array.Resize(ref rows, rows.Length + 1); // Increase column count
+                        rows[rows.Length - 1] = string.Empty;    // Fill empty column with empty string
+                    }
+
+                    dt.Rows.Add(rows);
+                }
+            }
+            return dt;
+        }
+
 
         //=====================================================================
         private void btnSettingsControl_Click(object sender, RoutedEventArgs e)
@@ -1102,11 +1792,11 @@ namespace PalletCheck
                 return;
 
             Password PB = new Password();
-            PB.Closed += (sender2, e2) => 
+            PB.Closed += (sender2, e2) =>
             {
                 if (Password.Passed)
                 {
-                    ParamConfig PC = new ParamConfig();
+                    ParamConfig PC = new ParamConfig(ParamStorageGeneral, "LastUsedParamFileGeneral.txt");
                     PC.Show();
                 }
             };
@@ -1125,15 +1815,15 @@ namespace PalletCheck
         //=====================================================================
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
-            if ( (AllFilesInFolder != null) && (AllFilesInFolder.Length > 0) )
+            if ((AllFilesInFolder != null) && (AllFilesInFolder.Length > 0))
             {
 
-                if ( e.Key == Key.Left )
+                if (e.Key == Key.Left)
                 {
-                    if ( LastFileIdx < AllFilesInFolder.Length-1 )
+                    if (LastFileIdx < AllFilesInFolder.Length - 1)
                     {
                         LastFileIdx++;
-                        LoadAndProcessCaptureFile(AllFilesInFolder[LastFileIdx]);
+                        LoadAndProcessCaptureFile(PositionOfPallet.Top, AllFilesInFolder[LastFileIdx], false);
                     }
                 }
                 if (e.Key == Key.Right)
@@ -1141,12 +1831,11 @@ namespace PalletCheck
                     if (LastFileIdx > 0)
                     {
                         LastFileIdx--;
-                        LoadAndProcessCaptureFile(AllFilesInFolder[LastFileIdx]);
+                        LoadAndProcessCaptureFile(PositionOfPallet.Top, AllFilesInFolder[LastFileIdx], false);
                     }
                 }
             }
         }
-
         //=====================================================================
 
         private void Window_Closed(object sender, EventArgs e)
@@ -1157,23 +1846,343 @@ namespace PalletCheck
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            Pallet.Shutdown = true;
+            PLC?.Stop();
+            PLCShort?.Stop();
+            Storage.Stop();
+            Logger.WriteBorder("PalletCheck SHUTDOWN");
+            Log.Shutdown();
             try
             {
-                Pallet.Shutdown = true;
-                PLC.Stop();
-                Storage.Stop();
-                Camera1.Shutdown();
-                Camera2.Shutdown();
-                Camera3.Shutdown();
-                Logger.WriteBorder("PalletCheck SHUTDOWN");
-                Log.Shutdown();
+                foreach (var cam in Cameras)
+                {
+                    cam.Shutdown(); // Stop each camera
+                }
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 Logger.WriteException(exp);
             }
+            Environment.Exit(0); // Force terminate all threads
+        }
+
+        private void Load_Top_Click(object sender, RoutedEventArgs e)
+        {
+            SetLoadFlags(0);
+            LoadAndProcessCapture6FileFrame();
+            //Logger.ButtonPressed(btnLoad_Top.Content.ToString());
+
+            //LoadAndProcessCaptureFileFrame(PositionOfPallet.Top, PalletName0);
+        }
+        private void Load_Bottom_Click(object sender, RoutedEventArgs e)
+        {
+
+            SetLoadFlags(1,2,3);
+            LoadAndProcessCapture6FileFrame();
+        }
+        private void Load_Left_Click(object sender, RoutedEventArgs e)
+        {
+            SetLoadFlags(4);
+            LoadAndProcessCapture6FileFrame();
+
+        }
+        private void Load_Right_Click(object sender, RoutedEventArgs e)
+        {
+            SetLoadFlags(5);
+            LoadAndProcessCapture6FileFrame();
+
+        }
+        private void btnSettingEach_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.ButtonPressed(btnSettingsControl.Content.ToString());
+
+            if (Password.DlgOpen)
+                return;
+
+            // Use traditional type casting
+            Button clickedButton = sender as Button;
+            if (clickedButton == null)
+            {
+                MessageBox.Show("The sender is not a Button.");
+                return;
+            }
+
+            // Select the corresponding ParamStorage based on the button name.
+            ParamStorage selectedParamStorage = null;
+            string LastUsedParamName = null;
+            switch (clickedButton.Name)
+            {
+                case "btnSetting_Top":
+
+                    selectedParamStorage = ParamStorageTop;
+                    LastUsedParamName = "LastUsedParamFileTop.txt";
+                    break;
+                case "btnSetting_Bottom":
+                    selectedParamStorage = ParamStorageBottom;
+                    LastUsedParamName = "LastUsedParamFileBottom.txt";
+                    break;
+                case "btnSetting_Left":
+                    selectedParamStorage = ParamStorageLeft;
+                    LastUsedParamName = "LastUsedParamFileLeft.txt";
+                    break;
+                case "btnSetting_Right":
+                    selectedParamStorage = ParamStorageRight;
+                    LastUsedParamName = "LastUsedParamFileRight.txt";
+                    break;
+                default:
+                    MessageBox.Show("Unknown button, unable to select ParamStorage.");
+                    return;
+            }
+
+            Password PB = new Password();
+            PB.Closed += (sender2, e2) =>
+            {
+                if (Password.Passed && selectedParamStorage != null)
+                {
+                    ParamConfig PC = new ParamConfig(selectedParamStorage, LastUsedParamName);
+                    PC.Text = clickedButton.Name;
+                    PC.Show();
+                }
+            };
+            PB.Show();
+        }
+
+        private readonly ConcurrentDictionary<int, InspectionResult> _results = new ConcurrentDictionary<int, InspectionResult>();
+
+
+
+        private int _completedCount = 0; // Counter for completed cameras
+        private readonly object _lockResult = new object();
+        private readonly int _totalCameras = 4; // Total number of cameras
+
+        public void ProcessCameraResult(int cameraId, InspectionResult result)
+        {
+            // Store the result of the current camera
+            lock (_lock)
+            {
+                _results[cameraId] = result; // Store the camera result
+                _completedCount++; // Increment the counter
+            }
+
+            // Check if all cameras are completed
+            if (_completedCount == _totalCameras)
+            {
+                // Invoke final logic
+                FinalizeResults();
+                if (isSaveFrames)
+                {
+                    SaveAllFrames();
+                }
+                else
+                {
+                    isSaveFrames = true;
+                }
+            }
+        }
+
+        private void FinalizeResults()
+        {
+            var finalResult = CalculateOverallResult(_results.Values);
+
+            if (BypassModeEnabled)
+            {
+                SendPLCTotalResult("BypassModeEnabled");
+            }
+            else
+            {
+                SendPLCTotalResult(finalResult.ToString());
+            }
+
+            // 打印或更新界面
+            Console.WriteLine($"Total Results: {finalResult}");
+
+            // Save Results To CSV File
+
+            stopwatchProcess.Stop();
+            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.Green, 30);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                defectTable.Items.Clear();
+                UpdateTextBlock(
+                    TotalResultTextBlock,
+                    finalResult.ToString(),
+                    finalResult == InspectionResult.PASS ? Colors.Green :
+                    finalResult == InspectionResult.FAIL ? Colors.Red :
+                    finalResult == InspectionResult.ERROR ? Colors.Orange :
+                    Colors.Gray,
+                    80);
+
+                UpdateProductivityStats(finalResult == InspectionResult.PASS);
+
+                string[] stringNameOfResult = new string[stringNameOfResultTitle.Length];
+                for (int i = 0; i < stringNameOfResult.Length; i++)
+                {
+                    stringNameOfResult[i] = " ";
+                }
+
+                // 显示缺陷
+
+                defectTable.Items.Clear();
+                stringNameOfResult[0] = _FilenameDateTime;
+                stringNameOfResult[15] = finalResult.ToString();
+                foreach (var defect in Pallet.CombinedDefects ?? new List<PalletDefect>())
+                {
+                    defectTable.Items.Add(defect);
+                    if ((topLocations.Contains(defect.Location.ToString())) )
+                    {
+                        if (defect.Code == "RN")
+                        {
+                            stringNameOfResult[1] = "X";
+                        }
+                        else if (defect.Code == "MB")
+                        {
+                            stringNameOfResult[2] = "X";
+                        }
+                        else if (defect.Code == "BW")
+                        {
+                            stringNameOfResult[3] = "X";
+                        }
+                        else
+                        {
+                            stringNameOfResult[4] = "X";
+                        }
+                    }
+                    if ((bottomLocations.Contains(defect.Location.ToString())))
+                    {
+                        if (defect.Code == "RN")
+                        {
+                            stringNameOfResult[5] = "X";
+                        }
+                        else if (defect.Code == "MB")
+                        {
+                            stringNameOfResult[6] = "X";
+                        }
+                        else if (defect.Code == "BW")
+                        {
+                            stringNameOfResult[7] = "X";
+                        }
+                        else
+                        {
+                            stringNameOfResult[8] = "X";
+                        }
+                    }
+                    if ((leftLocations.Contains(defect.Location.ToString())))
+                    {
+                        if (defect.Code == "MO")
+                        {
+                            stringNameOfResult[9] = "X";
+                        }
+                        else if (defect.Code == "EA")
+                        {
+                            stringNameOfResult[10] = "X";
+                        }
+                        else if (defect.Code == "MU")
+                        {
+                            stringNameOfResult[11] = "X";
+                        }
+                       
+                    }
+                    if ((rightLocations.Contains(defect.Location.ToString())))
+                    {
+                        if (defect.Code == "MO")
+                        {
+                            stringNameOfResult[12] = "X";
+                        }
+                        else if (defect.Code == "FC")
+                        {
+                            stringNameOfResult[13] = "X";
+                        }
+                        else if (defect.Code == "MU")
+                        {
+                            stringNameOfResult[14] = "X";
+                        }
+
+                    }
+
+                }
+                SaveDataToFile(string.Join(",", stringNameOfResult));
+                
+            });
+            lock (LockObjectCombine)
+            {
+                CombinedBoards.Clear();
+                CombinedDefects.Clear();
+            }
+            // 清理或复位状态
+            Reset();
+        }
+
+        private InspectionResult CalculateOverallResult(IEnumerable<InspectionResult> results)
+        {
+            if (results.Contains(InspectionResult.FAIL))
+                return InspectionResult.FAIL;
+            if (results.Contains(InspectionResult.TIMEOUT))
+                return InspectionResult.TIMEOUT;
+            return InspectionResult.PASS;
+        }
+
+        private void Reset()
+        {
+            lock (_lockResult)
+            {
+                _results.Clear();
+                _completedCount = 0;
+            }
+          
         }
 
 
+        private void btnShow3D_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Determine the environment based on the button source.
+                ProcessingEnvironment environment = null;
+                string title = "";
+
+                if (sender == btnShow_Top)
+                {
+                    environment = _envTop;
+                    title = "Top View";
+                }
+                else if (sender == btnShow_Bottom)
+                {
+                    environment = _envBottom;
+                    title = "Bottom View";
+                }
+                else if (sender == btnShow_Left)
+                {
+                    environment = _envLeft;
+                    title = "Left View";
+                }
+                else if (sender == btnShow_Right)
+                {
+                    environment = _envRight;
+                    title = "Right View";
+                }
+
+                // 
+                if (environment == null)
+                {
+                    Console.WriteLine("No environment found for this button.");
+                    return;
+                }
+
+                // 打开 Viewer3D
+                Viewer3D viewer3D = new Viewer3D(environment)
+                {
+                    Title = title // Set the window title.
+                };
+
+                viewer3D.SICKViewer3D.Draw("FilteredImage"); // Draw the image.
+                viewer3D.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+
+                viewer3D.ShowDialog(); 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
     }
 }

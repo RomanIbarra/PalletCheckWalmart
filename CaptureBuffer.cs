@@ -20,6 +20,12 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Runtime.InteropServices;
+using FluentFTP;
+using FluentFTP.Exceptions;
+
+
+
+
 
 namespace PalletCheck
 {
@@ -40,6 +46,11 @@ namespace PalletCheck
         public int          Height;
         public int          BPP = 16;
         public DataTypes    DataType = DataTypes.Unknown;
+
+        //Jack Added
+        public float xScale;
+        public float yScale;
+        public float zScale;
         //public static int   SensorWidth = 2560;
 
         public enum PaletteTypes
@@ -153,7 +164,7 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        public void Load(string Filename)
+        public void Load(string Filename,ParamStorage paramStorage)
         {
             if (Filename.EndsWith(".r3"))
             {
@@ -170,7 +181,7 @@ namespace PalletCheck
                 }
 
                 Buf = Cap.ToArray();
-                Width = 3136;
+                Width = paramStorage.GetInt("StitchedWidth");
                 Height = Buf.Length / Width;
             }
 
@@ -207,8 +218,6 @@ namespace PalletCheck
                         byteArray = null;
                     }                    
                 }
-
-
             }
         }
 
@@ -296,6 +305,233 @@ namespace PalletCheck
             return false;
 
         }
+        public bool UploadPngToFtp(string ftpServer, string username, string password, string remoteFilePath)
+        {
+            try
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    // 构建用于保存的 PNG 图像
+                    FastBitmap FB = BuildFastBitmap(0, 0, false); // 使用假设的 BuildFastBitmap 函数
+
+                    if (FB != null && FB.Bmp != null)
+                    {
+                        // 将图像保存到内存流中，格式为 PNG
+                        FB.Bmp.Save(stream, ImageFormat.Png);
+                        Logger.WriteLine("PNG image saved to memory stream.");
+
+                        // 重置流位置
+                        stream.Position = 0;
+
+                        // 解析 remoteFilePath 获取目录路径
+                        string remoteDirectory = GetDirectoryFromPath(remoteFilePath);
+
+                        // 上传到 FTP
+                        using (var ftpClient = new FtpClient(ftpServer, username, password))
+                        {
+                            ftpClient.Connect(); // 连接到FTP服务器
+
+                            // 确保目录存在
+                            if (!DirectoryExistsOnFtp(ftpClient, remoteDirectory))
+                            {
+                                CreateDirectoryOnFtp(ftpClient, remoteDirectory);
+                            }
+
+                            // 上传文件
+                            ftpClient.UploadStream(stream, remoteFilePath, FtpRemoteExists.Overwrite);
+                            ftpClient.Disconnect();
+                        }
+
+                        Logger.WriteLine($"PNG image uploaded to FTP: {remoteFilePath}");
+                        return true;
+                    }
+                    else
+                    {
+                        Logger.WriteLine("Error: Failed to create FastBitmap or bitmap is null.");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"Error uploading PNG image to FTP: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool UploadZipFileToFtp(string ftpServer, string username, string password, string localFilePath, string remoteFilePath)
+        {
+            try
+            {
+                // 检查本地文件是否存在
+                if (!File.Exists(localFilePath))
+                {
+                    Logger.WriteLine($"Local file does not exist: {localFilePath}");
+                    return false;
+                }
+
+                // 打开本地 ZIP 文件作为文件流
+                using (FileStream fileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    // 创建 FTP 客户端
+                    using (var ftpClient = new FtpClient(ftpServer, username, password))
+                    {
+                        ftpClient.Connect(); // 连接 FTP
+
+                        // 获取远程目录并确保其存在
+                        string remoteDirectory = GetDirectoryFromPath(remoteFilePath);
+                        if (!DirectoryExistsOnFtp(ftpClient, remoteDirectory))
+                        {
+                            CreateDirectoryOnFtp(ftpClient, remoteDirectory);
+                        }
+
+                        // 上传文件
+                        ftpClient.UploadStream(fileStream, remoteFilePath, FtpRemoteExists.Overwrite);
+                        ftpClient.Disconnect();
+                    }
+
+                    Logger.WriteLine($"ZIP file uploaded to FTP: {remoteFilePath}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"Error uploading ZIP file to FTP: {ex.Message}");
+                return false;
+            }
+        }
+
+
+        public bool UploadToFtp(string ftpServer, string username, string password, string remoteFilePath)
+        {
+            try
+            {
+                using (MemoryStream stream = new MemoryStream())
+                using (BinaryWriter BW = new BinaryWriter(stream))
+                {
+                    // 根据文件类型写入数据到内存流
+                    if (remoteFilePath.EndsWith(".r3"))
+                    {
+                        foreach (ushort V in Buf)
+                        {
+                            BW.Write(V);
+                        }
+                    }
+                    else if (remoteFilePath.EndsWith(".cap"))
+                    {
+                        // 写入文件头部信息
+                        BW.Write((char)'C');
+                        BW.Write((char)'P');
+                        BW.Write((char)'B');
+                        BW.Write((char)'F');
+
+                        // 写入文件的详细信息
+                        BW.Write((int)1000);    // Version
+                        BW.Write((int)Width);   // Width in pixels
+                        BW.Write((int)Height);  // Height in pixels
+                        BW.Write((int)16);      // Bits per pixel
+                        BW.Write((int)DataType);  // Data Type (0=Unknown)
+
+                        // Reserve space for 32 bytes of other info
+                        for (int i = 0; i < 8; i++) BW.Write((UInt32)i);
+
+                        // 写入数据
+                        byte[] byteArray = new byte[Buf.Length * 2];
+                        unsafe
+                        {
+                            fixed (ushort* ushortArrayPtr = Buf)
+                            {
+                                IntPtr ushortIntPtr = new IntPtr(ushortArrayPtr);
+                                Marshal.Copy(ushortIntPtr, byteArray, 0, byteArray.Length);
+                            }
+                        }
+                        BW.Write((int)byteArray.Length);
+                        BW.Write(byteArray);
+                    }
+                    else
+                    {
+                        // 非支持的文件格式
+                        return false;
+                    }
+
+                    BW.Flush();
+                    stream.Position = 0; // 重置内存流位置
+
+                    // 上传到 FTP（同步版本）
+                    using (var ftpClient = new FtpClient(ftpServer, username, password))
+                    {
+                        ftpClient.Connect(); // 使用同步连接方法
+
+                        // 获取远程目录并确保其存在
+                        string remoteDirectory = GetDirectoryFromPath(remoteFilePath);
+                        if (!DirectoryExistsOnFtp(ftpClient, remoteDirectory))
+                        {
+                            CreateDirectoryOnFtp(ftpClient, remoteDirectory);
+                        }
+
+                        // 上传文件
+                        ftpClient.UploadStream(stream, remoteFilePath, FtpRemoteExists.Overwrite);
+                        ftpClient.Disconnect();
+                    }
+                    Logger.WriteLine($"Image uploaded to FTP: {remoteFilePath}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"Error uploading file to FTP: {ex.Message}");
+                return false;
+            }
+        }
+
+        // 提取 FTP 路径的目录部分
+        private string GetDirectoryFromPath(string remoteFilePath)
+        {
+            // 找到最后一个 '/' 并获取之前的部分作为目录
+            int lastSlashIndex = remoteFilePath.LastIndexOf('/');
+            if (lastSlashIndex >= 0)
+            {
+                return remoteFilePath.Substring(0, lastSlashIndex);
+            }
+            return "/";
+        }
+
+        // 检查FTP目录是否存在
+        private bool DirectoryExistsOnFtp(FtpClient ftpClient, string remoteDirectory)
+        {
+            try
+            {
+                ftpClient.SetWorkingDirectory(remoteDirectory); // 尝试切换到该目录
+                return true; // 切换成功，目录存在
+            }
+            catch (FtpCommandException)
+            {
+                return false; // 切换失败，目录不存在
+            }
+        }
+
+        // 在FTP上创建目录
+        private void CreateDirectoryOnFtp(FtpClient ftpClient, string remoteDirectory)
+        {
+            string[] directories = remoteDirectory.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            string currentPath = "";
+
+            foreach (var dir in directories)
+            {
+                currentPath += "/" + dir;
+                try
+                {
+                    ftpClient.CreateDirectory(currentPath); // 尝试创建目录
+                }
+                catch (FtpCommandException)
+                {
+                    Console.WriteLine($"Directory {currentPath} already exists or failed to create.");
+                }
+            }
+        }
+
+
+
 
         //=====================================================================
         public bool SaveImage(string Filename, bool UseGray = false)

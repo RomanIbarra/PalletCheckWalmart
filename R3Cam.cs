@@ -7,6 +7,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.IO;
+using static Sick.GenIStream.FrameGrabber;
+using static Sick.GenIStream.ICamera;
+using System.Net;
+
 //using System.Threading.Tasks;
 
 
@@ -35,6 +39,7 @@ namespace PalletCheck
 {
     public class R3Cam
     {
+        ParamStorage ParamStorageGeneral = MainWindow.ParamStorageGeneral;
         public enum ConnectionState
         {
             Shutdown,
@@ -60,6 +65,10 @@ namespace PalletCheck
             public byte[] Reflectance { get; set; }
             public R3Cam Camera { get; set; }
             // Jack Added zScale and zOffset
+            public double xScale { get; set; }
+            public double xOffset { get; set; }
+            public double yScale { get; set; }
+            public double yOffset { get; set; }
             public double zScale { get; set; }
             public double zOffset { get; set; }
 
@@ -68,6 +77,7 @@ namespace PalletCheck
                 return $"R3Cam.Frame: cam:{Camera.CameraName} w:{Width} h:{Height} range:{Range != null} reflectance:{Reflectance != null} scatter:false";
             }
         }
+
 
         public ICamera Camera { get; private set; }
         public string CameraName { get; private set; }
@@ -85,6 +95,8 @@ namespace PalletCheck
         private int SimModeFileIndex;
         private DateTime SimModeNextDT;
 
+
+
         public delegate void NewFrameReceivedCB(R3Cam Cam, R3Cam.Frame Frame);
         public delegate void ConnectionStateChangeCB(R3Cam Cam, ConnectionState NewState);
         public delegate void CaptureStateChangeCB(R3Cam Cam, CaptureState NewState);
@@ -92,6 +104,114 @@ namespace PalletCheck
         private NewFrameReceivedCB OnFrameReceived;
         private ConnectionStateChangeCB OnConnectionStateChange;
         private CaptureStateChangeCB OnCaptureStateChange;
+
+        /// <summary>
+        /// Jack New for API
+        /// </summary>
+        GrabResultCallback OnNext;
+        DisconnectCallback OnDisconnect;
+
+        public void StartupNew(
+                             string name,
+                             string ipAddress,
+                             CameraDiscovery discovery,
+                             GrabResultCallback grabResultCallback,
+                             DisconnectCallback disconnectCallback,
+                             ConnectionStateChangeCB connectionStateChangeCallback,
+                             CaptureStateChangeCB captureStateChangeCallback)
+        {
+            CameraName = name;
+            IPAddressStr = ipAddress;
+            OnNext = grabResultCallback;
+            OnDisconnect = disconnectCallback;
+            OnConnectionStateChange = connectionStateChangeCallback;
+            OnCaptureStateChange = captureStateChangeCallback;
+
+            // 启动连接线程
+            Thread connectionThread = new Thread(() => ConnectToCamera(discovery));
+            connectionThread.IsBackground = true;
+            connectionThread.Start();
+        }
+
+        public void ConnectToCamera(CameraDiscovery discovery)
+        {
+            if (discovery == null)
+            {
+                Logger.WriteLine("Camera discovery instance is null. Aborting connection attempt.");
+                throw new ArgumentNullException(nameof(discovery), "Camera discovery instance cannot be null.");
+            }
+
+            while (true)
+            {
+                try
+                {
+                    Logger.WriteLine($"Attempting to connect to camera {CameraName} at {IPAddressStr}...");
+                    SetConnectionState(ConnectionState.Searching);
+                    SetCaptureState(CaptureState.Stopped);
+
+
+
+                    // 尝试连接相机
+                    Camera = discovery.ConnectTo(System.Net.IPAddress.Parse(IPAddressStr));
+
+                    // 验证相机连接状态
+                    if (Camera == null || !Camera.IsConnected)
+                    {
+                        Logger.WriteLine($"Failed to connect to camera {CameraName} at {IPAddressStr}. Retrying in 5 seconds...");
+                        SetConnectionState(ConnectionState.Disconnected);
+                        Thread.Sleep(5000); // 等待 5 秒后重试
+                        continue;
+                    }
+
+                    // 注册断开连接回调
+                    Camera.Disconnected += OnDisconnect;
+
+                    SetConnectionState(ConnectionState.Connected);
+                    Logger.WriteLine($"Camera {CameraName} connected successfully.");
+
+                    // 配置 FrameGrabber
+                    frameGrabber = Camera.CreateFrameGrabber();
+                    if (frameGrabber == null)
+                    {
+                        Logger.WriteLine("Failed to create FrameGrabber. Disconnecting camera and retrying.");
+                        Camera.Disconnect();
+                        SetConnectionState(ConnectionState.Disconnected);
+                        Thread.Sleep(5000);
+                        continue;
+                    }
+
+                    frameGrabber.Next += OnNext;
+
+                    // 启动 FrameGrabber
+                    frameGrabber.Start();
+
+                    // 验证 FrameGrabber 状态
+                    if (!frameGrabber.IsStarted)
+                    {
+                        Logger.WriteLine($"Failed to start capturing for camera {CameraName}. Retrying...");
+                        SetCaptureState(CaptureState.Stopped);
+                        Thread.Sleep(5000);
+                        continue;
+                    }
+
+                    CameraCaptureState = CaptureState.Capturing;
+                    OnCaptureStateChange?.Invoke(this, CaptureState.Capturing);
+                    Logger.WriteLine($"Camera {CameraName} started capturing successfully.");
+                    break; // 连接成功，退出循环
+                }
+
+                catch (Exception ex)
+                {
+                    Logger.WriteLine($"Error while connecting to camera {CameraName}: {ex.Message}");
+                    OnConnectionStateChange?.Invoke(this, ConnectionState.Disconnected);
+                    Thread.Sleep(5000); // 等待 5 秒后重试
+                }
+            }
+        }
+
+
+
+
 
         public void Startup(string Name, string IPAddress, CameraDiscovery discovery,
                             NewFrameReceivedCB NewFrameReceivedCallback,
@@ -113,15 +233,125 @@ namespace PalletCheck
             CamThread.Start();
         }
 
+        public void StartupUpdate(string Name, string IPAddress, CameraDiscovery discovery,
+                           GrabResultCallback NewFrameReceivedCallback,
+                           ConnectionStateChangeCB ConnectionStateChangeCallback,
+                           CaptureStateChangeCB CaptureStateChangeCallback)
+        {
+            Camera = null;
+            CameraName = Name;
+            IPAddressStr = IPAddress;
+            OnNext += NewFrameReceivedCallback;
+            OnConnectionStateChange += ConnectionStateChangeCallback;
+            OnCaptureStateChange += CaptureStateChangeCallback;
+
+            DoCaptureFrames = true;
+
+            StopCamThread = false;
+
+            CamThread = new Thread(() => CameraProcessingThread(discovery));
+            CamThread.Start();
+        }
+
+        //private void ReconnectCamera(string cameraName)
+        //{
+        //    try
+        //    {
+        //        // 假设 discovery 已全局可用
+        //        Camera = _discovery.Reconnect(Camera);
+        //        if (Camera != null && Camera.IsConnected)
+        //        {
+        //            Console.WriteLine($"Camera {cameraName} reconnected successfully.");
+        //            frameGrabber = Camera.CreateFrameGrabber();
+        //            frameGrabber.Next += result => OnNewFrame(cameraName, result);
+        //            frameGrabber.Start();
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine($"Failed to reconnect camera: {cameraName}. Retrying...");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error during reconnecting camera {cameraName}: {ex.Message}");
+        //    }
+        //}
         public void StartCapturingFrames()
         {
-            DoCaptureFrames = true;
+            if (frameGrabber == null)
+            {
+                Logger.WriteLine($"[{CameraName}] Cannot start capturing frames: FrameGrabber is null.");
+                return;
+            }
+
+            if (frameGrabber.IsStarted)
+            {
+                Logger.WriteLine($"[{CameraName}] FrameGrabber is already started. Skipping start operation.");
+                return;
+            }
+
+            try
+            {
+                Logger.WriteLine($"[{CameraName}] Attempting to start FrameGrabber...");
+                frameGrabber.Start();
+                DoCaptureFrames = true;
+
+                if (frameGrabber.IsStarted)
+                {
+                    Logger.WriteLine($"[{CameraName}] FrameGrabber started successfully. Capturing frames...");
+                }
+                else
+                {
+                    Logger.WriteLine($"[{CameraName}] FrameGrabber failed to start for unknown reasons.");
+                    DoCaptureFrames = false; // Ensure capturing flag is consistent with the actual state.
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"[{CameraName}] Error while starting FrameGrabber: {ex.Message}");
+                DoCaptureFrames = false; // Prevent capturing if an exception occurred.
+            }
         }
+
 
         public void StopCapturingFrames()
         {
-            DoCaptureFrames = false;
+
+            if (frameGrabber == null)
+            {
+                Logger.WriteLine($"[{CameraName}] Cannot stop capturing frames: FrameGrabber is null.");
+                return;
+            }
+
+            if (!frameGrabber.IsStarted)
+            {
+                Logger.WriteLine($"[{CameraName}] FrameGrabber is not started. Skipping stop operation.");
+                DoCaptureFrames = false; // Ensure capturing flag is consistent with the actual state.
+                return;
+            }
+
+            try
+            {
+                Logger.WriteLine($"[{CameraName}] Stopping FrameGrabber...");
+                frameGrabber.Stop();
+                DoCaptureFrames = false;
+
+                if (!frameGrabber.IsStarted)
+                {
+                    Logger.WriteLine($"[{CameraName}] FrameGrabber stopped successfully.");
+                }
+                else
+                {
+                    Logger.WriteLine($"[{CameraName}] FrameGrabber failed to stop for unknown reasons.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"[{CameraName}] Error while stopping FrameGrabber: {ex.Message}");
+            }
         }
+
+
 
         public void Shutdown()
         {
@@ -162,7 +392,7 @@ namespace PalletCheck
 
         private bool ProcessRealCamera(CameraDiscovery discovery)
         {
-            if (ParamStorage.GetInt("Camera Enabled") == 0)
+            if (ParamStorageGeneral.GetInt("Camera Enabled") == 0)
             {
                 Thread.Sleep(100);
                 return true;
@@ -172,6 +402,7 @@ namespace PalletCheck
             {
                 Logger.WriteLine("Searching for camera " + CameraName + " at " + IPAddressStr);
                 SetConnectionState(ConnectionState.Searching);
+                SetCaptureState(CaptureState.Capturing);
 
                 try
                 {
@@ -196,7 +427,12 @@ namespace PalletCheck
                 }
                 else
                 {
+                    Camera
+                    .GetCameraParameters()
+                    .DeviceScanType.Set(DeviceScanType.LINESCAN_3D);
+                    Camera.GetCameraParameters().Scan3dExtraction(Scan3dExtractionId.SCAN_3D_EXTRACTION_1).Scan3dOutputMode.Set(Scan3dOutputMode.RECTIFIED_C);
                     SetConnectionState(ConnectionState.Connected);
+                    SetCaptureState(CaptureState.Stopped);
                     Logger.WriteLine("Camera Parameter Setup Succeeded " + CameraName + " at " + IPAddressStr);
                     frameGrabber = Camera.CreateFrameGrabber();
                 }
@@ -233,7 +469,9 @@ namespace PalletCheck
                 {
                     if (!frameGrabber.IsStarted)
                     {
+
                         frameGrabber.Start();
+                        frameGrabber.Next += OnNext;
                         SetCaptureState(CaptureState.Capturing);
                         Logger.WriteLine("Started FrameGrabber for " + CameraName + " at " + IPAddressStr);
                         Thread.Sleep(100);
@@ -241,21 +479,24 @@ namespace PalletCheck
 
                     if (frameGrabber.IsStarted)
                     {
-                        try
-                        {
-                            Logger.WriteLine("frameGrabber.Grab()...");
-                            IFrameWaitResult res = frameGrabber.Grab(new TimeSpan(0, 0, 120));
-                            if (res != null)
-                            {
-                                res.IfCompleted(OnNewFrame)
-                                    .IfAborted(OnAborted)
-                                    .IfTimedOut(OnTimedOut);
-                            }
-                        }
-                        catch (Exception E)
-                        {
-                            Logger.WriteException(E);
-                        }
+                        SetCaptureState(CaptureState.Capturing);
+                        Logger.WriteLine("frameGrabber Start Capturing");
+                        Thread.Sleep(1000);
+                        //try
+                        //{
+                        //    Logger.WriteLine("frameGrabber.Grab()...");
+                        //    IFrameWaitResult res = frameGrabber.Grab(new TimeSpan(0, 0, 120));
+                        //    if (res != null)
+                        //    {
+                        //        res.IfCompleted(OnNewFrame)
+                        //            .IfAborted(OnAborted)
+                        //            .IfTimedOut(OnTimedOut);
+                        //    }
+                        //}
+                        //catch (Exception E)
+                        //{
+                        //    Logger.WriteException(E);
+                        //}
 
                         return false;
                     }
@@ -286,11 +527,11 @@ namespace PalletCheck
 
                 if (!InSimMode)
                 {
-                    if (ParamStorage.GetInt("Camera Sim Enabled") == 1)
+                    if (ParamStorageGeneral.GetInt("Camera Sim Enabled") == 1)
                     {
                         InSimMode = true;
                         Logger.WriteLine("Camera SIM MODE Enabled");
-                        UpdateSimCamera(true);
+                        UpdateSimCamera(true, ParamStorageGeneral);
                     }
                     else
                     {
@@ -299,7 +540,7 @@ namespace PalletCheck
                 }
                 else
                 {
-                    if (ParamStorage.GetInt("Camera Sim Enabled") == 0)
+                    if (ParamStorageGeneral.GetInt("Camera Sim Enabled") == 0)
                     {
                         InSimMode = false;
                         Logger.WriteLine("Camera SIM MODE Disabled");
@@ -307,7 +548,7 @@ namespace PalletCheck
                     }
                     else
                     {
-                        UpdateSimCamera(false);
+                        UpdateSimCamera(false, ParamStorageGeneral);
                     }
                 }
             }
@@ -328,7 +569,7 @@ namespace PalletCheck
                 if (Camera != null)
                 {
                     if (Camera.IsConnected) Camera.Disconnect();
-                    Camera.Dispose();
+                    Camera?.Dispose();
                     Camera = null;
                 }
             }
@@ -340,13 +581,13 @@ namespace PalletCheck
             SetConnectionState(ConnectionState.Shutdown);
         }
 
-        private void UpdateSimCamera(bool restart)
+        private void UpdateSimCamera(bool restart, ParamStorage paramStorage)
         {
             if (restart)
             {
                 Logger.WriteLine("UpdateSimCamera::RESTARTING");
-                string RootDir = Environment.GetEnvironmentVariable("PALLETCHECK_ROOT_DIR");
-                DirectoryInfo info = new DirectoryInfo(RootDir + '\\' + ParamStorage.GetString("Camera Sim Directory"));
+                string RootDir = Environment.GetEnvironmentVariable("SICK_PALLETCHECK_ROOT_DIR");
+                DirectoryInfo info = new DirectoryInfo(RootDir + '\\' + ParamStorageGeneral.GetString("Camera Sim Directory"));
                 SimModeFileList = info.GetFiles("*.r3").OrderBy(p => p.CreationTime).ToArray();
                 SimModeFileIndex = 0;
                 SimModeNextDT = DateTime.Now;
@@ -354,7 +595,7 @@ namespace PalletCheck
 
             if (DateTime.Now >= SimModeNextDT)
             {
-                float DT = ParamStorage.GetFloat("Camera Sim Sec Per Pallet");
+                float DT = ParamStorageGeneral.GetFloat("Camera Sim Sec Per Pallet");
                 SimModeNextDT = DateTime.Now + TimeSpan.FromSeconds(DT);
 
                 if (SimModeFileList.Length > 0)
@@ -364,7 +605,7 @@ namespace PalletCheck
                     Logger.WriteLine(FI.FullName);
 
                     CaptureBuffer CB = new CaptureBuffer();
-                    CB.Load(FI.FullName);
+                    CB.Load(FI.FullName, paramStorage);
 
                     Frame F = new Frame
                     {
@@ -415,17 +656,17 @@ namespace PalletCheck
                 Camera = this,
                 Range = null,
                 Reflectance = null,
-                
+
 
             };
 
             if (frame.GetRange() != null)
             {
                 IComponent component = frame.GetRange();
-                F.Width = component.GetWidth();
-                F.Height = component.GetHeight();
+                F.Width = (int)component.GetWidth();
+                F.Height = (int)component.GetConfiguredHeight();
                 IntPtr data = component.GetData();
-                int DataSize = (int)component.GetDataSize();
+                int DataSize = (int)component.GetConfiguredDataSize();
                 int BPP = (int)component.GetBitsPerPixel();
                 var count = (int)(DataSize / (int)Math.Ceiling(BPP / 8.0));
                 Logger.WriteLine($"OnNewFrame  RANGE  W:{F.Width} H:{F.Height} DS:{DataSize} BPP:{BPP} count:{count}");
@@ -438,10 +679,10 @@ namespace PalletCheck
             if (frame.GetReflectance() != null)
             {
                 IComponent component = frame.GetReflectance();
-                F.Width = component.GetWidth();
-                F.Height = component.GetHeight();
+                F.Width = (int)component.GetWidth();
+                F.Height = (int)component.GetConfiguredHeight();
                 IntPtr data = component.GetData();
-                int DataSize = (int)component.GetDataSize();
+                int DataSize = (int)component.GetConfiguredDataSize();
                 int BPP = (int)component.GetBitsPerPixel();
                 var count = (int)(DataSize / (int)Math.Ceiling(BPP / 8.0));
                 Logger.WriteLine($"OnNewFrame  REFLC  W:{F.Width} H:{F.Height} DS:{DataSize} BPP:{BPP} count:{count}");
@@ -476,6 +717,8 @@ namespace PalletCheck
             }
         }
 
+
+
         private void OnAborted()
         {
             Logger.WriteLine("FRAME GRABBER: OnAborted");
@@ -493,7 +736,7 @@ namespace PalletCheck
             {
                 try
                 {
-                    Camera.ExportParameters(FileName);
+                    Camera.ExportParametersToFile(FileName);
                 }
                 catch (Exception)
                 {
@@ -506,7 +749,7 @@ namespace PalletCheck
         {
             if (Camera != null && Camera.IsConnected)
             {
-                ConfigurationResult Result = Camera.ImportParameters(FileName);
+                ConfigurationResult Result = Camera.ImportParametersFromFile(FileName);
                 if (Result.Status == ConfigurationStatus.OK)
                 {
                     return true;
@@ -520,6 +763,66 @@ namespace PalletCheck
             return true;
         }
 
+        public static Frame ConvertToFrame(IFrame frame, string cameraName)
+        {
+            Logger.WriteLine($"Converting IFrame to Frame! Frame ID: {frame.GetFrameId()} from Camera: {cameraName}");
+
+            // 创建 Frame 实例
+            Frame convertedFrame = new Frame
+            {
+                Time = DateTime.Now,
+                Width = 0,
+                Height = 0,
+                FrameID = frame.GetFrameId(),
+                Camera = null, // 假设 'this' 指的是当前相机实例
+                Range = null,
+                Reflectance = null,
+            };
+
+            // 处理 Range 数据
+            if (frame.GetRange() != null)
+            {
+                Sick.GenIStream.IComponent component = frame.GetRange();
+                convertedFrame.Width = (int)component.GetWidth();
+                convertedFrame.Height = (int)component.GetConfiguredHeight();
+                IntPtr data = component.GetData();
+                int dataSize = (int)component.GetConfiguredDataSize();
+                int bitsPerPixel = (int)component.GetBitsPerPixel();
+                int count = dataSize / (int)Math.Ceiling(bitsPerPixel / 8.0);
+
+                Logger.WriteLine($"Processing RANGE Data: W={convertedFrame.Width}, H={convertedFrame.Height}, DS={dataSize}, BPP={bitsPerPixel}, Count={count}");
+
+                convertedFrame.Range = new ushort[count];
+                Copy(data, convertedFrame.Range, count);
+
+                convertedFrame.xScale = component.GetCoordinateSystem().A.Transform.Scale;
+                convertedFrame.xOffset = component.GetCoordinateSystem().A.Transform.Offset;
+                convertedFrame.yScale = component.GetCoordinateSystem().B.Transform.Scale;
+                convertedFrame.yOffset = component.GetCoordinateSystem().B.Transform.Offset;
+                convertedFrame.zScale = component.GetCoordinateSystem().C.Transform.Scale;
+                convertedFrame.zOffset = component.GetCoordinateSystem().C.Transform.Offset;
+
+            }
+
+            // 处理 Reflectance 数据
+            if (frame.GetReflectance() != null)
+            {
+                IComponent component = frame.GetReflectance();
+                convertedFrame.Width = (int)component.GetWidth();
+                convertedFrame.Height = (int)component.GetConfiguredHeight();
+                IntPtr data = component.GetData();
+                int dataSize = (int)component.GetConfiguredDataSize();
+                int bitsPerPixel = (int)component.GetBitsPerPixel();
+                int count = dataSize / (int)Math.Ceiling(bitsPerPixel / 8.0);
+
+                Logger.WriteLine($"Processing REFLECTANCE Data: W={convertedFrame.Width}, H={convertedFrame.Height}, DS={dataSize}, BPP={bitsPerPixel}, Count={count}");
+
+                convertedFrame.Reflectance = new byte[count];
+                Copy(data, convertedFrame.Reflectance, count);
+            }
+
+            return convertedFrame;
+        }
         public void SaveInHistory(string Reason)
         {
             DateTime DT = DateTime.Now;
