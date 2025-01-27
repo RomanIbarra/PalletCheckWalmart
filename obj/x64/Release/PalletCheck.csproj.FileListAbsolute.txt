@@ -1,0 +1,69 @@
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\PalletCheck.exe.config
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\PalletCheck.exe
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\PalletCheck.pdb
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\FluentFTP.dll
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\ScottPlot.WPF.dll
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\Sick.GenIStreamDotNet.dll
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\System.Drawing.Common.dll
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\System.ValueTuple.dll
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\FluentFTP.xml
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\bin\x64\Release\System.ValueTuple.xml
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.csproj.AssemblyReference.cache
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\Controls\CaptureBufferBrowser.g.cs
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\MainWindow.g.cs
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\Password.g.cs
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\ProcessingRecordingControl.g.cs
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\App.g.cs
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck_MarkupCompile.cache
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck_MarkupCompile.lref
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\Controls\CaptureBufferBrowser.baml
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\MainWindow.baml
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\Password.baml
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\ProcessingRecordingControl.baml
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.g.resources
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.ParamConfig.resources
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.Properties.Resources.resources
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.StatusWindow.resources
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.csproj.GenerateResource.cache
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.csproj.CoreCompileInputs.cache
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCh.6D9E2110.Up2Date
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.exe
+D:\Projects US\PalletCheck\TestPalletCheck\PalletCheck_FINAL_Stitch - 3Cam\PalletCheckWPF\PalletCheckWPF\obj\x64\Release\PalletCheck.pdb
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\PalletCheck.exe.config
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\PalletCheck.exe
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\PalletCheck.pdb
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\FluentFTP.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\OpenTK.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\OpenTK.GLControl.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\ScottPlot.WPF.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\Sick.GenIStreamDotNet.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\System.Drawing.Common.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\System.ValueTuple.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\FluentFTP.xml
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\System.Drawing.Common.pdb
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\System.Drawing.Common.xml
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\System.ValueTuple.xml
+D:\Walmart Software\PalletCheckWPF -Walmart\bin\x64\Release\sick_easyranger.dll
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.csproj.AssemblyReference.cache
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\Controls\CaptureBufferBrowser.g.cs
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\MainWindow.g.cs
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\Password.g.cs
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\ProcessingRecordingControl.g.cs
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\Viewer3D.g.cs
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\App.g.cs
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck_MarkupCompile.cache
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck_MarkupCompile.lref
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\Controls\CaptureBufferBrowser.baml
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\MainWindow.baml
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\Password.baml
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\ProcessingRecordingControl.baml
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\Viewer3D.baml
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.g.resources
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.ParamConfig.resources
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.Properties.Resources.resources
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.StatusWindow.resources
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.csproj.GenerateResource.cache
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.csproj.CoreCompileInputs.cache
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCh.6D9E2110.Up2Date
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.exe
+D:\Walmart Software\PalletCheckWPF -Walmart\obj\x64\Release\PalletCheck.pdb
