@@ -4,189 +4,480 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PalletCheck" xmlns:controls="clr-namespace:PalletCheck.Controls"
+        xmlns:control  ="clr-namespace:Sick.EasyRanger.Controls;assembly=Sick.EasyRanger.Controls"
+        xmlns:converters="clr-namespace:Sick.EasyRanger.Controls.Converter;assembly=Sick.EasyRanger.Controls"
         mc:Ignorable="d"
         Title="PalletCheck" Height="1050" Width="1920" WindowStartupLocation="CenterScreen" WindowState="Maximized" 
-        KeyUp="Window_KeyUp" ResizeMode="CanResize" Loaded="Window_Loaded" Closed="Window_Closed" Closing="Window_Closing"
+         
+        KeyUp="Window_KeyUp" ResizeMode="CanResize" Loaded="Window_Loaded" Closed="Window_Closed" Closing="Window_Closing" Background="Black"
         >
-    <Window.Background>
-        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-            <GradientStop Color="Black" Offset="0"/>
-            <GradientStop Color="#FF003E5B" Offset="1"/>
-        </LinearGradientBrush>
-    </Window.Background>
+    <Window.Resources>
+        <Style x:Key="Transparent3DButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <!-- 默认字体颜色 -->
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#FF177DC3"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Gray" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+                                </Border.Effect>
+                            </Border>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- 鼠标悬停触发器 -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#FFCCE7FF"/>
+                                <!-- 更改背景色 -->
+                                <Setter Property="Foreground" Value="Black"/>
+                                <!-- 鼠标悬停字体变黑 -->
+                            </Trigger>
+                            <!-- 鼠标按下触发器 -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#FF99C9FF"/>
+                                <!-- 更深背景色 -->
+                                <Setter Property="BorderBrush" Value="#FF0056A3"/>
+                                <!-- 更改边框颜色 -->
+                            </Trigger>
+                            <!-- 禁用状态触发器 -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="Background" Value="#FFE0E0E0"/>
+                                <Setter Property="BorderBrush" Value="#FFA0A0A0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
     <Grid>
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="7"/>
-            <ColumnDefinition Width="11"/>
-            <ColumnDefinition Width="85"/>
-            <ColumnDefinition Width="291*"/>
-            <ColumnDefinition Width="439*"/>
-            <ColumnDefinition Width="24*"/>
-            <ColumnDefinition Width="42*"/>
-            <ColumnDefinition Width="391*"/>
-            <ColumnDefinition Width="630*"/>
+            <ColumnDefinition Width="96"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="50" />
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.ColumnSpan="6" Grid.Column="3" HorizontalAlignment="Left" Width="1811" Margin="6,10,0,0" Height="45" VerticalAlignment="Top" Grid.RowSpan="2">
+        <DockPanel Grid.ColumnSpan="4" Grid.Column="0" HorizontalAlignment="Stretch"  Margin="0,0,0,0" Height="45" VerticalAlignment="Top"  Grid.RowSpan="2" OpacityMask="Black" >
 
-            <Button x:Name="btnStart" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="120" Foreground="White" Click="btnStart_Click" >
-                START
-            </Button>
-
-            <Button x:Name="btnBypass" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="120" Foreground="White" Click="btnBypassClick">
-                BYPASS
-            </Button>
-
-            <Button x:Name="btnRecord" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="120" Foreground="White" Click="btnRecord_Click">
-                RECORD
-            </Button>
-
-
-
+            <Button x:Name="btnStart" Style="{StaticResource Transparent3DButtonStyle}" Content="START" Visibility="Hidden" Click="btnStart_Click" Width="10" Margin="5"/>
+            <Button x:Name="btnBypass" Style="{StaticResource Transparent3DButtonStyle}" Content="BYPASS" Click="btnBypassClick" Width="200" Margin="5"/>
+            <Button x:Name="btnRecord" Style="{StaticResource Transparent3DButtonStyle}" Content="RECORD" Visibility="Hidden" Click="btnRecord_Click" Width="10" Margin="5"/>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="25,5,25,5"/>
-
-            <Button x:Name="btnProcessPallet" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="180" Foreground="White" Click="btnProcessPallet_Click">
-                PROCESS PALLET
-            </Button>
-
-            <Button x:Name="btnProcessRecording" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="200" Foreground="White" Click="btnProcessRecording_Click">
-                PROCESS RECORDING
-            </Button>
-            <Button x:Name="btn_LoadEzR" Content="Load EzR Image" Background="#007CC1" FontSize="18" FontWeight="Bold" Margin="5" Width="150
-                    " Foreground="White" Click="btn_LoadEzR_Click"/>
-
+            <Button x:Name="btnProcessPallet" Style="{StaticResource Transparent3DButtonStyle}" Content="PROCESS PALLET" IsEnabled="False" Click="btnProcessPallet_Click" Width="180" Margin="5"/>
+            <Button x:Name="btnProcessRecording" Style="{StaticResource Transparent3DButtonStyle}" Content="PROCESS RECORDING" IsEnabled="False" Click="btnProcessRecording_Click" Width="220" Margin="5"/>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="25,5,25,5"/>
+            <Button x:Name="btnSettingsControl" Style="{StaticResource Transparent3DButtonStyle}" Content="SETTINGS" Click="btnSettingsControl_Click" Width="120" Margin="5"/>
+            <Button x:Name="btnStatusControl" Style="{StaticResource Transparent3DButtonStyle}" Content="STATUS" Click="btnStatusControl_Click" Width="120" Margin="5"/>
 
-            <Button x:Name="btnSettingsControl" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="120" Foreground="White" Click="btnSettingsControl_Click">
-                SETTINGS
-            </Button>
-
-            <Button x:Name="btnStatusControl" Background="#FF2D5774" FontSize="18" FontWeight="Bold" Margin="5" Width="120" Foreground="White" Click="btnStatusControl_Click">
-                STATUS
-            </Button>
-
-            <TextBlock x:Name="ModeStatus" FontSize="32" FontWeight="Bold" Foreground="White"  Margin="0,0,25,0" TextAlignment="Center" Width="200">
-                IDLING
+            <TextBlock x:Name="ModeStatus" FontSize="32" FontWeight="Bold" Foreground="White"  Margin="100,0,0,0" TextAlignment="Center"  OpacityMask="Black">
+                RUNNING
             </TextBlock>
 
-            <TextBlock x:Name="CurDateTime" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,25,0"  >
-                11/11/2021 15:38pm
-            </TextBlock>
-
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <!--<TextBlock x:Name="CurDateTime" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Background="Black" >
+        Time
+                </TextBlock>-->
+                <!--<Image Width="150" Height="50" Grid.RowSpan="2" Source="/LogoWalmart.png" />-->
+            </StackPanel>
         </DockPanel>
-
-
-        <Grid x:Name="CBB_Container" Grid.Row="1" Grid.Column="3" Background="#FF000508" Margin="10,14,0,0" Grid.ColumnSpan="5" />
-
-        <TextBlock x:Name="PalletName" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Row="1" Margin="0,25
-                   ,30,0" Panel.ZIndex="100" VerticalAlignment="Top" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="7"><Run Text="XXXXXXXXXX Pallet Name XXXXXXXXX"/></TextBlock>
-
-        <StackPanel x:Name="CBB_Button_List" Orientation="Vertical" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,30,0,-36">
-        </StackPanel>
-
-
-        <Grid Grid.Row="1" Grid.Column="8">
+        <Grid  Grid.Row="1" Grid.ColumnSpan="3" OpacityMask="Black">
             <Grid.RowDefinitions>
-                <RowDefinition Height="475*"/>
-                <RowDefinition Height="509*"/>
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid OpacityMask="Black">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border BorderBrush="White" BorderThickness="2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                    <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Column="1" Orientation="Horizontal" OpacityMask="Black" >
+                    <Button x:Name="btnLoad_Top" Style="{StaticResource Transparent3DButtonStyle}" Click="Load_Top_Click" Margin="10,10,0,0"   IsEnabled="False"  Content="Process Top" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnSetting_Top"  Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="Setting Top" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnShow_Top"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />
+                </StackPanel>
+                <Grid x:Name="CBB_Container" Grid.Row="0" Grid.Column="1" Background="Black" Margin="0,40,5,5" Grid.ColumnSpan="1" OpacityMask="Black" />
+                <TextBlock x:Name="PalletName0" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Row="0" Margin="0,10
+                   ,30,0"  VerticalAlignment="Top" HorizontalAlignment="Right" Opacity="1" Grid.Column="1" OpacityMask="Black"><Run Text="Info"/></TextBlock>
+                <StackPanel x:Name="CBB_Button_List" Margin="5,50,5,5" Orientation="Vertical" Grid.Row="0" OpacityMask="Black"  >
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="1" OpacityMask="Black">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border BorderBrush="White" BorderThickness="2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                    <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Column="1" Orientation="Horizontal" OpacityMask="Black" >
+                    <Button x:Name="btnLoad_Bottom" Click="Load_Bottom_Click" Margin="10,10,0,0" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top"   IsEnabled="False" FontSize="15" Width="120" OpacityMask="Black" Content="Process Bottom"/>
+                    <Button x:Name="btnSetting_Bottom" Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="Setting Bottom" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnShow_Bottom"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />
+                </StackPanel>
+                <Grid x:Name="CBB_Container1" Grid.Row="0" Grid.Column="1" Background="Black" Margin="0,40,5,5" Grid.ColumnSpan="1" OpacityMask="Black" />
+                <TextBlock x:Name="PalletName1" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Row="0" Margin="0,10
+                   ,30,0"  VerticalAlignment="Top" HorizontalAlignment="Right" Opacity="1" Grid.Column="1" OpacityMask="Black"><Run Text="Info"/></TextBlock>
+                <StackPanel x:Name="CBB_Button_List1" Margin="5,50,5,5" Orientation="Vertical" Grid.Row="0" OpacityMask="Black"  >
+                </StackPanel>
+            </Grid>
+
+            <Border BorderBrush="White" BorderThickness="2" Grid.Row="1" Grid.Column="0" >
+                <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <Grid Grid.Row="1" Grid.Column="0" OpacityMask="Black">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center" OpacityMask="Black" >
+                    <Button x:Name="btnLoad_Left" Click="Load_Left_Click" Margin="10,10,0,0"  IsEnabled="False"  Content="Process Left" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnSetting_Left" Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="Setting Left" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnShow_Left"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />
+                </StackPanel>
+                <!--<Grid x:Name="CBB_Container2" Grid.Row="0" Grid.Column="1" Background="#FF000508" Margin="10,50,0,0" Grid.ColumnSpan="1" />-->
+                <control:View2DControl x:Name="ViewerLeft" Grid.Row="0" Grid.Column="0"  Margin="5,40,5,5" Grid.ColumnSpan="2" BorderBrush="#FF9E3232"   >
+                    <control:View2DControl.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="Black"/>
+                            <GradientStop Color="#FF757575" Offset="1"/>
+                        </LinearGradientBrush>
+                    </control:View2DControl.Background>
+                </control:View2DControl>
+                <TextBlock x:Name="PalletName2" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Row="0" Margin="0,10
+                   ,30,0"  VerticalAlignment="Top" HorizontalAlignment="Right" Opacity="1" Grid.Column="1" OpacityMask="Black"><Run Text="Info"/></TextBlock>
+                <StackPanel x:Name="CBB_Button_List2" Orientation="Vertical" Grid.Row="0" OpacityMask="Black"  >
+                </StackPanel>
+
+            </Grid>
+            <Border BorderBrush="White" BorderThickness="2" Grid.Row="1" Grid.Column="2" >
+                <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <Grid Grid.Row="1" Grid.Column="1" OpacityMask="Black">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center" Grid.Column="1" OpacityMask="Black" >
+                    <Button x:Name="btnLoad_Right" Click="Load_Right_Click" Margin="10,10,0,0" IsEnabled="False"  Content="Process Right" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnSetting_Right" Click="btnSettingEach_Click" Margin="10,10,0,0"   Content="Setting Right" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
+                    <Button x:Name="btnShow_Right"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />
+                </StackPanel>
+                <control:View2DControl x:Name="ViewerRight" Grid.Row="0" Grid.Column="0"  Margin="5,40,5,5" Grid.ColumnSpan="2" BorderBrush="#FF9E3232"   >
+                    <control:View2DControl.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="Black"/>
+                            <GradientStop Color="#FF757575" Offset="1"/>
+                        </LinearGradientBrush>
+                    </control:View2DControl.Background>
+                </control:View2DControl>
+                <!--<Grid x:Name="CBB_Container3" Grid.Row="0" Grid.Column="1" Background="#FF000508" Margin="10,50,0,0" Grid.ColumnSpan="1" />-->
+                <TextBlock x:Name="PalletName3" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Row="0" Margin="0,10
+                   ,30,0" Panel.ZIndex="100" VerticalAlignment="Top" HorizontalAlignment="Right" Opacity="1" Grid.Column="1" OpacityMask="Black"><Run Text="Info"/></TextBlock>
+                <StackPanel x:Name="CBB_Button_List3" Orientation="Vertical" Grid.Row="0" OpacityMask="Black"  >
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" Margin="0,0,0,0" OpacityMask="Black" Background="Black">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="800*"/>
+                <RowDefinition Height="200*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="TotalResultTextBlock" Text="Result" Foreground="White" FontSize="80" FontWeight="Heavy" VerticalAlignment="Top" Margin="10,0,0,0"/>
 
 
-            <Image x:Name="imgPassSymbol" Margin="313,50,0,0" Source="/Art/Check.png" Visibility="Visible" HorizontalAlignment="Left" Width="68" Height="108" VerticalAlignment="Top" />
-            <Image x:Name="imgPassText" Margin="97,50,0,0" Source="/Art/Pass.png" Visibility="Visible" RenderTransformOrigin="-1.191,0.561" Height="136" VerticalAlignment="Top" HorizontalAlignment="Left" Width="218" />
-            <Image x:Name="imgFailSymbol" Margin="318,50,0,0" Source="/Art/X.png" Visibility="Visible" Height="96" VerticalAlignment="Top" HorizontalAlignment="Left" Width="58" />
-            <Image x:Name="imgFailText" Margin="94,50,0,0" Source="/Art/Fail.png" Visibility="Visible" RenderTransformOrigin="-1.191,0.561" Height="113" VerticalAlignment="Top" HorizontalAlignment="Left" Width="208" />
 
-
-            <Button x:Name="btnDefects" Background="#FF2D5774" Grid.Row="0" FontSize="18" FontWeight="Bold" Margin="455,109,0,0" Foreground="White" Click="btnDefects_Click" HorizontalAlignment="Left" Width="125" Height="35" VerticalAlignment="Top">
+            <Button x:Name="btnDefects"  Margin="0,109,10,0"  Click="btnDefects_Click" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="25" Width="150" OpacityMask="Black" HorizontalAlignment="Right">
                 DEFECTS
             </Button>
 
-            <DataGrid Name = "defectTable" Background="Gray" Grid.Row="0" AlternatingRowBackground = "LightBlue"  AlternationCount = "2" AutoGenerateColumns = "False" Margin="0,152,0,0" FontWeight="Normal" ColumnHeaderHeight="30" RowHeight="30" HorizontalAlignment="Center" Width="530" Height="309" VerticalAlignment="Top" >
+            <DataGrid Name="defectTable" Grid.Row="0" AlternatingRowBackground="Transparent" 
+          AlternationCount="2" AutoGenerateColumns="False" Margin="0,152,0,0" 
+          FontWeight="Normal" ColumnHeaderHeight="30" 
+          IsSynchronizedWithCurrentItem="True" Background="Transparent"
+          Foreground="White" GridLinesVisibility="All"
+          HorizontalGridLinesBrush="White" VerticalGridLinesBrush="White" BorderBrush="White">
 
-                <DataGrid.RowStyle>
-                    <Style TargetType="{x:Type DataGridRow}">
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="16"/>
-                    </Style>
-                </DataGrid.RowStyle>
-
+                <!-- 表头样式 -->
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="White" />
+                        <!-- 表头边框颜色 -->
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <!-- 表头下边框 -->
                     </Style>
                 </DataGrid.ColumnHeaderStyle>
 
+                <!-- 行样式 -->
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}">
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="White" />
+                        <!-- 行边框颜色 -->
+                        <Setter Property="BorderThickness" Value="0,1,0,1" />
+                        <!-- 上下边框 -->
+                    </Style>
+                </DataGrid.RowStyle>
+
+                <!-- 列定义 -->
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header = "Board" Width="75"  IsReadOnly="True" Binding="{Binding Location}"/>
-                    <DataGridTextColumn Header = "Defect" Width="100"  IsReadOnly="True" Binding="{Binding Code}"/>
-                    <DataGridTextColumn Header = "Comment" Width="*"  IsReadOnly="True" Binding="{Binding Comment}"/>
+                    <DataGridTextColumn Header="Board" Width="75" IsReadOnly="True" Binding="{Binding Location}" />
+                    <DataGridTextColumn Header="Defect" Width="100" IsReadOnly="True" Binding="{Binding Code}" />
+                    <DataGridTextColumn Header="Comment" Width="*" IsReadOnly="True" Binding="{Binding Comment}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn.EditingElementStyle>
+                            <Style TargetType="TextBox">
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="AcceptsReturn" Value="True" />
+                            </Style>
+                        </DataGridTextColumn.EditingElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
 
 
-            <Button x:Name="btnStatistics" Background="#FF2D5774" Grid.Row="1" FontSize="18" FontWeight="Bold" Margin="455,42,0,0" Foreground="White" Click="btnStatistics_Click" HorizontalAlignment="Left" Width="125" Height="35" VerticalAlignment="Top">
-                STATISTICS
+
+            <Button x:Name="btnStatistics"  Grid.Row="1"  Margin="0,10,10,0"  Click="btnStatistics_Click" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="25" Width="150" OpacityMask="Black" HorizontalAlignment="Right">
+                Reset
             </Button>
 
-            <DataGrid Name = "statisticsTable" Background="Gray" Grid.Row="1" AlternatingRowBackground = "LightBlue"  AlternationCount = "2" AutoGenerateColumns = "False" Margin="50,0,0,0" Height="329" VerticalAlignment="Center" HorizontalAlignment="Left" Width="530" >
+            <DataGrid Name="statisticsTable" Background="Transparent" Grid.Row="1" Margin="0,50"
+          AlternatingRowBackground="Transparent" AlternationCount="2" 
+          AutoGenerateColumns="False" FontSize="50" VerticalAlignment="Stretch" 
+          Foreground="White" GridLinesVisibility="All"
+          HorizontalGridLinesBrush="White" VerticalGridLinesBrush="White" 
+          BorderBrush="Black">
+
+                <!-- 行样式 -->
                 <DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}">
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="Foreground" Value="White" />
+                        <!-- 设置行字体颜色为白色 -->
+                        <Setter Property="Background" Value="Transparent" />
+                        <!-- 行背景透明 -->
+                        <Setter Property="BorderBrush" Value="White" />
+                        <!-- 行边框颜色 -->
+                        <Setter Property="BorderThickness" Value="0,1,0,1" />
+                        <!-- 上下边框 -->
                     </Style>
                 </DataGrid.RowStyle>
 
+                <!-- 表头样式 -->
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="Foreground" Value="White" />
+                        <!-- 设置表头字体颜色为白色 -->
+                        <Setter Property="Background" Value="Transparent" />
+                        <!-- 表头背景透明 -->
+                        <Setter Property="BorderBrush" Value="White" />
+                        <!-- 表头边框颜色 -->
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <!-- 表头下边框 -->
                     </Style>
                 </DataGrid.ColumnHeaderStyle>
 
+                <!-- 列定义 -->
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header = "Description" Width="175"  IsReadOnly="True"  Binding="{Binding Description}"/>
-                    <DataGridTextColumn Header = "Count" Width="85"  IsReadOnly="True"  Binding="{Binding Count1}"/>
-                    <DataGridTextColumn Header = "%" Width="85"  IsReadOnly="True"  Binding="{Binding Percent1}"/>
-                    <DataGridTextColumn Header = "Count" Width="85"  IsReadOnly="True"  Binding="{Binding Count2}"/>
-                    <DataGridTextColumn Header = "%" Width="85"  IsReadOnly="True"  Binding="{Binding Percent2}"/>
+                    <DataGridTextColumn Header="Description" Width="*" IsReadOnly="True" Binding="{Binding Description}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="White" />
+                                <!-- 设置字体颜色为白色 -->
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Count" Width="*" IsReadOnly="True" Binding="{Binding Count1}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="White" />
+                                <!-- 设置字体颜色为白色 -->
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="%" Width="*" IsReadOnly="True" Binding="{Binding Percent1}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="White" />
+                                <!-- 设置字体颜色为白色 -->
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
-            <ProgressBar x:Name="ProgressBar" HorizontalAlignment="Center" Height="46" Margin="0,436,0,0" Grid.Row="1" VerticalAlignment="Top" Width="530">
+
+            <ProgressBar x:Name="ProgressBar" Height="46" Margin="10,10,10,5" Visibility="Hidden" VerticalAlignment="Bottom" Grid.Row="2" Minimum="0" Maximum="100" Value="0">
                 <ProgressBar.Template>
                     <ControlTemplate TargetType="ProgressBar">
-                        <Border
-                            BorderBrush="Black"
-                            BorderThickness="3"
-                            Background="Gray"
-                >
-
-                            <Grid x:Name="PART_Track">
-                                <Rectangle
-                                    x:Name="PART_Indicator"
-                                    HorizontalAlignment="Left"
-                                    Fill="#FF2D5774"
-                                    />
-                            </Grid>
-                        </Border>
+                        <Grid>
+                            <!-- Outer Border -->
+                            <Border
+                    BorderBrush="#1E90FF"
+                    BorderThickness="3"
+                    CornerRadius="10"
+                    Background="#D3D3D3"
+                    SnapsToDevicePixels="True">
+                                <!-- Track (Background) -->
+                                <Grid x:Name="PART_Track">
+                                    <!-- Progress Indicator -->
+                                    <Rectangle
+                            x:Name="PART_Indicator"
+                            HorizontalAlignment="Left"
+                            RadiusX="10"
+                            RadiusY="10">
+                                        <Rectangle.Fill>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#1E90FF" Offset="0.0" />
+                                                <GradientStop Color="#87CEEB" Offset="1.0" />
+                                            </LinearGradientBrush>
+                                        </Rectangle.Fill>
+                                        <Rectangle.Effect>
+                                            <DropShadowEffect Color="Black" BlurRadius="5" ShadowDepth="2" />
+                                        </Rectangle.Effect>
+                                    </Rectangle>
+                                </Grid>
+                            </Border>
+                            <!-- Text Overlay for Progress -->
+                            <TextBlock
+                    x:Name="ProgressText"
+                    Text="0% (0 of 0)"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Foreground="Black"
+                    FontWeight="Bold"
+                    FontSize="26">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" />
+                                </TextBlock.Effect>
+                            </TextBlock>
+                        </Grid>
                     </ControlTemplate>
                 </ProgressBar.Template>
             </ProgressBar>
-            <TextBlock x:Name="ProgressBarText" HorizontalAlignment="Center" Margin="0,448,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Progress Bar Text" VerticalAlignment="Top" Foreground="White" FontWeight="Bold" FontSize="16"/>
-
 
 
 
 
         </Grid>
-
+        <Image Width="300" Height="100" Grid.Column="3"  VerticalAlignment="Top" HorizontalAlignment="Right" Grid.RowSpan="2" Source="/LogoWalmart.png" />
 
         <!--<controls:CaptureBufferBrowser x:Name="CBB"  Grid.Row="1" />-->
+        <Grid Margin="1" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Background="Black">
+            <!-- 定义两列：左侧显示状态，右侧显示日志 -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <!-- 左侧相机状态 -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- 右侧日志文本 -->
+            </Grid.ColumnDefinitions>
 
+            <!-- 相机状态 -->
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="0,5,0,5">
+                <!-- 相机1状态 -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <TextBlock x:Name="Camera1StatusText" Text="C1 Searching " VerticalAlignment="Center" FontSize="18" Foreground="White" FontWeight="Bold"/>
+                    <Ellipse x:Name="Camera1StatusIndicator" Width="20" Height="20"
+                     Fill="Red" Stroke="Black" StrokeThickness="1" Margin="0,0,10,0"/>
+                </StackPanel>
+                <!-- 相机2状态 -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <TextBlock x:Name="Camera2StatusText" Text="C2 Searching" VerticalAlignment="Center" FontSize="18" Foreground="White" FontWeight="Bold"/>
+                    <Ellipse x:Name="Camera2StatusIndicator" Width="20" Height="20"
+                     Fill="Red" Stroke="Black" StrokeThickness="1" Margin="0,0,10,0"/>
+                </StackPanel>
+                <!-- 相机3状态 -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <TextBlock x:Name="Camera3StatusText" Text="C3 Searching" VerticalAlignment="Center" FontSize="18" Foreground="White" FontWeight="Bold"/>
+                    <Ellipse x:Name="Camera3StatusIndicator" Width="20" Height="20"
+                     Fill="Red" Stroke="Black" StrokeThickness="1" Margin="0,0,10,0"/>
+                </StackPanel>
+                <!-- 相机4状态 -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <TextBlock x:Name="Camera4StatusText" Text="C4 Searching" VerticalAlignment="Center" FontSize="18" Foreground="White"  FontWeight="Bold"/>
+                    <Ellipse x:Name="Camera4StatusIndicator" Width="20" Height="20"
+                     Fill="Red" Stroke="Black" StrokeThickness="1" Margin="0,0,10,0"/>
+                </StackPanel>
+                <!-- 相机5状态 -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <TextBlock x:Name="Camera5StatusText" Text="C5 Searching" VerticalAlignment="Center" FontSize="18" Foreground="White"  FontWeight="Bold"/>
+                    <Ellipse x:Name="Camera5StatusIndicator" Width="20" Height="20"
+                     Fill="Red" Stroke="Black" StrokeThickness="1" Margin="0,0,10,0"/>
+                </StackPanel>
+                <!-- 相机6状态 -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <TextBlock x:Name="Camera6StatusText" Text="C6 Searching" VerticalAlignment="Center" FontSize="18" Foreground="White" FontWeight="Bold"/>
+                    <Ellipse x:Name="Camera6StatusIndicator" Width="20" Height="20"
+                     Fill="Red" Stroke="Black" StrokeThickness="1" Margin="0,0,10,0"/>
+                </StackPanel>
+                <TextBlock x:Name="LogText" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" 
+   Foreground="White" Text="SICK" FontSize="20" Margin="10,0,10,0"/>
+            </StackPanel>
+
+            <!-- 日志文本 -->
+
+            <TextBlock x:Name="CurDateTime" Grid.Column="1" FontSize="24" FontWeight="Bold" Foreground="White"  VerticalAlignment="Center" HorizontalAlignment="Right" Background="Black" >
+ Time
+            </TextBlock>
+        </Grid>
     </Grid>
 </Window>

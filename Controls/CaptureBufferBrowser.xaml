@@ -34,16 +34,16 @@
             <Slider x:Name="sldLowRange" Orientation="Vertical" Value="0" Margin="5" Minimum="0" Maximum="1" ValueChanged="sldLowRange_ValueChanged" />
         </StackPanel>
 
-        <Canvas x:Name="OuterCanvas" Grid.Row="1" ClipToBounds="True" Grid.Column="1" Grid.RowSpan="2" Cursor="Cross" >
+        <Canvas x:Name="OuterCanvas" Grid.Row="1" ClipToBounds="True" Grid.Column="1" Grid.RowSpan="2" Cursor="Cross" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Canvas.Background>
                 <ImageBrush/>
             </Canvas.Background>
-            <Canvas x:Name="ImageCanvas" Background="#101010" ClipToBounds="false" Cursor="Cross" >
-                <Image x:Name="CapBufImg" Stretch="Fill" />
+            <Canvas x:Name="ImageCanvas" Background="#101010" ClipToBounds="false" Cursor="Cross" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Image x:Name="CapBufImg" Stretch ="Fill" />
             </Canvas>
         </Canvas>
 
-        <TextBlock x:Name="tbInfo" Grid.Column="1" Grid.Row="2" FontSize="18" Foreground="White" Margin="20,0,0,0" VerticalAlignment="Center" Text="0, 0, 0" />
+        <TextBlock x:Name="tbInfo" Grid.Column="1" FontSize="12"  Foreground="White" Margin="63,0,10,0" VerticalAlignment="Center" Text="0, 0, 0" />
 
     </Grid>
 </UserControl>

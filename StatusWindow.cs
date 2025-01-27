@@ -23,7 +23,9 @@ namespace PalletCheck
         Dictionary<string, DataGridViewRow> rowDict = new Dictionary<string, DataGridViewRow>();
         System.Windows.Forms.Timer ScreenshotTimer = new System.Windows.Forms.Timer();
         string SnapshotDir;
-
+        ParamStorage ParamStorageGeneral = MainWindow.ParamStorageGeneral;
+        ParamStorage ParamStorageTop = MainWindow.ParamStorageTop;
+        ParamStorage ParamStorageBottom = MainWindow.ParamStorageBottom;
         public StatusWindow()
         {
             InitializeComponent();
@@ -177,7 +179,7 @@ namespace PalletCheck
         {
             if (Camera != null && Camera.IsConnected)
             {
-                ConfigurationResult Result = Camera.ImportParameters(Filename);
+                ConfigurationResult Result = Camera.ImportParametersFromFile(Filename);
                 return Result.Status;
             }
             return Sick.GenIStream.ConfigurationStatus.ERROR_GENERIC;
@@ -322,9 +324,20 @@ namespace PalletCheck
             CopyLastNFiles("*", 10, MainWindow.CameraConfigHistoryRootDir, SnapshotDir + "\\CameraConfigHistory");
 
 
-            ParamStorage.Save(SnapshotDir + "\\SettingsSnapshot.txt", false);
+            ParamStorageGeneral.Save(SnapshotDir + "\\SettingsSnapshotGeneral.txt", false);
+            ParamStorageTop.Save(SnapshotDir + "\\SettingsSnapshotTop.txt", false);
+            ParamStorageGeneral.Save(SnapshotDir + "\\SettingsSnapshotBottom.txt", false);
             StatusStorage.Save(SnapshotDir + "\\StatusSnapshot.txt");
-            MainWindow.Singleton.Camera1.SaveSettings(SnapshotDir + "\\CameraConfigSnapshot.csv");
+            // Iterate through all cameras and save settings for each camera
+
+            foreach (var camera in MainWindow.Singleton.Cameras)
+            {
+                string cameraName = camera.CameraName; // Get the camera name
+                string filePath = SnapshotDir + "\\" + cameraName + "_ConfigSnapshot.csv"; // Create a separate file for each camera
+
+                camera.SaveSettings(filePath); // Save the settings to the corresponding file
+            }
+
 
             this.Visible = false;
             ScreenshotTimer.Enabled = true;
@@ -367,7 +380,27 @@ namespace PalletCheck
 
             ZipFile.CreateFromDirectory(SnapshotDir, SnapshotDir + ".zip");
 
+            // Set FTP server credentials
+            string ftpServer = ParamStorageGeneral.GetString("FTP Server IP");
+            string username = ParamStorageGeneral.GetString("FTP UserName");
+            string password = ParamStorageGeneral.GetString("FTP Password");
+            bool isFTPUpload = Convert.ToBoolean(ParamStorageGeneral.GetInt("UploadOrNot")); ;
+
+            CaptureBuffer captureBuffer = new CaptureBuffer();
+            captureBuffer.UploadZipFileToFtp(ftpServer, username, password, SnapshotDir + ".zip", ConvertWindowsPathToUnixStyle(SnapshotDir + ".zip"));
+
             System.Windows.Forms.MessageBox.Show("Snapshot has been created at:\n\n" + SnapshotDir, "SNAPSHOT COMPLETED!");
+        }
+
+        public string ConvertWindowsPathToUnixStyle(string windowsPath)
+        {
+            // 去掉驱动器号部分，例如 "C:" 或 "D:"
+            string withoutDrive = windowsPath.Substring(windowsPath.IndexOf('\\'));  // 从第一个反斜杠开始截取
+
+            // 将所有反斜杠替换为正斜杠
+            string unixPath = withoutDrive.Replace("\\", "/");
+
+            return unixPath;
         }
     }
 }
