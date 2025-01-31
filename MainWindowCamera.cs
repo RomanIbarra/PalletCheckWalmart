@@ -80,10 +80,10 @@ namespace PalletCheck
             _envTop = new ProcessingEnvironment();
             _envBottom = new ProcessingEnvironment();
             _envRight = new ProcessingEnvironment();
-            _envLeft.Load("SICK ENV\\Sides.env");
-            _envRight.Load("SICK ENV\\Sides.env");
-            _envTop.Load("SICK ENV\\Top.env");
-            _envBottom.Load("SICK ENV\\Bottom.env");
+            _envLeft.Load("..\\..\\..\\EasyRangerEnvironments\\Sides.env");
+            _envRight.Load("..\\..\\..\\EasyRangerEnvironments\\Sides.env");
+            _envTop.Load("..\\..\\..\\EasyRangerEnvironments\\Top.env");
+            _envBottom.Load("..\\..\\..\\EasyRangerEnvironments\\Bottom.env");
 
             // Define a fixed callback array (placed outside the loop)
             GrabResultCallback[] callbacks =

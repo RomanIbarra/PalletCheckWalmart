@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/obj/x64/Debug/Password.g.i.cs
+/obj/x64/Debug/Controls/CaptureBufferBrowser.g.cs
+/obj/x64/Debug/Controls/CaptureBufferBrowser.g.i.cs
+/obj/x64/Debug/MainWindow.g.i.cs
+/obj/x64/Debug/PalletCheck.exe
