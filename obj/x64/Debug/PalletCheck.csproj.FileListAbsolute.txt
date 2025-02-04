@@ -845,3 +845,7 @@ C:\Users\roman\source\repos\PalletCheckWalmart\obj\x64\Debug\PalletCheck.csproj.
 C:\Users\roman\source\repos\PalletCheckWalmart\obj\x64\Debug\PalletCh.6D9E2110.Up2Date
 C:\Users\roman\source\repos\PalletCheckWalmart\obj\x64\Debug\PalletCheck.exe
 C:\Users\roman\source\repos\PalletCheckWalmart\obj\x64\Debug\PalletCheck.pdb
+C:\Users\roman\source\repos\PalletCheckWalmart\bin\x64\Debug\PalletCheck.exe.manifest
+C:\Users\roman\source\repos\PalletCheckWalmart\bin\x64\Debug\PalletCheck.application
+C:\Users\roman\source\repos\PalletCheckWalmart\obj\x64\Debug\PalletCheck.exe.manifest
+C:\Users\roman\source\repos\PalletCheckWalmart\obj\x64\Debug\PalletCheck.application
