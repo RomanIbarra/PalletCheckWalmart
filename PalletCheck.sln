@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PalletCheck", "PalletCheck.csproj", "{2C89BE58-40E8-49F3-AE26-A6EA75BFFB86}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PalletCheckInstaller", "Installer\PalletCheckInstaller\PalletCheckInstaller.vdproj", "{6DB3A53A-1AD7-4B6F-87D6-D95866C2820D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,8 @@ Global
 		{2C89BE58-40E8-49F3-AE26-A6EA75BFFB86}.Debug|x64.Build.0 = Debug|x64
 		{2C89BE58-40E8-49F3-AE26-A6EA75BFFB86}.Release|x64.ActiveCfg = Release|x64
 		{2C89BE58-40E8-49F3-AE26-A6EA75BFFB86}.Release|x64.Build.0 = Release|x64
+		{6DB3A53A-1AD7-4B6F-87D6-D95866C2820D}.Debug|x64.ActiveCfg = Debug
+		{6DB3A53A-1AD7-4B6F-87D6-D95866C2820D}.Release|x64.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
