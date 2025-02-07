@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System;
 using System.Collections.Generic;
-//using System.Drawing;
+using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using static PalletCheck.MainWindow;
 using System.Runtime.Remoting.Contexts;
+using System.Drawing;
 
 namespace PalletCheck
 {
@@ -1436,11 +1437,12 @@ return 0;
                 // New 2025 for missing wood across the length (set 90% of the total length here)
                 if (B.MinWidthForChunkAcrossLength != 0)
                 {
-                    bool MissingWoodAcrossLength = CheckNarrowBoard(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength *0.9), true);
+                    double percentage;
+                    bool MissingWoodAcrossLength = CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),.9, true);
                     if (MissingWoodAcrossLength)
                     {
                         // Jack Note: Mark the board as defective for having a missing chunk and set defect marker
-                        AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing chunk width <" + B.MinWidthForChunk + "(in) Across the lengh ");
+                        AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
                         SetDefectMarker(B);
                     }
 
@@ -1456,10 +1458,111 @@ return 0;
             }
 
         }
-        
+
         //=====================================================================
+        private void DrawContours(Board B, string filename)
+        {
+            int imgWidth = 2500; // Ajusta al tamaño real de la tabla
+            int imgHeight = 2700;
+
+            Bitmap img = new Bitmap(imgWidth, imgHeight);
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                g.Clear(Color.White);
+                Pen pen = new Pen(Color.Red, 2);
+
+                for (int i = 0; i < B.Edges[0].Count; i++)
+                {
+                    int x0 = B.Edges[0][i].X;
+                    int y0 = B.Edges[0][i].Y;
+                    int x1 = B.Edges[1][i].X;
+                    int y1 = B.Edges[1][i].Y;
+
+                    g.DrawLine(pen, x0, y0, x1, y1);
+                }
+            }
+
+            img.Save(filename);
+           // Console.WriteLine($"Imagen de contornos guardada como {filename}");
+        }
+        private bool CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float MinMissingWoodLengthIn,double PercentageOLength, bool ExcludeEnds = false)
+        {
+            // Jack Note: Initialize variables for pixels per inch (PPI) and measured length
+            float PPIX;
+            float PPIY;
+            float MeasuredLength = 0;
+
+            // Jack Note: Retrieve PPI values from parameter storage
+            PPIY = paramStorage.GetPPIY();
+            PPIX = paramStorage.GetPPIX();
+
+            // Jack Note: Get dimensions of the crack tracker array
+            int w = B.CrackTracker.GetLength(1);
+            int h = B.CrackTracker.GetLength(0);
+
+            // Jack Note: Initialize the counter for bad edges
+            int nBadEdges = 0;
+
+            // Jack Note: Determine exclusion length based on whether ends should be excluded
+            int Exclusion = ExcludeEnds ? 60 : 0;
+
+            // Jack Note: Check if the board is oriented horizontally
+            if (w > h)
+            {
+                Console.WriteLine("Horizontally oriented");
+                // Jack Note: Fail width is already in pixels (not converting to pixels)
+                Console.WriteLine("FailWidIn: " + FailWidIn);
+                // Jack Note: Calculate the fail width in pixels for horizontal orientation
+                int FailWid = (int)(FailWidIn * PPIY);
+
+                // Jack Note: Iterate through the edges and count bad edges
+                for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
+                {
+                    int DY = B.Edges[1][i].Y - B.Edges[0][i].Y;
+
+                    // Jack Note: Increment the bad edges counter if the width is less than the fail width
+                    if (DY < FailWid)
+                    {
+                        nBadEdges++;
+
+                        
+                    }
+ 
+                }
+
+                //  Calculate the measured length in inches for horizontal orientation
+                MeasuredLength = nBadEdges / PPIX;
+                Console.WriteLine("nBadEdges: " + nBadEdges);
+                Console.WriteLine("MeasuredLength: " + MeasuredLength);
+            }
+            else
+            {
+                //  Calculate the fail width in pixels for vertical orientation
+                int FailWid = (int)(FailWidIn * PPIX);
+
+                //  Iterate through the edges and count bad edges
+                for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
+                {
+                    int DX = B.Edges[1][i].X - B.Edges[0][i].X;
+
+                    //  Increment the bad edges counter if the width is less than the fail width
+                    if (DX < FailWid)
+                    {
+                        nBadEdges++;
+                      
+                    }
+                }
+                // Jack Note: Calculate the measured length in inches for vertical orientation
+                MeasuredLength = nBadEdges / PPIY;
+            }
+            //DrawContours(B, "contours.png");
+            // this offset has been used because casting from pixels to inchs isn't accurate
+           // MeasuredLength = MeasuredLength +  (float)(3);
+            return (MeasuredLength >= MinMissingWoodLengthIn*PercentageOLength);
+            Console.WriteLine("MeasuredLength: " + MinMissingWoodLengthIn);
 
 
+        }
         // Jack Note: Count the Number of the distance between the Edge0 and Edge1 < FailWidth
         private bool CheckNarrowBoard(ParamStorage paramStorage,Board B, float FailWidIn, float MinMissingWoodLengthIn, bool ExcludeEnds = false)
         {

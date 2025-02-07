@@ -25,6 +25,10 @@ namespace PalletCheck
             missing_chunks, //Added by Jack
             excessive_angle, //Added by Jack
             clearance,
+            raised_nail_fastener_cutoff,     //added by HUB
+            missing_wood_width_across_length,//added by HUB
+            blocks_protuded_from_pallet,     //added by HUB
+            side_nails_protruding,           //added by HUB 
         }
 
         public enum DefectLocation
@@ -155,6 +159,11 @@ namespace PalletCheck
                 case DefectType.missing_chunks:return "MU";
                 case DefectType.excessive_angle:return "EA";
                 case DefectType.clearance: return "FC";
+                case DefectType.missing_wood_width_across_length: return "MWA";       //Added by HUB 
+                case DefectType.raised_nail_fastener_cutoff: return "RNFC";          //Added by HUB
+                case DefectType.blocks_protuded_from_pallet: return "BPFP";         //Added by HUB 
+                case DefectType.side_nails_protruding: return "SNP";               //Added by HUB 
+                 
                 default: return "?";
             }
         }
@@ -177,6 +186,10 @@ namespace PalletCheck
                 case "MU": return "Missing Chunks";
                 case "EA": return "Excessive Angle";
                 case "FC": return "Fork Clearance";
+                case "MWA": return "Missing Wood Width Across Length";   //Added by HUB 
+                case "RNFC": return "Raised Nail Fastener Cutoff";      //Added by HUB 
+                case "BPFP": return "Blocks Protruding From Pallet";   //Added by HUB 
+                case "SNP":  return "Side Nails Protruding";          //Added by HUB 
                 default: return "?";
             }
         }
@@ -199,19 +212,23 @@ namespace PalletCheck
                 case DefectType.missing_blocks: return "Missing Blocks";  //Jack Added
                 case DefectType.missing_chunks: return "Missing Chunks";  //Jack Added
                 case DefectType.excessive_angle: return "Excessive Angle"; //Jack Added
+                case DefectType.missing_wood_width_across_length: return "Missing Wood Width Across Length";  //Added by HUB 
+                case DefectType.raised_nail_fastener_cutoff: return "Raised Nail Fastener Cutoff";           //Added by HUB
+                case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
+                case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB 
                 default: return "?";
             }
         }
 
         public static string[] GetCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC" };  //Jack added the last 3
+            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP" };  //Last 4 added by HUB 
             return list;
         }
 
         public static string[] GetPLCCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC" };//Jack added the last 3
+            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP" };//Last 4 added by HUB
             return list;
         }
     }
