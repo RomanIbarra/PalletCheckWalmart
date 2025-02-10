@@ -1419,15 +1419,12 @@ return 0;
                 }
 
 
-                // Jack Note: Retrieve the minimum length for a missing chunk of wood
-                float MinLengthIn = paramStorage.GetFloat("(BN) Missing Chunk Minimum Length (in)");
-
                 // Jack Note: Check if the board has a missing chunk of wood based on the minimum width and length parameters
                 bool MissingWoodChunk = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthForChunk ), (float)(B.MinLengthForChunk), true);
                 if (MissingWoodChunk)
                 {
                     //  Mark the board as defective for having a missing chunk and set defect marker
-                    AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing chunk too deep <" + B.MinWidthForChunk + "(in) and too long >"  + B.MinLengthForChunk+"(in)");
+                    AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing wood too deep <" + B.MinWidthForChunk + "(in) and too long >"  + B.MinLengthForChunk+"(in)");
                     SetDefectMarker(B);
                 }
 
@@ -1436,11 +1433,11 @@ return 0;
                 if (B.MinWidthForChunkAcrossLength != 0)
                 {
                     double percentage;
-                    bool MissingWoodAcrossLength = CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),.9, true);
+                    bool MissingWoodAcrossLength = CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength), true);
                     if (MissingWoodAcrossLength)
                     {
                        
-                        AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
+                        AddDefect(B, PalletDefect.DefectType.missing_wood_width_across_length, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
                         SetDefectMarker(B);
                     }
 
@@ -1483,12 +1480,12 @@ return 0;
             img.Save(filename);
            // Console.WriteLine($"Imagen de contornos guardada como {filename}");
         }
-        private bool CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float MinMissingWoodLengthIn,double PercentageOLength, bool ExcludeEnds = false)
+        private bool CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float WoodLengthIn, bool ExcludeEnds = false)
         {
             // Jack Note: Initialize variables for pixels per inch (PPI) and measured length
             float PPIX;
             float PPIY;
-            float MeasuredLength = 0;
+            float MissingWoodLength = 0;
 
             // Jack Note: Retrieve PPI values from parameter storage
             PPIY = paramStorage.GetPPIY();
@@ -1529,9 +1526,9 @@ return 0;
                 }
 
                 //  Calculate the measured length in inches for horizontal orientation
-                MeasuredLength = nBadEdges / PPIX;
+                MissingWoodLength = nBadEdges / PPIX;
                 Console.WriteLine("nBadEdges: " + nBadEdges);
-                Console.WriteLine("MeasuredLength: " + MeasuredLength);
+                Console.WriteLine("MeasuredLength: " + MissingWoodLength);
             }
             else
             {
@@ -1551,13 +1548,13 @@ return 0;
                     }
                 }
                 // Jack Note: Calculate the measured length in inches for vertical orientation
-                MeasuredLength = nBadEdges / PPIY;
+                MissingWoodLength = nBadEdges / PPIY;
             }
             //DrawContours(B, "contours.png");
-            // this offset has been used because casting from pixels to inchs isn't accurate
-           // MeasuredLength = MeasuredLength +  (float)(3);
-            return (MeasuredLength >= MinMissingWoodLengthIn*PercentageOLength);
-            Console.WriteLine("MeasuredLength: " + MinMissingWoodLengthIn);
+            // this offset has been used because calibration values aren\t good
+            MissingWoodLength = MissingWoodLength +  (float)(3);
+            return (MissingWoodLength >= WoodLengthIn);
+           // Console.WriteLine("MeasuredLength: " + WoodLengthIn);
 
 
         }
