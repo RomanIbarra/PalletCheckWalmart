@@ -1429,19 +1429,20 @@ return 0;
                 bool MissingWoodChunk = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthForChunk ), (float)(B.MinLengthForChunk), true);
                 if (MissingWoodChunk)
                 {
-                    // Jack Note: Mark the board as defective for having a missing chunk and set defect marker
+                    //  Mark the board as defective for having a missing chunk and set defect marker
                     AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing chunk too deep <" + B.MinWidthForChunk + "(in) and too long >"  + B.MinLengthForChunk+"(in)");
                     SetDefectMarker(B);
                 }
 
-                // New 2025 for missing wood across the length (set 90% of the total length here)
+                // New 2025 for missing wood across the length (set 90% of the total length here)///////
+                // It depend on the calibr 
                 if (B.MinWidthForChunkAcrossLength != 0)
                 {
                     double percentage;
                     bool MissingWoodAcrossLength = CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),.9, true);
                     if (MissingWoodAcrossLength)
                     {
-                        // Jack Note: Mark the board as defective for having a missing chunk and set defect marker
+                       
                         AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
                         SetDefectMarker(B);
                     }
