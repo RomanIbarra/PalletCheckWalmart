@@ -1407,8 +1407,7 @@ return 0;
                 CheckForBreaks(B, paramStorage);
 
 
-                // Jack Note: Retrieve the minimum width for a board to be considered too narrow
-                float FailWidIn = paramStorage.GetFloat("(BN) Narrow Board Minimum Width (in)");
+
 
                 // Jack Note: Check if the board is too narrow based on the minimum width parameter
                 bool TooNarrow = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthTooNarrow), 0.5f, true);
@@ -1419,8 +1418,6 @@ return 0;
                     SetDefectMarker(B);
                 }
 
-                // Jack Note: Retrieve the minimum width for a missing chunk of wood
-                FailWidIn = paramStorage.GetFloat("(BN) Missing Chunk Minimum Width (in)");
 
                 // Jack Note: Retrieve the minimum length for a missing chunk of wood
                 float MinLengthIn = paramStorage.GetFloat("(BN) Missing Chunk Minimum Length (in)");
