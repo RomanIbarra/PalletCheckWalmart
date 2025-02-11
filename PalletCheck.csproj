@@ -167,6 +167,11 @@
       <DependentUpon>StatusWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="StorageWatchdog.cs" />
+    <Compile Include="StringsLocalization.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StringsLocalization.resx</DependentUpon>
+    </Compile>
     <Compile Include="Utility.cs" />
     <Compile Include="Viewer3D.xaml.cs">
       <DependentUpon>Viewer3D.xaml</DependentUpon>
@@ -228,6 +233,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="StatusWindow.resx">
       <DependentUpon>StatusWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StringsLocalization.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>StringsLocalization.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

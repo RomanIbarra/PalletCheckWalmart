@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Xml;
 
 namespace PalletCheck
 {
@@ -13,6 +13,7 @@ namespace PalletCheck
         public object ObjectLock = new object();
 
         public Dictionary<string, Dictionary<string, string>> Categories = new Dictionary<string, Dictionary<string, string>>();
+        public Dictionary<string, Dictionary<string, string>> XMLCategories = new Dictionary<string, Dictionary<string, string>>();
 
         public void SaveInHistory(string Reason)
         {
@@ -69,6 +70,37 @@ namespace PalletCheck
                 HasChangedSinceLastSave = false;
                 Logger.WriteBorder("ParamStorage::Load() COMPLETE");
                 SaveInHistory("LOADED");
+            }
+        }
+
+        public void LoadXML(string fileName)
+        {
+            XmlDocument file = new XmlDocument();
+            file.Load(fileName);
+
+            foreach (XmlNode node in file.DocumentElement.ChildNodes)
+            {
+                Categories.Add(node.Name, new Dictionary<string, string>());
+                foreach (XmlNode innerNode in node.ChildNodes)
+                {
+                    Categories[node.Name].Add(innerNode.Name, innerNode.InnerText);
+                }
+            }
+        }
+
+        public void LoadXMLParameters(string fileName, string cameraPosition)
+        {
+            XmlDocument paramsFile = new XmlDocument();
+            paramsFile.Load(fileName);
+            var node = paramsFile.SelectSingleNode("Parameters/" + cameraPosition);
+
+            foreach (XmlNode innerNode in node)
+            {
+                Categories.Add(innerNode.Name, new Dictionary<string, string>());
+                foreach (XmlNode param in innerNode.ChildNodes)
+                {
+                    Categories[innerNode.Name].Add(param.Name, param.InnerText);
+                }
             }
         }
 
@@ -239,24 +271,24 @@ namespace PalletCheck
 
         public  float GetPPIX()
         {
-            return (1 / (GetFloat("MM Per Pixel X") / 25.4f));
+            return (1 / (GetFloat("MMPerPixelX") / 25.4f));
         }
 
         public float GetPPIY()
         {
-            return (1 / (GetFloat("MM Per Pixel Y") / 25.4f));
+            return (1 / (GetFloat("MMPerPixelY") / 25.4f));
         }
 
         public   float GetPPIZ()
         {
-            return (1 / (GetFloat("MM Per Pixel Z") / 25.4f));
+            return (1 / (GetFloat("MMPerPixelZ") / 25.4f));
         }
 
         public float GetInchesX(string Field)
         {
             float f = GetFloat(Field);
             if (Field.Contains("(mm)")) f /= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel X") / 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MMPerPixelX") / 25.4f;
             return f;
         }
 
@@ -264,7 +296,7 @@ namespace PalletCheck
         {
             float f = GetFloat(Field);
             if (Field.Contains("(mm)")) f /= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Y") / 25.4f;
+            if (Field.Contains("(px)")) f *= GetFloat("MMPerPixelY") / 25.4f;
             return f;
         }
 
@@ -272,31 +304,31 @@ namespace PalletCheck
         {
             float f = GetFloat(Field);
             if (Field.Contains("(mm)")) f /= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Z") / 25.4f;
+            if (Field.Contains("_px)")) f *= GetFloat("MMPerPixelZ") / 25.4f;
             return f;
         }
 
         public float GetMMX(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f *= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel X");
+            if (Field.Contains("_in")) f *= 25.4f;
+            if (Field.Contains("_px")) f *= GetFloat("MMPerPixelX");
             return f;
         }
 
         public float GetMMY(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f *= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Y");
+            if (Field.Contains("_in")) f *= 25.4f;
+            if (Field.Contains("_px")) f *= GetFloat("MMPerPixelY");
             return f;
         }
 
         public  float GetMMZ(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f *= 25.4f;
-            if (Field.Contains("(px)")) f *= GetFloat("MM Per Pixel Z");
+            if (Field.Contains("_in")) f *= 25.4f;
+            if (Field.Contains("_px")) f *= GetFloat("MMPerPixelZ");
             return f;
         }
 
@@ -304,24 +336,24 @@ namespace PalletCheck
         public  int GetPixX(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel X") / 25.4f);
-            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel X");
+            if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelX") / 25.4f);
+            if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelX");
             return (int)f;
         }
 
         public  int GetPixY(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel Y") / 25.4f);
-            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel Y");
+            if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelY") / 25.4f);
+            if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelY");
             return (int)f;
         }
 
         public  int GetPixZ(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("(in)")) f /= (GetFloat("MM Per Pixel Z") / 25.4f);
-            if (Field.Contains("(mm)")) f /= GetFloat("MM Per Pixel Z");
+            if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelZ") / 25.4f);
+            if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelZ");
             return (int)f;
         }
 

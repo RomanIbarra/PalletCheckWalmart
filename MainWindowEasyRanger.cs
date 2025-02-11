@@ -1,33 +1,16 @@
 ﻿using Microsoft.Win32;
+using Sick.EasyRanger;
+using Sick.EasyRanger.Base;
 using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using PalletCheck.Controls;
-using System.IO;
-using System.Diagnostics;
+
 using static PalletCheck.Pallet;
-using Sick.GenIStream;
-using IFrame = Sick.GenIStream.IFrame;
-using Frame = Sick.GenIStream.Frame;
-using System.Threading;
-using System.Collections.Concurrent;
-using System.Data;
-using System.Runtime.CompilerServices;
-using static ScottPlot.Plottable.PopulationPlot;
-using Sick.EasyRanger;
-using Sick.EasyRanger.Controls;
-using Sick.EasyRanger.Base;
-using Sick.EasyRanger.Controls.Common;
-using Sick.StreamUI.ImageFormat;
-using System.Threading.Tasks;
-using System.Windows.Shapes;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using System.Runtime.InteropServices.ComTypes;
+
 namespace PalletCheck
 {
     public partial class MainWindow : Window
@@ -52,7 +35,6 @@ namespace PalletCheck
             var viewer = (position == PositionOfPallet.Left) ? ViewerLeft : ViewerRight;
             //List<Board> CurrentBlist = (position == PositionOfPallet.Left) ? BListLeft.ToList() : BListRight.ToList();
             
-
             Pallet P = new Pallet(null, null, position);
             P.BList = new List<Board>();
             if (position == PositionOfPallet.Left)
@@ -77,21 +59,21 @@ namespace PalletCheck
                 var paramStorage = position == PositionOfPallet.Left ? ParamStorageLeft : ParamStorageRight;
             double[] BlockHeight = new double[3];
             double[] BlockWidth = new double[3];
-            BlockHeight[0] = paramStorage.GetFloat("BlockHeight1(mm)");
-            BlockHeight[1] = paramStorage.GetFloat("BlockHeight2(mm)");
-            BlockHeight[2] = paramStorage.GetFloat("BlockHeight3(mm)");
-            BlockWidth[0] = paramStorage.GetFloat("BlockWidth_1(mm)");
-            BlockWidth[1] = paramStorage.GetFloat("BlockWidth_2(mm)");
-            BlockWidth[2] = paramStorage.GetFloat("BlockWidth_3(mm)");
-            double SideLength = paramStorage.GetFloat("SideLength(mm)");
-            double AngleThresholdDegree = paramStorage.GetFloat("AngleThresholdDegree(°)");
-            double MissingChunkThreshold = paramStorage.GetFloat("MissingChunkHeightDeviationThreshold(mm)");
-            double MissingBlockPercentage = paramStorage.GetFloat("MissingBlockMinimumRequiredAreaPercentage(%)");
-            int ForkClearancePercentage = paramStorage.GetInt("ForkClearancePercentage(%)");
-            int RefTop = paramStorage.GetInt("Top");
-            int RefBottom = paramStorage.GetInt("Bottom");
-            int CropX = paramStorage.GetInt("CropX");  //new for Clearance
-            double NailHeight = paramStorage.GetFloat("ProtrudingNailHeight");
+            BlockHeight[0] = paramStorage.GetFloat(StringsLocalization.BlockHeight1);
+            BlockHeight[1] = paramStorage.GetFloat(StringsLocalization.BlockHeight2);
+            BlockHeight[2] = paramStorage.GetFloat(StringsLocalization.BlockHeight3);
+            BlockWidth[0] = paramStorage.GetFloat(StringsLocalization.BlockWidth1);
+            BlockWidth[1] = paramStorage.GetFloat(StringsLocalization.BlockWidth2);
+            BlockWidth[2] = paramStorage.GetFloat(StringsLocalization.BlockWidth3);
+            double SideLength = paramStorage.GetFloat(StringsLocalization.SideLength);
+            double AngleThresholdDegree = paramStorage.GetFloat(StringsLocalization.AngleThresholdDegree);
+            double MissingChunkThreshold = paramStorage.GetFloat(StringsLocalization.MissingChunkHeightDeviationThreshold);
+            double MissingBlockPercentage = paramStorage.GetFloat(StringsLocalization.MissingBlockMinimumRequiredAreaPercentage);
+            int ForkClearancePercentage = paramStorage.GetInt(StringsLocalization.ForkClearancePercentage);
+            int RefTop = paramStorage.GetInt(StringsLocalization.Top);
+            int RefBottom = paramStorage.GetInt(StringsLocalization.Bottom);
+            int CropX = paramStorage.GetInt(StringsLocalization.CropX);  //new for Clearance
+            double NailHeight = paramStorage.GetFloat(StringsLocalization.ProtrudingNailHeight);
             try
             {
                 env.SetInteger("InputRefTop", RefTop);
@@ -265,10 +247,7 @@ namespace PalletCheck
         {
             _FilenameDateTime = null;
             _DirectoryDateHour = null;
- 
         }
-
-
 
         private void SaveAllFrames()
         {
@@ -341,43 +320,36 @@ namespace PalletCheck
         private void LoadFile(string buttonContent, Action<string> loadAction, TextBlock palletTextName, PositionOfPallet position)
         {
             Logger.ButtonPressed(buttonContent);
-
-            // 创建并配置 OpenFileDialog
             OpenFileDialog OFD = new OpenFileDialog
             {
-                Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*", // 设置文件过滤器，支持 XML 和所有文件
-                InitialDirectory = MainWindow.RecordingRootDir,       // 设置初始目录
-                Title = "Select an XML File"                           // 设置对话框标题
+                Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*",
+                InitialDirectory = MainWindow.RecordingRootDir,       // Setting the initial catalog
+                Title = "Select an XML File"           
             };
 
             if (OFD.ShowDialog() == true)
             {
                 try
                 {
-                    // 加载 XML 文件
                     string filePath = OFD.FileName;
                     loadAction(filePath);
-                    UpdateTextBlock(palletTextName, filePath);
-                  
+                    UpdateTextBlock(palletTextName, filePath);               
                 }
+
                 catch (Exception ex)
                 {
-                    // 捕获和记录异常
                     Logger.WriteLine($"Error loading file: {ex.Message}");
                 }
             }
+
             else
             {
-                // 记录取消操作
                 Logger.ButtonPressed("File dialog cancelled by user.");
             }
 
-
             Task.Run(() => ProcessMeasurement((result) =>
             {
-
             }, position));
         }
-
     }
 }
