@@ -1,0 +1,432 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="H2MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_H2MaxAllowedMissingWood</value>
+  </data>
+  <data name="H2MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_H2MissingChunkMinimumLength</value>
+  </data>
+  <data name="H2MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_H2MissingChunkMinimumWidth</value>
+  </data>
+  <data name="H2NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_H2NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="H3MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_H3MaxAllowedMissingWood</value>
+  </data>
+  <data name="H3MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_H3MissingChunkMinimumLength</value>
+  </data>
+  <data name="H3MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_H3MissingChunkMinimumWidth</value>
+  </data>
+  <data name="H3NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_H3NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="H4MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_H4MaxAllowedMissingWood</value>
+  </data>
+  <data name="H4MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_H4MissingChunkMinimumLength</value>
+  </data>
+  <data name="H4MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_H4MissingChunkMinimumWidth</value>
+  </data>
+  <data name="H4NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_H4NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="H5MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_H5MaxAllowedMissingWood</value>
+  </data>
+  <data name="H5MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_H5MissingChunkMinimumLength</value>
+  </data>
+  <data name="H5MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_H5MissingChunkMinimumWidth</value>
+  </data>
+  <data name="H5NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_H5NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="H6MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_H6MaxAllowedMissingWood</value>
+  </data>
+  <data name="H6MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_H6MissingChunkMinimumLength</value>
+  </data>
+  <data name="H6MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_H6MissingChunkMinimumWidth</value>
+  </data>
+  <data name="H6NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_H6NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="LeadingBoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>BN_LeadingBoardMinimumWidthAcrossLength</value>
+  </data>
+  <data name="LeadingMaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_LeadingMaxAllowedMissingWood</value>
+  </data>
+  <data name="LeadingMissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_LeadingMissingChunkMinimumLength</value>
+  </data>
+  <data name="LeadingMissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_LeadingMissingChunkMinimumWidth</value>
+  </data>
+  <data name="LeadingNarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_LeadingNarrowBoardMinimumWidth</value>
+  </data>
+  <data name="MaxNailHeight_mm" xml:space="preserve">
+    <value>RN_MaxNailHeight_mm</value>
+  </data>
+  <data name="UI_Title" xml:space="preserve">
+    <value>Pallet Check POC</value>
+  </data>
+  <data name="TrailingMaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_TrailingMaxAllowedMissingWood</value>
+  </data>
+  <data name="TrailingMissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_TrailingMissingChunkMinimumLength</value>
+  </data>
+  <data name="TrailingMissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_TrailingMissingChunkMinimumWidth</value>
+  </data>
+  <data name="TrailingNarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_TrailingNarrowBoardMinimumWidth</value>
+  </data>
+  <data name="RaisedBoardMaximumHeight" xml:space="preserve">
+    <value>RB_RaisedBoardMaximumHeight</value>
+  </data>
+  <data name="RaisedBoardWidth" xml:space="preserve">
+    <value>RB_RaisedBoardWidth</value>
+  </data>
+  <data name="MinBoardLen" xml:space="preserve">
+    <value>SH_MinBoardLen</value>
+  </data>
+  <data name="RawCaptureROILeft_px" xml:space="preserve">
+    <value>RawCaptureROILeft_px</value>
+  </data>
+  <data name="RawCaptureROIRight_px" xml:space="preserve">
+    <value>RawCaptureROIRight_px</value>
+  </data>
+  <data name="RawCaptureROITop_px" xml:space="preserve">
+    <value>RawCaptureROITop_px</value>
+  </data>
+  <data name="RawCaptureROIBottom_px" xml:space="preserve">
+    <value>RawCaptureROIBottom_px</value>
+  </data>
+  <data name="RawCaptureROIMaxZ_px" xml:space="preserve">
+    <value>RawCaptureROIMaxZ_px</value>
+  </data>
+  <data name="RawCaptureROIMinZ_px" xml:space="preserve">
+    <value>RawCaptureROIMinZ_px</value>
+  </data>
+  <data name="MMPerPixelX" xml:space="preserve">
+    <value>MMPerPixelX</value>
+  </data>
+  <data name="MMPerPixelY" xml:space="preserve">
+    <value>MMPerPixelY</value>
+  </data>
+  <data name="MMPerPixelZ" xml:space="preserve">
+    <value>MMPerPixelZ</value>
+  </data>
+  <data name="NailConfirmationsRequired" xml:space="preserve">
+    <value>RN_NailConfirmationsRequired</value>
+  </data>
+  <data name="NailNeighborSamplePoints" xml:space="preserve">
+    <value>RN_NailNeighborSamplePoints</value>
+  </data>
+  <data name="NailNeighborSampleRadius" xml:space="preserve">
+    <value>RN_NailNeighborSampleRadius</value>
+  </data>
+  <data name="NailConfirmSurfaceRadius" xml:space="preserve">
+    <value>RN_NailConfirmSurfaceRadius</value>
+  </data>
+  <data name="NailConfirmHeadInnerRadius" xml:space="preserve">
+    <value>RN_NailConfirmHeadInnerRadius</value>
+  </data>
+  <data name="NailConfirmHeadOuterRadius" xml:space="preserve">
+    <value>RN_NailConfirmHeadOuterRadius</value>
+  </data>
+  <data name="CrackTrackerBlockSize" xml:space="preserve">
+    <value>CrackTrackerBlockSize</value>
+  </data>
+  <data name="CrackTrackerMinPct" xml:space="preserve">
+    <value>CrackTrackerMinPct</value>
+  </data>
+  <data name="CrackTrackerMinDelta" xml:space="preserve">
+    <value>CrackTrackerMinDelta</value>
+  </data>
+  <data name="AutoStartCapturing" xml:space="preserve">
+    <value>AutoStartCapturing</value>
+  </data>
+  <data name="TopHXBoardWidth_in" xml:space="preserve">
+    <value>TopH{0}BoardWidth_in</value>
+  </data>
+  <data name="HBoardLength_in" xml:space="preserve">
+    <value>HBoardLength_in</value>
+  </data>
+  <data name="Rotate90" xml:space="preserve">
+    <value>Rotate90</value>
+  </data>
+  <data name="HBoardEdgeCrackExclusionZonePercentage" xml:space="preserve">
+    <value>HBoardEdgeCrackExclusionZonePercentage</value>
+  </data>
+  <data name="VBoardEdgeCrackExclusionZonePercentage" xml:space="preserve">
+    <value>VBoardEdgeCrackExclusionZonePercentage</value>
+  </data>
+  <data name="BoardCenterCrackExclusionZonePercentage" xml:space="preserve">
+    <value>BoardCenterCrackExclusionZonePercentage</value>
+  </data>
+  <data name="V1NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_V1NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="V1MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_V1MissingChunkMinimumLength</value>
+  </data>
+  <data name="V1MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_V1MissingChunkMinimumWidth</value>
+  </data>
+  <data name="V1MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_V1MaxAllowedMissingWood</value>
+  </data>
+  <data name="V2NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_V2NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="V2MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_V2MissingChunkMinimumWidth</value>
+  </data>
+  <data name="V2MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_V2MissingChunkMinimumLength</value>
+  </data>
+  <data name="V2MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_V2MaxAllowedMissingWood</value>
+  </data>
+  <data name="V3NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_V3NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="V3MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_V3MissingChunkMinimumLength</value>
+  </data>
+  <data name="V3MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_V3MissingChunkMinimumWidth</value>
+  </data>
+  <data name="V3MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_V3MaxAllowedMissingWood</value>
+  </data>
+  <data name="H1NarrowBoardMinimumWidth" xml:space="preserve">
+    <value>BN_H1NarrowBoardMinimumWidth</value>
+  </data>
+  <data name="H1MissingChunkMinimumLength" xml:space="preserve">
+    <value>BN_H1MissingChunkMinimumLength</value>
+  </data>
+  <data name="H1MissingChunkMinimumWidth" xml:space="preserve">
+    <value>BN_H1MissingChunkMinimumWidth</value>
+  </data>
+  <data name="H1MaxAllowedMissingWood" xml:space="preserve">
+    <value>MW_H1MaxAllowedMissingWood</value>
+  </data>
+  <data name="HBoardWidth_in" xml:space="preserve">
+    <value>HBoardWidth_in</value>
+  </data>
+  <data name="VBoardWidth_in" xml:space="preserve">
+    <value>VBoardWidth_in</value>
+  </data>
+  <data name="VBoardLength_in" xml:space="preserve">
+    <value>VBoardLength_in</value>
+  </data>
+  <data name="StartX0" xml:space="preserve">
+    <value>StartX0</value>
+  </data>
+  <data name="EndX0" xml:space="preserve">
+    <value>EndX0</value>
+  </data>
+  <data name="OffsetZ0" xml:space="preserve">
+    <value>OffsetZ0</value>
+  </data>
+  <data name="StartX1" xml:space="preserve">
+    <value>StartX1</value>
+  </data>
+  <data name="EndX1" xml:space="preserve">
+    <value>EndX1</value>
+  </data>
+  <data name="OffsetZ1" xml:space="preserve">
+    <value>OffsetZ1</value>
+  </data>
+  <data name="StartX2" xml:space="preserve">
+    <value>StartX2</value>
+  </data>
+  <data name="EndX2" xml:space="preserve">
+    <value>EndX2</value>
+  </data>
+  <data name="OffsetZ2" xml:space="preserve">
+    <value>OffsetZ2</value>
+  </data>
+  <data name="AngleThresholdDegree" xml:space="preserve">
+    <value>AngleThresholdDegree</value>
+  </data>
+  <data name="MissingChunkHeightDeviationThreshold" xml:space="preserve">
+    <value>MissingChunkHeightDeviationThreshold</value>
+  </data>
+  <data name="MissingBlockMinimumRequiredAreaPercentage" xml:space="preserve">
+    <value>MissingBlockMinimumRequiredAreaPercentage</value>
+  </data>
+  <data name="ProtrudingNailHeight" xml:space="preserve">
+    <value>ProtrudingNailHeight</value>
+  </data>
+  <data name="ForkClearancePercentage" xml:space="preserve">
+    <value>ForkClearancePercentage</value>
+  </data>
+  <data name="Notes1" xml:space="preserve">
+    <value>Notes1</value>
+  </data>
+  <data name="Notes2" xml:space="preserve">
+    <value>Notes2</value>
+  </data>
+  <data name="Top" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="Bottom" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="CropX" xml:space="preserve">
+    <value>CropX</value>
+  </data>
+  <data name="BlockHeight1" xml:space="preserve">
+    <value>BlockHeight1</value>
+  </data>
+  <data name="BlockHeight2" xml:space="preserve">
+    <value>BlockHeight2</value>
+  </data>
+  <data name="BlockHeight3" xml:space="preserve">
+    <value>BlockHeight3</value>
+  </data>
+  <data name="BlockWidth1" xml:space="preserve">
+    <value>BlockWidth1</value>
+  </data>
+  <data name="BlockWidth2" xml:space="preserve">
+    <value>BlockWidth2</value>
+  </data>
+  <data name="BlockWidth3" xml:space="preserve">
+    <value>BlockWidth3</value>
+  </data>
+  <data name="SideLength" xml:space="preserve">
+    <value>SideLength</value>
+  </data>
+</root>

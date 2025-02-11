@@ -127,7 +127,11 @@ namespace PalletCheck
             if (ParamStorageGeneral.GetInt("Auto Start Capturing") == 1)
             {
                 await Task.Delay(2000); // Wait for 2 seconds
-                btnStart_Click(null, null);
+                this.Dispatcher.Invoke(() =>
+                {
+                    btnStart_Click(null, null);
+                });
+                
             }
         }
 

@@ -1,49 +1,30 @@
 ﻿using Microsoft.Win32;
+using PalletCheck.Controls;
+using Sick.EasyRanger;
+using Sick.EasyRanger.Base;
+using Sick.GenIStream;
+using Sick.StreamUI.ImageFormat;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using PalletCheck.Controls;
-using System.IO;
-using System.Diagnostics;
-using static PalletCheck.Pallet;
-using Sick.GenIStream;
-using IFrame = Sick.GenIStream.IFrame;
-using Frame = Sick.GenIStream.Frame;
-using System.Threading;
-using System.Collections.Concurrent;
-using System.Data;
-using System.Runtime.CompilerServices;
-using static ScottPlot.Plottable.PopulationPlot;
-using Sick.EasyRanger;
-using Sick.EasyRanger.Controls;
-using Sick.EasyRanger.Base;
-using Sick.EasyRanger.Controls.Common;
-using Sick.StreamUI.ImageFormat;
-using System.Threading.Tasks;
 using System.Windows.Shapes;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using MahApps.Metro.Controls;
-using Sick.StreamUI.Viewer;
-using System.Windows.Media.Animation;
-using Sick.StreamUI.FrameSave;
-using System.Security.Cryptography;
 
-
-
-
+using static PalletCheck.Pallet;
+using IFrame = Sick.GenIStream.IFrame;
 
 
 namespace PalletCheck
 {
     using static FromGenIStreamFrameConverter;
-    using static PalletCheck.PalletDefect;
-    using static Sick.GenIStream.FrameGrabber;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -55,9 +36,7 @@ namespace PalletCheck
         Left = 2,
         Right=3
     }
-    /// <summary>
-    /// Jack Add New Result
-    /// </summary>
+
     public enum InspectionResult
     {
         PASS,
@@ -76,7 +55,6 @@ namespace PalletCheck
         public static ParamStorage ParamStorageBottom { get; set; } = new ParamStorage();
         public static ParamStorage ParamStorageLeft { get; set; } = new ParamStorage();
         public static ParamStorage ParamStorageRight { get; set; } = new ParamStorage();
-
         string _FilenameDateTime { get; set; }
         string _DirectoryDateHour { get; set; }
 
@@ -233,6 +211,7 @@ namespace PalletCheck
 
         public static string _LastUsedParamFile = "";
         private static string _lastUsedParamFileName = "LastUsedParamFile.txt";
+        public static string lastUsedConfigFile;
         public static string LastUsedParamFile
         {
             get
@@ -399,18 +378,19 @@ namespace PalletCheck
         private void LoadParameters(PositionOfPallet position)
         {
             // Construct the file path based on the enum value
-            string lastUsedParamFilePath = HistoryRootDir + $"\\LastUsedParamFile{position}.txt";
-            string defaultParamFilePath = ConfigRootDir + "\\DefaultParams.txt";
-            string lastUsedParamFile = null;
+            //string lastUsedParamFilePath = HistoryRootDir + $"\\LastUsedParamFile{position}.txt"; Used for load txt files
+            string lastUsedParamFilePath = HistoryRootDir + "\\LastUsedParamFile.txt";
+            string defaultParamFilePath = ConfigRootDir + "\\DefaultParams.xml";
 
             // Check if the history file exists
             if (File.Exists(lastUsedParamFilePath))
             {
-                lastUsedParamFile = File.ReadAllText(lastUsedParamFilePath);
+                string lastUsedParamFile = File.ReadAllText(lastUsedParamFilePath);
                 // If the parameter file referenced in the history exists, load it
                 if (File.Exists(lastUsedParamFile))
                 {
-                    GetParamStorageByPosition(position).Load(lastUsedParamFile);
+                    //GetParamStorageByPosition(position).Load(lastUsedParamFile);
+                    GetParamStorageByPosition(position).LoadXMLParameters(lastUsedParamFile, position.ToString());
                 }
                 else
                 {
@@ -420,6 +400,7 @@ namespace PalletCheck
             else
             {
                 // Otherwise, load the default parameters
+                Logger.WriteLine("No Config file found. DefaultParams loaded.");
                 GetParamStorageByPosition(position).Load(defaultParamFilePath);
             }
         }
@@ -445,37 +426,33 @@ namespace PalletCheck
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
-
-
-            this.Title = "PalletCheck Stitching Inside " + Version + " - " + SiteName;
+            this.Title = StringsLocalization.UI_Title;
+            //this.Title = "PalletCheck Stitching Inside " + Version + " - " + SiteName;
             StatusStorage.Set("Version Number", Version);
 
             ButtonBackgroundBrush = btnStart.Background;
 
-
-            // Try to load starting parameters
-            if (File.Exists(HistoryRootDir + "\\LastUsedParamFileGeneral.txt"))
+            // Load starting parameters
+            if (File.Exists(HistoryRootDir + "\\LastUsedConfigFile.txt"))
             {
-                _LastUsedParamFile = File.ReadAllText(HistoryRootDir + "\\LastUsedParamFileGeneral.txt");
-                if (File.Exists(_LastUsedParamFile))
+                lastUsedConfigFile = File.ReadAllText(HistoryRootDir + "\\LastUsedConfigFile.txt");
+                if (File.Exists(lastUsedConfigFile))
                 {
-                    ParamStorageGeneral.Load(_LastUsedParamFile);
+                    ParamStorageGeneral.LoadXML(lastUsedConfigFile);;
                 }
                 else
                     MessageBox.Show("Can't open the last known config file. It was supposed to be at " + _LastUsedParamFile);
             }
             else
             {
-                ParamStorageGeneral.Load(ConfigRootDir + "\\DefaultParams.txt");
+                Logger.WriteLine("No Config file found. DefaultParams loaded.");
+                ParamStorageGeneral.Load(ConfigRootDir + "\\DefaultParams.xml");
             }
+
             LoadParameters(PositionOfPallet.Top);
             LoadParameters(PositionOfPallet.Bottom);
             LoadParameters(PositionOfPallet.Left);
             LoadParameters(PositionOfPallet.Right);
-
-
-
 
             // Open PLC connection port
             int Port = ParamStorageGeneral.GetInt("TCP Server Port");

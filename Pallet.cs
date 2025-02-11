@@ -2,21 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Text;
 using System.Threading;
-using System.Windows.Threading;
 using System.Threading.Tasks;
-using PalletCheck.Controls;
-using System.Diagnostics;
-using static ScottPlot.Plottable.PopulationPlot;
 using Sick.EasyRanger.Base;
-using Sick.StreamUI.FrameSave.Ply;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
 using static PalletCheck.MainWindow;
-using System.Runtime.Remoting.Contexts;
-using System.Drawing;
 
 namespace PalletCheck
 {
@@ -41,10 +30,6 @@ namespace PalletCheck
         int MaxHighThreads;
         int MaxLowThreads;
         object LockObject = new object();
-
-
-        
-
         public PalletProcessor(int MaxHighThreads, int MaxLowThreads)
         {
             this.MaxHighThreads = MaxHighThreads;
@@ -123,11 +108,7 @@ namespace PalletCheck
                     }
                 }
             }
-
-
         }
-
-
 
         public void ProcessPalletLowPriority(Pallet P, Pallet.palletAnalysisCompleteCB Callback, PositionOfPallet position)
         {
@@ -198,20 +179,15 @@ namespace PalletCheck
     }
 
 
-
     public class Pallet
     {
         public static bool Busy = false;
         public static bool Shutdown = false;
-
-        //public bool NotLive = false;
         public DateTime CreateTime;
         public DateTime AnalysisStartTime;
         public DateTime AnalysisStopTime;
         public double AnalysisTotalSec;
-
         public bool UseBackgroundThread;
-
 
         public enum InspectionState
         {
@@ -269,20 +245,6 @@ namespace PalletCheck
         public List<CaptureBuffer> CBList = new List<CaptureBuffer>();
 
         delegate CaptureBuffer addBufferCB(string s, UInt16[] buf);
-
-        //public static Board BL1 = new Board("Block1", PalletDefect.DefectLocation.Left_B1, true, 0, 0);
-        //public static Board BL2 = new Board("Block2", PalletDefect.DefectLocation.Left_B2, true, 0, 0);
-        //public static Board BL3 = new Board("Block3", PalletDefect.DefectLocation.Left_B3, true, 0, 0);
-
-        //public static Board BR1 = new Board("Block1", PalletDefect.DefectLocation.Right_B1, true, 0, 0);
-        //public static Board BR2 = new Board("Block2", PalletDefect.DefectLocation.Right_B2, true, 0, 0);
-        //public static Board BR3 = new Board("Block3", PalletDefect.DefectLocation.Right_B3, true, 0, 0);
-
-
-        //public static List<Board> BListLeft = new List<Board>();
-        //public static List<Board> BListRight = new List<Board>();
-        
-
 
         public delegate void palletAnalysisCompleteCB(Pallet P,PositionOfPallet position);
         public event palletAnalysisCompleteCB OnAnalysisComplete_User;
@@ -360,19 +322,12 @@ namespace PalletCheck
         //    }
         //}
 
-
-        //=====================================================================
         public Pallet(CaptureBuffer RangeCV, CaptureBuffer ReflCB,PositionOfPallet positionOfPallet)
         {
             Original = RangeCV;
             ReflectanceCB = ReflCB;
             PoistionOfThisPallet = positionOfPallet;
             CreateTime = DateTime.Now;
-            //Filename = String.Format("{0:0000}{1:00}{2:00}_{3:00}{4:00}{5:00}.XML",
-            //                                 CreateTime.Year, CreateTime.Month, CreateTime.Day, CreateTime.Hour, CreateTime.Minute, CreateTime.Second);
-
-            //Directory = String.Format("{0:0000}{1:00}{2:00}_{3:00}",
-            //                                 CreateTime.Year, CreateTime.Month, CreateTime.Day, CreateTime.Hour);
         }
 
         public Pallet(string Filename, PositionOfPallet position)
@@ -389,30 +344,14 @@ namespace PalletCheck
             Denoised = null;
         }
 
-        //=====================================================================
-
-
-
-
-
-        //=====================================================================
-        /// <summary>
-        /// DoAnalysis
-        /// </summary>
         public void DoAnalysisBlocking(PositionOfPallet position)
         {
             AnalysisStartTime = DateTime.Now;
             Busy = true;
             Logger.WriteLine("Pallet::DoAnalysis START");
-
-
-
-
             AddCaptureBuffer("Image", ReflectanceCB);
-
             Logger.WriteLine(String.Format("DoAnalysisBlocking: Original W,H  {0}  {0}", Original.Width, Original.Height));
             AddCaptureBuffer("Original", Original);
-
             //Denoised = DeNoise(Original, MainWindow.GetParamStorage(position));
             Denoised = DeNoiseEasyRanger(Original, position);
             if (Denoised == null)
@@ -423,7 +362,6 @@ namespace PalletCheck
 
             Logger.WriteLine(String.Format("DoAnalysisBlocking: Denoised W,H  {0}  {0}", Denoised.Width, Denoised.Height));
    
-
             
             IsolateAndAnalyzeSurfaces(Denoised, position);
            
@@ -436,21 +374,16 @@ namespace PalletCheck
             }
 
             // Final board size sanity check
-            int ExpWidH = (int)MainWindow.GetParamStorage(position).GetPixY("H Board Width (in)");
-            int ExpWidV1 = (int)MainWindow.GetParamStorage(position).GetPixX("V Board Width (in)");
-
-            //int ExpWidV2 = (int)ParamStorage.GetPixX("V2 Board Width (in)");  //Jack Delete
-
+            int ExpWidH = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.HBoardWidth_in);
+            int ExpWidV1 = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
 
             // Check for debris causing unusually wide boards
-
             if (position == PositionOfPallet.Top)
             {
                 for (int i = 0; i < 7; i++)
                 {
-                    string paramName = $"TopH{i + 1} Board Width (in)";
-                    ExpWidH = MainWindow.GetParamStorage(position).GetPixY(paramName);
-                   
+                    string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i + 1);
+                    ExpWidH = MainWindow.GetParamStorage(position).GetPixY(paramName);                 
 
                     if (BList[i].AllDefects.Count == 0)
                         continue;
@@ -462,7 +395,7 @@ namespace PalletCheck
                         SetDefectMarker(BList[i]);
                     }
 
-                    // 将当前 Board 添加到 CombinedBoards
+                    // Add the current Board to the CombinedBoards
                     lock (LockObjectCombine)
                     {
                         CombinedBoards.Add(BList[i]);
@@ -473,9 +406,8 @@ namespace PalletCheck
 
             if (position == PositionOfPallet.Bottom)
             {
-                string paramName = "H Board Width (in)";
-                ExpWidH = MainWindow.GetParamStorage(position).GetPixY(paramName);
-                ExpWidV1 = (int)MainWindow.GetParamStorage(position).GetPixX("V Board Width (in)");
+                ExpWidH = MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.HBoardWidth_in);
+                ExpWidV1 = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
                 for (int i = 3; i < 5; i++)
                 {
                     
@@ -490,7 +422,7 @@ namespace PalletCheck
                         SetDefectMarker(BList[i]);
                     }
 
-                    // 将当前 Board 添加到 CombinedBoards
+                    // Add the current Board to the CombinedBoards
                     lock (LockObjectCombine)
                     {
                         CombinedBoards.Add(BList[i]);
@@ -509,7 +441,7 @@ namespace PalletCheck
                             SetDefectMarker(BList[i]);
                         }
 
-                        // 将当前 Board 添加到 CombinedBoards
+                        // Add the current Board to the CombinedBoards
                         lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(BList[i]);
@@ -519,30 +451,16 @@ namespace PalletCheck
                 }
             }
 
-
-
-            // Jack  should considered in the future
-            //if (AllDefects.Count > 0)
-            //    CheckForInteriorDebris();
-
-
             State = AllDefects.Count > 0 ? InspectionState.Fail : InspectionState.Pass;
-
-
             Benchmark.Stop("Total");
-
             string Res = Benchmark.Report();
-
 
             //MainWindow.WriteLine(string.Format("Analysis took {0} ms\n\n", (Stop - Start).TotalMilliseconds));
             Busy = false;
             AnalysisStopTime = DateTime.Now;
             AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-            Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
-          
-
+            Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED  -  {0:0.000} sec", AnalysisTotalSec));      
         }
-
 
         private void CheckForInteriorDebris()
         {
@@ -582,12 +500,7 @@ namespace PalletCheck
                 AddDefect(BList[1], PalletDefect.DefectType.possible_debris, "Debris detected between H2 and H3");
                 SetDefectMarker(BList[1].BoundsP1.X + 50, BList[1].BoundsP2.Y + 50, BList[2].BoundsP2.X - 50, BList[2].BoundsP1.Y - 50);
             }
-
-
         }
-
-        //=====================================================================
-
 
         private CaptureBuffer DeNoiseEasyRanger(CaptureBuffer SourceCB, PositionOfPallet position)
         {
@@ -657,8 +570,6 @@ namespace PalletCheck
                 return null;
             }
 
-
-
             int leftEdge = paramStorage.GetInt("Raw Capture ROI Left (px)");
             int rightEdge = paramStorage.GetInt("Raw Capture ROI Right (px)");
             int clipMin = paramStorage.GetInt("Raw Capture ROI Min Z (px)");
@@ -706,14 +617,12 @@ namespace PalletCheck
             return CB;
         }
 
-        //=====================================================================
         void AddCaptureBuffer(string Name, CaptureBuffer CB)
         {
             CB.Name = Name;
             CBDict.Add(Name, CB);
             CBList.Add(CB);
         }
-
 
         //=====================================================================
         //void AddCaptureBuffer(string Name, UInt16[] Buf, out CaptureBufferBrowser CBB )
@@ -732,8 +641,8 @@ namespace PalletCheck
             UInt16[] Source = CB.Buf;
             UInt16[] Res = (UInt16[])CB.Buf.Clone();
 
-            int leftEdge = paramStorage.GetInt("Raw Capture ROI Left (px)");
-            int rightEdge = paramStorage.GetInt("Raw Capture ROI Right (px)");
+            int leftEdge = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px); 
+            int rightEdge = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px); 
 
             for (int i = 1; i < Res.Length - 1; i++)
             {
@@ -773,8 +682,8 @@ namespace PalletCheck
             //
 
              UInt16[] Source = SourceCB.Buf;
-            int LROI = paramStorage.GetInt("Raw Capture ROI Left (px)");
-            int RROI = paramStorage.GetInt("Raw Capture ROI Right (px)");
+            int LROI = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px);
+            int RROI = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px);
             //int MinZTh = ParamStorage.GetInt("Raw Capture ROI Min Z (px)");
             //int MaxZTh = ParamStorage.GetInt("Raw Capture ROI Max Z (px)");
 
@@ -836,50 +745,44 @@ namespace PalletCheck
         {
             // Jack Note // !!! Works directly with the buffer, starts from the bottom
             //
-if (SourceCB.Buf == null)
-{
-    throw new ArgumentNullException("SourceCB.Buf", "Source buffer cannot be null.");
-}
+            if (SourceCB.Buf == null)
+            {
+                throw new ArgumentNullException("SourceCB.Buf", "Source buffer cannot be null.");
+            }
 
-UInt16[] Source = SourceCB.Buf;
-int LROI = paramStorage.GetInt("Raw Capture ROI Left (px)");  // Left ROI boundary
-int RROI = paramStorage.GetInt("Raw Capture ROI Right (px)"); // Right ROI boundary
-int RequiredNonZeroCount = 10;  // Minimum number of non-zero pixels required
+            UInt16[] Source = SourceCB.Buf;
+            int LROI = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px);  // Left ROI boundary
+            int RROI = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px); // Right ROI boundary
+            int RequiredNonZeroCount = 10;  // Minimum number of non-zero pixels required
 
-// Traverse the image from the last row to the top
-for (int y = SourceCB.Height - 1; y >= 0; y--)
-{
-    int NonZeroCount = 0; // Count of non-zero pixels in the current row
+            // Traverse the image from the last row to the top
+            for (int y = SourceCB.Height - 1; y >= 0; y--)
+            {
+                int NonZeroCount = 0; // Count of non-zero pixels in the current row
 
-    // Traverse each pixel between the left and right ROI
-    for (int x = LROI; x < RROI; x++)
-    {
-        UInt16 Val = Source[y * SourceCB.Width + x];  // Get the value of the current pixel
+                // Traverse each pixel between the left and right ROI
+                for (int x = LROI; x < RROI; x++)
+                {
+                    UInt16 Val = Source[y * SourceCB.Width + x];  // Get the value of the current pixel
 
-        if (Val != 0)  // Increment count if the pixel is non-zero
-        {
-            NonZeroCount++;
+                    if (Val != 0)  // Increment count if the pixel is non-zero
+                    {
+                        NonZeroCount++;
+                    }
+
+                    // Stop checking further if the required count is reached
+                    if (NonZeroCount >= RequiredNonZeroCount)
+                    {
+                        return y;  // Return the current row if it meets the requirement
+                    }
+                }
+            }
+            // If no row satisfies the condition, return 0
+            return 0;
         }
-
-        // Stop checking further if the required count is reached
-        if (NonZeroCount >= RequiredNonZeroCount)
-        {
-            return y;  // Return the current row if it meets the requirement
-        }
-    }
-}
-
-// If no row satisfies the condition, return 0
-return 0;
-
-
-        }
-
-
 
         //=====================================================================
         // Jack Note: Get the top X
-
         private int FindTopX(CaptureBuffer SourceCB,ParamStorage paramStorage)
         {
             //
@@ -887,13 +790,12 @@ return 0;
             //
 
             UInt16[] Source = SourceCB.Buf;
-            int TROI = paramStorage.GetInt("Raw Capture ROI Top (px)");
-            int BROI = paramStorage.GetInt("Raw Capture ROI Bottom (px)");
+            int TROI = paramStorage.GetInt(StringsLocalization.RawCaptureROITop_px);
+            int BROI = paramStorage.GetInt(StringsLocalization.RawCaptureROIBottom_px);
             //int MinZTh = ParamStorage.GetInt("Raw Capture ROI Min Z (px)");
             //int MaxZTh = ParamStorage.GetInt("Raw Capture ROI Max Z (px)");
 
             int[] Hist = new int[100];
-
             int xlimit = Math.Min(999, (int)(SourceCB.Width / 2));
             for (int y = TROI; y < BROI; y += 10)
             {
@@ -953,12 +855,12 @@ return 0;
             int nCols = SourceCB.Width;
             ParamStorage paramStorage;
             paramStorage = MainWindow.GetParamStorage(position);
-            int LROI = paramStorage.GetInt("Raw Capture ROI Left (px)");//260px
-            int RROI = paramStorage.GetInt("Raw Capture ROI Right (px)"); //2440px
-            int LWid = paramStorage.GetPixX("V Board Width (in)");  //140mm
-            int RWid = paramStorage.GetPixX("V Board Width (in)");  //140mm
-            int HBoardWid = paramStorage.GetPixY("H Board Width (in)"); //140mm
-            int LBL = paramStorage.GetPixY("V Board Length (in)"); //1018mm
+            int LROI = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px);//260px
+            int RROI = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px); //2440px
+            int LWid = paramStorage.GetPixX(StringsLocalization.VBoardWidth_in);  //140mm
+            int RWid = paramStorage.GetPixX(StringsLocalization.VBoardWidth_in);  //140mm
+            int HBoardWid = paramStorage.GetPixY(StringsLocalization.HBoardWidth_in); //140mm
+            int LBL = paramStorage.GetPixY(StringsLocalization.VBoardLength_in); //1018mm
             int TopY = FindTopY(SourceCB, paramStorage);  // Jack Note: Find the first row that is not all black 
 
             BList = new List<Board>();
@@ -991,10 +893,10 @@ return 0;
                 int StartY = 370;
                 int EndY = BottomY - (int)(120 / SourceCB.yScale);
 
-                int ExpWidH = (int)MainWindow.GetParamStorage(position).GetPixY("H Board Width (in)");
-                int ExpLengthH = (int)MainWindow.GetParamStorage(position).GetPixX("H Board Length (in)");
-                int ExpWidV = (int)MainWindow.GetParamStorage(position).GetPixX("V Board Width (in)");
-                int ExpLengthV = (int)MainWindow.GetParamStorage(position).GetPixY("V Board Length (in)");
+                int ExpWidH = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.HBoardWidth_in);
+                int ExpLengthH = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.HBoardLength_in);
+                int ExpWidV = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
+                int ExpLengthV = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.VBoardLength_in);
 
                 Board V1 = ProbeHorizontallyRotate90(ProbeCB, "V1", PalletDefect.DefectLocation.B_V1, StartY, EndY, 1, StartX1, EndX1, paramStorage);
                 Board V2 = ProbeHorizontallyRotate90(ProbeCB, "V2", PalletDefect.DefectLocation.B_V2, StartY, EndY, 1, StartX2, EndX2, paramStorage);
@@ -1012,29 +914,29 @@ return 0;
                 H1.ExpWidth = ExpWidH ;
                 H2.ExpWidth = ExpWidH;
 
-                V1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) V1 Narrow Board Minimum Width (in)");
-                V2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) V2 Narrow Board Minimum Width (in)");
-                V3.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) V3 Narrow Board Minimum Width (in)");
-                H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H1 Narrow Board Minimum Width (in)");
-                H2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H2 Narrow Board Minimum Width (in)");
+                V1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V1NarrowBoardMinimumWidth);
+                V2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V2NarrowBoardMinimumWidth);
+                V3.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V3NarrowBoardMinimumWidth);
+                H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1NarrowBoardMinimumWidth);
+                H2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2NarrowBoardMinimumWidth);
 
-                V1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) V1 Missing Chunk Minimum Width (in)");
-                V2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) V2 Missing Chunk Minimum Width (in)");
-                V3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) V3 Missing Chunk Minimum Width (in)");
-                H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H1 Missing Chunk Minimum Width (in)");
-                H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H2 Missing Chunk Minimum Width (in)");
+                V1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V1MissingChunkMinimumWidth);
+                V2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V2MissingChunkMinimumWidth);
+                V3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V3MissingChunkMinimumWidth);
+                H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MissingChunkMinimumWidth);
+                H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumWidth);
 
-                V1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) V1 Missing Chunk Minimum Length (in)");
-                V2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) V2 Missing Chunk Minimum Length (in)");
-                V3.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) V3 Missing Chunk Minimum Length (in)");
-                H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H1 Missing Chunk Minimum Length (in)");
-                H2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H2 Missing Chunk Minimum Length (in)");
+                V1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V1MissingChunkMinimumLength);
+                V2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V2MissingChunkMinimumLength);
+                V3.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V3MissingChunkMinimumLength);
+                H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MissingChunkMinimumLength);
+                H2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumLength);
 
-                float V1maxallowabe = MainWindow.GetParamStorage(position).GetFloat("(MW) V1 Max Allowed Missing Wood (%)");
-                float V2maxallowabe = MainWindow.GetParamStorage(position).GetFloat("(MW) V2 Max Allowed Missing Wood (%)");
-                float V3maxallowabe = MainWindow.GetParamStorage(position).GetFloat("(MW) V3 Max Allowed Missing Wood (%)");
-                float H1maxallowabe = MainWindow.GetParamStorage(position).GetFloat("(MW) H1 Max Allowed Missing Wood (%)");
-                float H2maxallowabe = MainWindow.GetParamStorage(position).GetFloat("(MW) H2 Max Allowed Missing Wood (%)");
+                float V1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V1MaxAllowedMissingWood);
+                float V2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V2MaxAllowedMissingWood);
+                float V3maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V3MaxAllowedMissingWood);
+                float H1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MaxAllowedMissingWood);
+                float H2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MaxAllowedMissingWood);
 
                 V1.MaxAllowable = V1maxallowabe;
                 V2.MaxAllowable = V2maxallowabe; 
@@ -1125,11 +1027,11 @@ return 0;
                     int numberOfWidths = 7; // Total Board
                     int[] expWidths = new int[numberOfWidths]; // for expected width
                                                                // ：ExpHeight
-                    int ExpHeight = (int)MainWindow.GetParamStorage(position).GetPixX("H Board Length (in)");
+                    int ExpHeight = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.HBoardLength_in);
 
                     for (int i = 1; i <= numberOfWidths; i++)
                     {
-                        string paramName = $"TopH{i} Board Width (in)";
+                        string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i);
                         expWidths[i - 1] = (int)MainWindow.GetParamStorage(position).GetPixY(paramName);
                     }
 
@@ -1166,50 +1068,47 @@ return 0;
                     //H6.MinWidth = expWidths[5] * 0.7;
                     //H7.MinWidth = expWidths[6] * 0.7;
 
-
                     // Assigning minimum widths for narrow boards
-                    H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) Leading Narrow Board Minimum Width (in)");
-                    H7.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) Trailing Narrow Board Minimum Width (in)");
-                    H2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H2 Narrow Board Minimum Width (in)");
-                    H3.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H3 Narrow Board Minimum Width (in)");
-                    H4.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H4 Narrow Board Minimum Width (in)");
-                    H5.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H5 Narrow Board Minimum Width (in)");
-                    H6.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat("(BN) H6 Narrow Board Minimum Width (in)");
+                    H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingNarrowBoardMinimumWidth);
+                    H7.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingNarrowBoardMinimumWidth);
+                    H2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2NarrowBoardMinimumWidth);
+                    H3.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3NarrowBoardMinimumWidth);
+                    H4.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4NarrowBoardMinimumWidth);
+                    H5.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5NarrowBoardMinimumWidth);
+                    H6.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
 
                     // Assigning minimum widths for missing chunks
-                    H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) Leading Missing Chunk Minimum Width (in)");
-                    H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) Trailing Missing Chunk Minimum Width (in)");
-                    H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H2 Missing Chunk Minimum Width (in)");
-                    H3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H3 Missing Chunk Minimum Width (in)");
-                    H4.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H4 Missing Chunk Minimum Width (in)");
-                    H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H5 Missing Chunk Minimum Width (in)");
-                    H6.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H6 Missing Chunk Minimum Width (in)");
+                    H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMissingChunkMinimumWidth);
+                    H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumWidth);
+                    H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumWidth);
+                    H3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumWidth);
+                    H4.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumWidth);
+                    H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth);
+                    H6.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
 
                     // Assigning minimum lengths for missing chunks
-                    H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) Leading Missing Chunk Minimum Length (in)");
-                    H7.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) Trailing Missing Chunk Minimum Length (in)");
-                    H2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H2 Missing Chunk Minimum Length (in)");
-                    H3.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H3 Missing Chunk Minimum Length (in)");
-                    H4.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H4 Missing Chunk Minimum Length (in)");
-                    H5.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H5 Missing Chunk Minimum Length (in)");
-                    H6.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat("(BN) H6 Missing Chunk Minimum Length (in)");
-
-
+                    H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMissingChunkMinimumLength);
+                    H7.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumLength);
+                    H2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumLength);
+                    H3.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumLength);
+                    H4.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumLength);
+                    H5.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumLength);
+                    H6.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
 
                     //  20250110 New Added for Missing wood across length //H Board lengs parameters on pallet dimension file
-                    H1.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat("(BN) Leading Board Minimum Width Across Length (in)");
-                    H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat("(BN) Leading Board Minimum Width Across Length (in)");
-                    H1.ExpLength = MainWindow.GetParamStorage(position).GetFloat("H Board Length (in)");
-                    H7.ExpLength = MainWindow.GetParamStorage(position).GetFloat("H Board Length (in)");
+                    H1.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+                    H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+                    H1.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H7.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
 
                     // Assigning maximum allowable missing wood percentages
-                    float maxallowableLeading = MainWindow.GetParamStorage(position).GetFloat("(MW) Leading Max Allowed Missing Wood (%)");
-                    float maxallowableTrailing = MainWindow.GetParamStorage(position).GetFloat("(MW) Trailing Max Allowed Missing Wood (%)");
-                    float maxallowableH2 = MainWindow.GetParamStorage(position).GetFloat("(MW) H2 Max Allowed Missing Wood (%)");
-                    float maxallowableH3 = MainWindow.GetParamStorage(position).GetFloat("(MW) H3 Max Allowed Missing Wood (%)");
-                    float maxallowableH4 = MainWindow.GetParamStorage(position).GetFloat("(MW) H4 Max Allowed Missing Wood (%)");
-                    float maxallowableH5 = MainWindow.GetParamStorage(position).GetFloat("(MW) H5 Max Allowed Missing Wood (%)");
-                    float maxallowableH6 = MainWindow.GetParamStorage(position).GetFloat("(MW) H6 Max Allowed Missing Wood (%)");
+                    float maxallowableLeading = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMaxAllowedMissingWood);
+                    float maxallowableTrailing = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMaxAllowedMissingWood);
+                    float maxallowableH2 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MaxAllowedMissingWood);
+                    float maxallowableH3 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MaxAllowedMissingWood);
+                    float maxallowableH4 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MaxAllowedMissingWood);
+                    float maxallowableH5 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MaxAllowedMissingWood);
+                    float maxallowableH6 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MaxAllowedMissingWood);
 
                     H1.MaxAllowable = maxallowableLeading;
                     H7.MaxAllowable = maxallowableTrailing;
@@ -1218,13 +1117,7 @@ return 0;
                     H4.MaxAllowable = maxallowableH4;
                     H5.MaxAllowable = maxallowableH5;
                     H6.MaxAllowable = maxallowableH6;
-
-
-
-
-
-
-                    
+                  
                     BList.Add(H1);
                     BList.Add(H2);
                     BList.Add(H3);
@@ -1233,6 +1126,7 @@ return 0;
                     BList.Add(H6);
                     BList.Add(H7);
                 }
+
                 catch (Exception ex)
                 {
                     MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
@@ -1240,13 +1134,8 @@ return 0;
                     MessageBox.Show(ex.Message);
                     Logger.WriteLine("Error in processing boards: " + ex.Message);
                     throw new InvalidOperationException("An error occurred while processing the boards.", ex);
-                }
-
-
-               
+                }              
             }
-
-
 
             for (int i = 0; i < iCount; i++)
             {
@@ -1285,8 +1174,6 @@ return 0;
                     }
                 }
             }
-
-
 
             // Analyze the boards using Task instead of Thread
             List<Task> boardTasks = new List<Task>();
@@ -1400,14 +1287,11 @@ return 0;
 
             try
             {
-                FindCracks(B, paramStorage);
-             //   FindRaisedBoard(B, paramStorage);   // No Requirement for Walmart
+                FindCracks(B, paramStorage);  
                 FindRaisedNails(B, paramStorage);
                 CalculateMissingWood(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
-
-
-
+                //FindRaisedBoard(B, paramStorage);  No Requirement for Walmart
 
                 // Jack Note: Check if the board is too narrow based on the minimum width parameter
                 bool TooNarrow = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthTooNarrow), 0.5f, true);
@@ -1435,23 +1319,20 @@ return 0;
                     double percentage;
                     bool MissingWoodAcrossLength = CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength), true);
                     if (MissingWoodAcrossLength)
-                    {
-                       
+                    {                  
                         AddDefect(B, PalletDefect.DefectType.missing_wood_width_across_length, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
                         SetDefectMarker(B);
                     }
-
-                }
-               
+                }           
 
             }
+
             catch (Exception E)
             {
                 Logger.WriteException(E);            
                 AddDefect(B, PalletDefect.DefectType.board_segmentation_error, "Exception thrown in ProcessBoard()");
                 return;
             }
-
         }
 
         //=====================================================================
@@ -1519,10 +1400,8 @@ return 0;
                     if (DY < FailWid)
                     {
                         nBadEdges++;
-
-                        
+                      
                     }
- 
                 }
 
                 //  Calculate the measured length in inches for horizontal orientation
@@ -1530,6 +1409,7 @@ return 0;
                 Console.WriteLine("nBadEdges: " + nBadEdges);
                 Console.WriteLine("MeasuredLength: " + MissingWoodLength);
             }
+
             else
             {
                 //  Calculate the fail width in pixels for vertical orientation
@@ -1543,8 +1423,7 @@ return 0;
                     //  Increment the bad edges counter if the width is less than the fail width
                     if (DX < FailWid)
                     {
-                        nBadEdges++;
-                      
+                        nBadEdges++;                      
                     }
                 }
                 // Jack Note: Calculate the measured length in inches for vertical orientation
@@ -1554,10 +1433,9 @@ return 0;
             // this offset has been used because calibration values aren\t good
             MissingWoodLength = MissingWoodLength +  (float)(3);
             return (MissingWoodLength >= WoodLengthIn);
-           // Console.WriteLine("MeasuredLength: " + WoodLengthIn);
-
-
+            // Console.WriteLine("MeasuredLength: " + WoodLengthIn);
         }
+
         // Jack Note: Count the Number of the distance between the Edge0 and Edge1 < FailWidth
         private bool CheckNarrowBoard(ParamStorage paramStorage,Board B, float FailWidIn, float MinMissingWoodLengthIn, bool ExcludeEnds = false)
         {
@@ -1640,9 +1518,9 @@ return 0;
             B.CrackCB = new CaptureBuffer(B.CB);
             B.CrackCB.ClearBuffer();
 
-            B.CrackBlockSize = paramStorage.GetInt("Crack Tracker Block Size");
+            B.CrackBlockSize = paramStorage.GetInt(StringsLocalization.CrackTrackerBlockSize);
 
-            int MinDelta = paramStorage.GetInt("Crack Tracker Min Delta");
+            int MinDelta = paramStorage.GetInt(StringsLocalization.CrackTrackerMinDelta);
 
             // Divide into blocks
             int nx = ((P2.X - P1.X) / B.CrackBlockSize) + 1;
@@ -1675,9 +1553,7 @@ return 0;
                         //}
 
                         UInt16 Val1 = B.CB.Buf[y * B.CB.Width + x];
-
                         UInt16 MaxDif = 0;
-
 
                         for (int yy = y - 7; yy < (y + 7); yy++)
                         {
@@ -1703,6 +1579,7 @@ return 0;
                     }
                 }
             }
+
             catch (Exception)
             {
                 return;
@@ -1722,13 +1599,10 @@ return 0;
             //+----------------------------------+
             //                                    P2
 
-
             NullifyNonROIAreas(B, paramStorage);
-
             // Remove speckle
             // Jack Note: Filter
             DeNoiseInPlace(B.CrackCB,paramStorage);
-
 
             // Jack Note: Set the edge to zero
             for (int y = P1.Y; y <= P2.Y; y++)
@@ -1840,7 +1714,7 @@ return 0;
             /// This code iterates through each crack block, calculates the percentage of crack pixels in each block,
             /// and determines which blocks are valid based on a preset minimum crack percentage parameter. 
             /// Valid crack blocks are marked as 1, and invalid crack blocks are marked as 0.
-            float BlockCrackMinPct = paramStorage.GetFloat("Crack Tracker Min Pct");
+            float BlockCrackMinPct = paramStorage.GetFloat(StringsLocalization.CrackTrackerMinPct);
             float MaxVal = B.CrackBlockSize * B.CrackBlockSize;
             for (int y = 0; y < ny; y++)
             {
@@ -1904,9 +1778,9 @@ return 0;
         //=====================================================================
         void NullifyNonROIAreas(Board B,ParamStorage paramStorage)
         {
-            float EdgeWidH = paramStorage.GetFloat("HBoard Edge Crack Exclusion Zone Percentage");
-            float EdgeWidV = paramStorage.GetFloat("VBoard Edge Crack Exclusion Zone Percentage");
-            float CenWid = paramStorage.GetFloat("Board Center Crack Exclusion Zone Percentage");
+            float EdgeWidH = paramStorage.GetFloat(StringsLocalization.HBoardEdgeCrackExclusionZonePercentage);
+            float EdgeWidV = paramStorage.GetFloat(StringsLocalization.VBoardEdgeCrackExclusionZonePercentage);
+            float CenWid = paramStorage.GetFloat(StringsLocalization.BoardCenterCrackExclusionZonePercentage);
             // float CrackBlockValueThreshold = ParamStorage.GetFloat("Crack Block Value Threshold");
 
             int w = B.CrackTracker.GetLength(1);
@@ -1917,7 +1791,7 @@ return 0;
 
             if (isHoriz)
             {
-                float Len = paramStorage.GetPixX("H Board Length (in)");
+                float Len = paramStorage.GetPixX(StringsLocalization.HBoardLength_in);
 
                 int x1 = 0;// B.Edges[0][0].X;
                 int x2 = B.Edges[0].Count;// B.Edges[0][B.Edges[0].Count - 1].X;
@@ -1952,7 +1826,7 @@ return 0;
             }
             else
             {
-                float Len = paramStorage.GetPixY("V Board Length (in)");
+                float Len = paramStorage.GetPixY(StringsLocalization.VBoardLength_in);
 
                 int y1 = 0;// B.Edges[0][0].X;
                 int y2 = B.Edges[0].Count;// B.Edges[0][B.Edges[0].Count - 1].X;
@@ -1987,10 +1861,8 @@ return 0;
                         B.CrackCB.Buf[B.Edges[0][y].Y * CBW + x] = 0;
                     }
                 }
-
             }
         }
-
 
         //=====================================================================
         void IsCrackABrokenBoard(Board B,ParamStorage paramStorage)
@@ -2000,16 +1872,11 @@ return 0;
             /// of the board by looking for connections between the edges.
             /// If a crack is found that connects one edge to the opposite edge 
             /// and meets certain conditions, it marks the board as defective.
-            int BlockSize = paramStorage.GetInt("Crack Tracker Block Size");
-
+            int BlockSize = paramStorage.GetInt(StringsLocalization.CrackTrackerBlockSize);
             //float MaxDebrisPc = ParamStorage.GetFloat("Crack Block Debris Check Pct");
-
-
             int w = B.CrackTracker.GetLength(1);
             int h = B.CrackTracker.GetLength(0);
-
             bool isHoriz = w > h;
-
             int[] TouchesEdge1 = new int[100];
             int[] TouchesEdge2 = new int[100];
 
@@ -2043,6 +1910,7 @@ return 0;
                     }
                 }
             }
+
             else
             {
                 for (int y = 2; y < h - 2; y++)
@@ -2085,9 +1953,7 @@ return 0;
                 }
             }
 
-            return;
-
-       
+            return;    
         }
 
 
@@ -2148,13 +2014,13 @@ return 0;
             }
 
             // Jack Note: Retrieve the minimum board length percentage from parameter storage
-            float BoardLenPerc = paramStorage.GetFloat("(SH) Min Board Len (%)") / 100.0f;
+            float BoardLenPerc = paramStorage.GetFloat(StringsLocalization.MinBoardLen) / 100.0f;
             float BoardLenPerc100 = (int)(BoardLenPerc * 100);
             // Jack Note: Check if the board is oriented horizontally
             if (B.Edges[0][0].X == B.Edges[1][0].X)
             {
                 // Jack Note: Retrieve the expected horizontal board length and calculate minimum acceptable length
-                int Len = (int)paramStorage.GetPixX("H Board Length (in)");
+                int Len = (int)paramStorage.GetPixX(StringsLocalization.HBoardLength_in);
                 int MinLen = (int)(Len * BoardLenPerc);
 
                 // Jack Note: Calculate the measured length of the board
@@ -2175,7 +2041,7 @@ return 0;
             {
                 // Jack Note: Board is vertically oriented
                 // Jack Note: Retrieve the expected vertical board length and calculate minimum acceptable length
-                int Len = (int)paramStorage.GetPixY("V Board Length (in)");
+                int Len = (int)paramStorage.GetPixY(StringsLocalization.VBoardLength_in);
                 int MinLen = (int)(Len * BoardLenPerc);
 
                 // Jack Note: Calculate the measured length of the board
@@ -2186,7 +2052,7 @@ return 0;
                 {
                     // Jack Note: Mark the board as too short and set defect marker
                     AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.YResolution)).ToString() + 
-                        "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Lenth)");
+                        "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Length)");
                     SetDefectMarker(B);
                     return;
                 }
@@ -2397,16 +2263,15 @@ return 0;
 
 
             // Do a deeper check that this is a nail
-
             int W = B.CB.Width;
             int H = B.CB.Height;
-            double MNH = paramStorage.GetPixZ("(RN) Max Nail Height (mm)");
-            int NSP = paramStorage.GetInt("(RN) Nail Neighbor Sample Points");
-            int NSR = paramStorage.GetInt("(RN) Nail Neighbor Sample Radius");
+            double MNH = paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+            int NSP = paramStorage.GetInt(StringsLocalization.NailNeighborSamplePoints);
+            int NSR = paramStorage.GetInt(StringsLocalization.NailNeighborSamplePoints);
             int NearTh = NSR / 2;
-            int NCSR = paramStorage.GetInt("(RN) Nail Confirm Surface Radius");
-            int NCHIR = paramStorage.GetInt("(RN) Nail Confirm Head Inner Radius");
-            int NCHOR = paramStorage.GetInt("(RN) Nail Confirm Head Outer Radius");
+            int NCSR = paramStorage.GetInt(StringsLocalization.NailConfirmSurfaceRadius);
+            int NCHIR = paramStorage.GetInt(StringsLocalization.NailConfirmHeadInnerRadius);
+            int NCHOR = paramStorage.GetInt(StringsLocalization.NailConfirmHeadOuterRadius);
 
             // Get average height of nail head
             double sumZ = 0;
@@ -2480,7 +2345,6 @@ return 0;
                 return false;
             }
 
-
             // Check that nail head does not have a long tail....a wooden sliver
             int FailedCount = 0;
             int CheckedCount = 0;
@@ -2536,11 +2400,11 @@ return 0;
             }
 
             // Jack Note: Retrieve the maximum height a nail can have to be considered raised
-            int MNH = (int)paramStorage.GetPixZ("(RN) Max Nail Height (mm)");
+            int MNH = (int)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
 
             // Jack Note: Get parameters for nail detection algorithm
-            int NSP = paramStorage.GetInt("(RN) Nail Neighbor Sample Points");
-            int NSR = paramStorage.GetInt("(RN) Nail Neighbor Sample Radius");
+            int NSP = paramStorage.GetInt(StringsLocalization.NailNeighborSamplePoints);
+            int NSR = paramStorage.GetInt(StringsLocalization.NailNeighborSampleRadius);
 
             // Jack Note: Find the minimum and maximum coordinates of the board
             PalletPoint P1 = FindBoardMinXY(B);
@@ -2612,7 +2476,7 @@ return 0;
             }
 
             // Jack Note: Required confirmations for a nail to be considered valid
-            int RequiredConf = paramStorage.GetInt("Nail Confirmations Required");
+            int RequiredConf = paramStorage.GetInt(StringsLocalization.NailConfirmationsRequired);
 
             // Jack Note: Validate each potential nail based on nearby confirmations and existing records
             foreach (PalletPoint P in Raw)
@@ -2642,12 +2506,10 @@ return 0;
                         AddDefect(B, PalletDefect.DefectType.raised_nail,
                       $"Raised Nail > {MNH}mm, Height: {Math.Round( AverageDelta,2)}mm");
 
-                        SetDefectMarker(P.X, P.Y, 30);
-                        
+                        SetDefectMarker(P.X, P.Y, 30);                      
                     }
                 }
             }
-
         }
 
         //=====================================================================
@@ -3927,6 +3789,5 @@ return 0;
             float distance = (float)Math.Sqrt(dx * dx + dy * dy);
             return Math.Abs((b.X - a.X) * (a.Y - p.Y) - (a.X - p.X) * (b.Y - a.Y)) / distance;
         }
-
     }
 }
