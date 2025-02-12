@@ -25,6 +25,7 @@ using IFrame = Sick.GenIStream.IFrame;
 namespace PalletCheck
 {
     using static FromGenIStreamFrameConverter;
+    using static PalletCheck.PalletDefect;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -131,6 +132,7 @@ namespace PalletCheck
         private bool[] loadFrameFlags = new bool[6];
 
         bool isSaveFrames = true;
+
         string[] stringNameOfResultTitle = new string[] 
         { "File Name",
             "Top Raised Nail", "Top Missing Planks", "Top Crack across width", "Top Missing Wood", 
@@ -144,6 +146,22 @@ namespace PalletCheck
             "Right - Block Protuded From Pallet",
             "Top - Missing wood for the full length",
             "Result"};
+
+        string[] csvReportHeader = new string[]
+        {
+            "File Name",
+            "Top Missing Wood Across Lenght",
+            "Top Raised Nail Fastener Cut off",
+            "Bottom Raised Nail Fastener Cut off",
+            "Right Fork Clearance",
+            "Right Block Protruding From Pallet",
+            "Right Side Nail Protruding",
+            "Left Fork Clearance",
+            "Left Block Protruding From Pallet",
+            "Left Side Nail Protruding",
+            "Result"
+        };
+
         HashSet<string> bottomLocations = new HashSet<string>
                 {
                     "B_V1", "B_V2", "B_V3", "_H1", "B_H2"
@@ -1674,16 +1692,17 @@ namespace PalletCheck
                 string szTime = DateTime.Now.ToString("yyyyMMdd");
                 string path = RecordingRootDir + "\\" + szTime + ".csv";
                 string strNewHeader = null;
-                for (int i = 0; i < stringNameOfResultTitle.Length; i++) { strNewHeader += stringNameOfResultTitle[i] + ","; }
+                for (int i = 0; i < csvReportHeader.Length; i++) { strNewHeader += csvReportHeader[i] + ","; }
                 new System.Threading.Thread(() =>
                 {
                     JackSaveLog.DataLog(path, strNewHeader, totalResult);
                 })
                 { IsBackground = true }.Start();
             }
+
             catch (Exception ex)
             {
-                Logger.WriteLine("Saveing Result:" + ex.Message);
+                Logger.WriteLine("Saving Result:" + ex.Message);
             }
         }
 
@@ -1972,18 +1991,18 @@ namespace PalletCheck
             {
                 SendPLCTotalResult("BypassModeEnabled");
             }
+
             else
             {
                 SendPLCTotalResult(finalResult.ToString());
             }
 
-            // 打印或更新界面
+            // Update screen
             Console.WriteLine($"Total Results: {finalResult}");
-
-            // Save Results To CSV File
-
             stopwatchProcess.Stop();
             UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.Green, 30);
+
+            // Save Results To CSV File
             Application.Current.Dispatcher.Invoke(() =>
             {
                 defectTable.Items.Clear();
@@ -1997,178 +2016,39 @@ namespace PalletCheck
                     80);
 
                 UpdateProductivityStats(finalResult == InspectionResult.PASS);
+                defectTable.Items.Clear();
 
-                string[] stringNameOfResult = new string[stringNameOfResultTitle.Length];
+                // Prepare string[] to save results in CSV
+                string[] stringNameOfResult = new string[csvReportHeader.Length];
+
                 for (int i = 0; i < stringNameOfResult.Length; i++)
                 {
                     stringNameOfResult[i] = " ";
                 }
 
-                // 显示缺陷
-
-                defectTable.Items.Clear();
                 stringNameOfResult[0] = _FilenameDateTime;
-                stringNameOfResult[21] = finalResult.ToString();
+                stringNameOfResult[stringNameOfResult.Length - 1] = finalResult.ToString();
+
                 foreach (var defect in Pallet.CombinedDefects ?? new List<PalletDefect>())
                 {
-
-
-
-
-
-                    /*
-                     
-                     COLUMNS OF THE LIST OF DEFECTS TO BE SAVE (Around line 156)
-                            { "File Name",
-                             "Top Raised Nail", "Top Missing Planks", "Top Crack across width", "Top Missing Wood", 
-                              "Bottom Raised Nail", "Bottom Missing Planks", "Bottom Crack across width", "Bottom Missing Wood", 
-                               "Left Missing Block", "Left Rotated Block(s)", "Left Missing Wood Chunk", 
-                               "Right Missing Block", "Right Rotated Block(s)", "Right Missing Wood Chunk",
-                   Vector position 
-                       15      "Fork Clearance",
-                       16        "Left - Side Nails Protruded From pallet",
-                       17        "Left - Block Protruded From Pallet ",
-                       18        "Right - Side Nails Protruded From Pallet",
-                       19        "Right - Block Protuded From Pallet",
-                       20        "Top - Missing wood for the full length"
-                       21        "Result"};
-                     
-                     */
                     defectTable.Items.Add(defect);
-                    if ((topLocations.Contains(defect.Location.ToString())) )
+                    string defectCSVCode = defect.Location.ToString()[0] + "_" + defect.Code;
+
+                    if (Enum.IsDefined(typeof(DefectsCSV_Phase1A), defectCSVCode))
                     {
-                        if (defect.Code == "RN")
-                        {
-                            stringNameOfResult[1] = "X";
-                        }
-                        else if (defect.Code == "MB")
-                        {
-                            stringNameOfResult[2] = "X";
-                        }
-                        else if (defect.Code == "MWA")
-                        {
-                            stringNameOfResult[20] = "X";
-                        }
-                        else if (defect.Code == "BW")
-                        {
-                            stringNameOfResult[3] = "X";
-                        }
-                        else
-                        {
-                            stringNameOfResult[4] = "X";
-                        }
+                        int columIndex = (int)Enum.Parse(typeof(DefectsCSV_Phase1A), defectCSVCode); //Gets the correct report column to write in based on location and defect type
+                        stringNameOfResult[columIndex] = "X";
                     }
-                    if ((bottomLocations.Contains(defect.Location.ToString())))
-                    {
-                        if (defect.Code == "RN")
-                        {
-                            stringNameOfResult[5] = "X";
-                        }
-                        else if (defect.Code == "MB")
-                        {
-                            stringNameOfResult[6] = "X";
-                        }
-                        else if (defect.Code == "BW")
-                        {
-                            stringNameOfResult[7] = "X";
-                        }
-                        else
-                        {
-                            stringNameOfResult[8] = "X";
-                        }
-                    }
-                    if ((leftLocations.Contains(defect.Location.ToString())))
-                    {
-                        if (defect.Code == "MO")                //Missing Blocks      
-                        {
-                            stringNameOfResult[9] = "X";        
-                        }
-                        else if (defect.Code == "EA")           //Excessive Angle
-                        {
-                            stringNameOfResult[10] = "X";
-                        }
-                        else if (defect.Code == "MU")           //Missing chunk
-                        {
-                            stringNameOfResult[11] = "X";
-                        }
-                        /*
-                         *              1A Features for Left View
-                         We want to show 1A Feattures for now, so the sequence 
-                        of the features to be saved are probably weird, we should order them later
-
-                        Vector Position         Feature
-                                                   "Fork Clearance",
-                                                   "Left - Side Nails Protruded From pallet",
-                                                   "Left - Block Protruded From Pallet ",
-                         
-                         */
-                        else if (defect.Code == "FC")           //Fork Clearance  NOTE: Only applied once,
-                                                                //  at the left view.
-                        {
-                            stringNameOfResult[15] = "X";
-                        }
-                        else if (defect.Code == "SNP")          // "Left - Side Nails Protruded From pallet", 
-                        {
-                            stringNameOfResult[16] = "X";
-                        }
-                        else if (defect.Code == "BPFP")           //  "Left - Block Protruded From Pallet ",
-                        {
-                            stringNameOfResult[17] = "X";
-                        }
-
-                    }
-                    if ((rightLocations.Contains(defect.Location.ToString())))
-                    {
-                        if (defect.Code == "MO")            //Missing Blocks
-                        {
-                            stringNameOfResult[12] = "X";
-                        }
-                        else if (defect.Code == "FC")      //Fork Clearance
-                        {
-                            stringNameOfResult[13] = "X";
-                        }
-                        else if (defect.Code == "MU")      //Missing Chunk
-
-                        {
-                            stringNameOfResult[14] = "X";
-                        }
-
-
-                                                /*
-                         *              1A Features for Right View
-                         We want to show 1A Feattures for now, so the sequence 
-                        of the features to be saved are probably weird, we should order them later
-
-                        Vector Position         Feature
-                                                   "Right - Side Nails Protruded From Pallet",
-                                                   "Right - Block Protuded From Pallet",
-                         */
-
-                        else if (defect.Code == "SNP")          // "Right - Side Nails Protruded From pallet", 
-                        {
-                            stringNameOfResult[18] = "X";
-                        }
-                        else if (defect.Code == "BPFP")         //  "Right - Block Protruded From Pallet ",
-                        {
-                            stringNameOfResult[19] = "X";
-                        }
-
-
-
-                    }
-
-
-
                 }
                 SaveDataToFile(string.Join(",", stringNameOfResult));
-                
+
             });
             lock (LockObjectCombine)
             {
                 CombinedBoards.Clear();
                 CombinedDefects.Clear();
             }
-            // 清理或复位状态
+            // Reset status
             Reset();
         }
 
