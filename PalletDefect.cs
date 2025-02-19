@@ -60,7 +60,6 @@ namespace PalletCheck
         public string Comment { get; set; }
         public string Name { get; set; }
         public string Code { get; set; }
-
         public double MarkerX1 { get; set; }
         public double MarkerY1 { get; set; }
         public double MarkerX2 { get; set; }
@@ -76,7 +75,6 @@ namespace PalletCheck
             this.Name = TypeToName(type);
             this.Code = TypeToCode(type);
         }
-
 
         public void SetRectMarker(double X1, double Y1, double X2, double Y2, string Tag)
         {
@@ -94,51 +92,6 @@ namespace PalletCheck
             MarkerRadius = R;
             MarkerTag = Tag;
         }
-
-
-
-
-
-
-
-        //public class Marker
-        //{
-        //    public double X;
-        //    public double Y;
-        //    public double Radius;
-        //    public double Width;
-        //    public double Height;
-        //    public string Tag;
-        //};
-        //public List<Marker> Markers = new List<Marker>();
-
-        //public void AddRectMarker(double X, double Y, double W, double H, string Tag)
-        //{
-        //    Marker M = new Marker();
-        //    M.X = X;
-        //    M.Y = Y;
-        //    M.Radius = 0;
-        //    M.Width = W;
-        //    M.Height = H;
-        //    M.Tag = Tag;
-        //    Markers.Add(M);
-        //}
-        //public void AddCircleMarker(double X, double Y, double R, string Tag)
-        //{
-        //    Marker M = new Marker();
-        //    M.X = X;
-        //    M.Y = Y;
-        //    M.Radius = R;
-        //    M.Width = R * 2;
-        //    M.Height = R * 2;
-        //    M.Tag = Tag;
-        //    Markers.Add(M);
-        //}
-
-
-
-
-
 
         public static string TypeToCode(DefectType type)
         {
@@ -215,7 +168,8 @@ namespace PalletCheck
                 case DefectType.missing_wood_width_across_length: return "Missing Wood Width Across Length";  //Added by HUB 
                 case DefectType.raised_nail_fastener_cutoff: return "Raised Nail Fastener Cutoff";           //Added by HUB
                 case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
-                case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB 
+                case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB
+                case DefectType.clearance: return "Fork Clearance";
                 default: return "?";
             }
         }
@@ -231,5 +185,43 @@ namespace PalletCheck
             string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP" };//Last 4 added by HUB
             return list;
         }
+
+        public enum DefectsCSV
+        {
+            T_RN = 1,       // Top Raised Nail   
+            T_MB = 2,       // Top Missing Board
+            T_BW = 3,       // Top Broken Across Width
+            T_MW = 4,       // Top Missing Wood
+            B_RN = 5,       // Bottom Raised Nail
+            B_MB = 6,       // Bottom Missing Board
+            B_BW = 7,       // Bottom Crack across width
+            B_MW = 8,       // Bottom Missing Wood
+            L_MO = 9,       // Left Missing Block
+            L_EA = 10,      // Left Excesive Angle (Rotated Block)
+            L_MU = 11,      // Left Missing Chunk
+            R_MO = 12,      // Right Missing Block
+            R_EA = 13,      // Right Excesive Angle (Rotated Block)
+            R_MU = 14,      // Right Missing Chunk
+            R_FC = 15,      // Right Fork Clearance
+            L_SNP = 16,     // Left Side Nails Protruding
+            L_BPFP = 17,    // Left Block Protruding from Pallet
+            R_SNP = 18,     // Right Side Nails Protruding From Pallet
+            R_BPFP = 19,    // Right Block Protuded From Pallet
+            T_MWA = 20      // Top Missing Wood Across the Length
+        }
+
+        public enum DefectsCSV_Phase1A
+        {
+            T_MWA = 1,      // Top Missing Wood Across Lenght
+            T_RNFC = 2,     // Top Raised Nail Fastener Cut off
+            B_RNFC = 3,     // Bottom Raised Nail Fastener Cut off
+            R_FC = 4,       // Right Fork Clearance
+            R_BPFP = 5,     // Right Block Protruding From Pallet
+            R_SNP = 6,      // Right Side Nail Protruding
+            L_FC = 7,       // Left Fork Clearance
+            L_BPFP = 8,     // Left Block Protruding From Pallet
+            L_SNP = 9       // Left Side Nail Protruding
+        }
+
     }
 }

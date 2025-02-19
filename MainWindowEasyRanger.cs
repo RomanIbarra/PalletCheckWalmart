@@ -144,16 +144,11 @@ namespace PalletCheck
                         }
 
                         if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * MissingBlockPercentage / 100 ||blockHeight[i] > MissingChunkThreshold)
-                        {
-                            if (blockHeight[i] < -MissingChunkThreshold)
-                            { 
-                                P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round( (blockHeight[i]),2) + "mm < -" + MissingChunkThreshold + "mm"); 
-                            }
 
-                            if (blockHeight[i] > MissingChunkThreshold)
-                            { 
-                                P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); 
-                            }
+                            if(blockHeight[i] < -MissingChunkThreshold)
+                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round( (blockHeight[i]),2) + "mm < -" + MissingChunkThreshold + "mm"); }
+                            if(blockHeight[i] > MissingChunkThreshold)
+                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }
 
                             viewer.DrawRoi("OutputRegions", i, red, 100);
                             isFail = true;
