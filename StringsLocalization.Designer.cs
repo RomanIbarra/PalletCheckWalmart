@@ -520,6 +520,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MiddleBoardMissingWoodMaxPercentage.
+        /// </summary>
+        internal static string MiddleBoardMissingWoodMaxPercentage {
+            get {
+                return ResourceManager.GetString("MiddleBoardMissingWoodMaxPercentage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SH_MinBoardLen.
         /// </summary>
         internal static string MinBoardLen {
