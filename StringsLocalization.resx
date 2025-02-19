@@ -429,4 +429,7 @@
   <data name="SideLength" xml:space="preserve">
     <value>SideLength</value>
   </data>
+  <data name="MiddleBoardMissingWoodMaxPercentage" xml:space="preserve">
+    <value>MiddleBoardMissingWoodMaxPercentage</value>
+  </data>
 </root>
