@@ -19,6 +19,8 @@ namespace PalletCheck
         public ProcessingEnvironment _envRight { get; set; }
         public static  ProcessingEnvironment _envTop { get; set; }
         public static ProcessingEnvironment _envBottom { get; set; }
+        public ProcessingEnvironment _envFront {  get; set; }
+        public ProcessingEnvironment _envBack { get; set; }
 
         System.Windows.Media.Color red = System.Windows.Media.Color.FromRgb(255, 0, 0);
         System.Windows.Media.Color green = System.Windows.Media.Color.FromRgb(0, 255, 0);
@@ -31,6 +33,7 @@ namespace PalletCheck
             // Select environment and view based on position
             var env = (position == PositionOfPallet.Left) ? _envLeft : _envRight;
             var viewer = (position == PositionOfPallet.Left) ? ViewerLeft : ViewerRight;
+            
             //List<Board> CurrentBlist = (position == PositionOfPallet.Left) ? BListLeft.ToList() : BListRight.ToList();            
             Pallet P = new Pallet(null, null, position);
             P.BList = new List<Board>();
@@ -271,7 +274,7 @@ namespace PalletCheck
 
             UpdateTextBlock(ModeStatus, "File Name: " + _FilenameDateTime);
             // Define the suffix for image files
-            string[] suffixes = { "_T", "_B1", "_B2", "_B3", "_L", "_R" };
+            string[] suffixes = { "_T", "_B1", "_B2", "_B3", "_L", "_R", "_F", "_B" };
 
             // Check if the number of SickFrames matches the number of suffixes
             if (SickFrames.Length != suffixes.Length)

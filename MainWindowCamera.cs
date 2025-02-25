@@ -80,10 +80,13 @@ namespace PalletCheck
             _envTop = new ProcessingEnvironment();
             _envBottom = new ProcessingEnvironment();
             _envRight = new ProcessingEnvironment();
+            _envFront = new ProcessingEnvironment();
+            _envBack = new ProcessingEnvironment();
             _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
             _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
+            
 
             // Define a fixed callback array (placed outside the loop)
             GrabResultCallback[] callbacks =
@@ -93,7 +96,8 @@ namespace PalletCheck
         ProcessFrameForCameraBottomMidCallback,
         ProcessFrameForCameraBottomRightCallback,
         ProcessFrameForCameraLeftCallback,
-        ProcessFrameForCameraRightCallback
+        ProcessFrameForCameraRightCallback,
+        ProcessFrameForCameraFrontCallback
     };
 
             // Initialize cameras in a loop

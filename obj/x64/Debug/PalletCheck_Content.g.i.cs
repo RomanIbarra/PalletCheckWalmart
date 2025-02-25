@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("stringslocalization.xml")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("art/sick_logo_white.png")]
 
 
