@@ -349,12 +349,12 @@ namespace PalletCheck
             return (int)f;
         }
 
-        public  int GetPixZ(string Field)
+        public float GetPixZ(string Field)
         {
             float f = GetFloat(Field);
             if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelZ") / 25.4f);
             if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelZ");
-            return (int)f;
+            return (float)f;
         }
 
         //=====================================================================

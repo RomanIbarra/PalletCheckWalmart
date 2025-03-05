@@ -432,4 +432,7 @@
   <data name="MiddleBoardMissingWoodMaxPercentage" xml:space="preserve">
     <value>MiddleBoardMissingWoodMaxPercentage</value>
   </data>
+  <data name="HNarrowBoardMinimumWidthAcrossLenght" xml:space="preserve">
+    <value>BN_HNarrowBoardMinimumWidthAcrossLenght</value>
+  </data>
 </root>
