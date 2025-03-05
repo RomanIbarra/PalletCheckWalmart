@@ -1607,7 +1607,7 @@ namespace PalletCheck
 
                             // Wait 10 seconds
                             Console.WriteLine("Waiting 10 seconds...");
-                            await Task.Delay(2000);
+                            await Task.Delay(4000);
                         }
 
                         Console.WriteLine("All subfolders processed.");
