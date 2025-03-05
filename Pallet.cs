@@ -1097,6 +1097,13 @@ namespace PalletCheck
 
                     //  20250110 New Added for Missing wood across length //H Board lengs parameters on pallet dimension file
                     H1.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+
+                    /*H2.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H3.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H4.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H5.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H6.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);*/
+
                     H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
                     H1.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
                     H7.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
@@ -2400,7 +2407,7 @@ namespace PalletCheck
             }
 
             // Jack Note: Retrieve the maximum height a nail can have to be considered raised
-            int MNH = (int)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+            float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
 
             // Jack Note: Get parameters for nail detection algorithm
             int NSP = paramStorage.GetInt(StringsLocalization.NailNeighborSamplePoints);
