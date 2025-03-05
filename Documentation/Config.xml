@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConfigurationFile>
+    <Camera>
+        <CameraCount>8</CameraCount>
+        <Camera0_IP>192.168.1.1</Camera0_IP>
+        <Camera1_IP>192.168.2.1</Camera1_IP>
+        <Camera2_IP>192.168.3.1</Camera2_IP>
+        <Camera3_IP>192.168.4.1</Camera3_IP>
+        <Camera4_IP>192.168.5.1</Camera4_IP>
+        <Camera5_IP>192.168.7.1</Camera5_IP>
+        <Camera6_IP>192.168.8.1</Camera6_IP>
+        <Camera7_IP>192.168.9.1</Camera7_IP>
+        <CameraEnabled>1</CameraEnabled>
+        <CameraSimEnabled>0</CameraSimEnabled>
+        <CameraSimDirectory>Recordings\20220915_14</CameraSimDirectory>
+        <CameraSimSecPerPallet>3.0</CameraSimSecPerPallet>
+    </Camera>
+    <PLC>
+        <TCPServerIP>127.0.0.1</TCPServerIP>
+        <TCPServerPort>11000</TCPServerPort>
+        <TCPServerPortForShortResult>2114</TCPServerPortForShortResult>
+        <TCPServertHeartbeat>0</TCPServertHeartbeat>
+        <Server>1</Server>
+    </PLC>
+    <FTP>
+        <FTPServerIP>127.0.0.1</FTPServerIP>
+        <FTPServerPort>21</FTPServerPort>
+        <FTPUserName>SICKFTP</FTPUserName>
+        <FTPPassword>123456789</FTPPassword>
+        <UploadOrNot>1</UploadOrNot>
+    </FTP>
+    <Storage>
+        <MaxRecordingDirectories>240</MaxRecordingDirectories>
+        <RecordingRootDirMax_MB>200000</RecordingRootDirMax_MB>
+        <SegmentationErrorDirMax_MB>50000</SegmentationErrorDirMax_MB>
+        <HistoryDirMax_MB>50000</HistoryDirMax_MB>
+        <CameraConfigHistoryDirMax_MB>1000</CameraConfigHistoryDirMax_MB>
+        <SettingsHistoryDirMax_MB>1000</SettingsHistoryDirMax_MB>
+        <SnapshotsDirMax_MB>10000</SnapshotsDirMax_MB>
+        <LoggingDirMax_MB>10000</LoggingDirMax_MB>
+        <ExceptionsDirMax_MB>1000</ExceptionsDirMax_MB>
+    </Storage>
+</ConfigurationFile>
