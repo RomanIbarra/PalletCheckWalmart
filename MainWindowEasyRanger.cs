@@ -106,6 +106,7 @@ namespace PalletCheck
                         if (HasNails[i] == 1)
                         {
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nails protruding out sides of pallet > " + NailHeight + "mm");
+                            isFail = true;
                         }
                     }
 
