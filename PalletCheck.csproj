@@ -249,6 +249,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Dataset\" />
     <Folder Include="icons\" />
     <Folder Include="Resources\" />
     <Folder Include="SICK\" />
