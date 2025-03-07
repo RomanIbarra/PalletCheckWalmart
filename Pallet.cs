@@ -872,6 +872,24 @@ namespace PalletCheck
             
             if(position == PositionOfPallet.Bottom)
             {
+                //to extract datasaet 
+                if (enableDatasetExtraction)
+                {
+                    if (SelectPositionForExtraction == 1)
+                    {
+                        float[] floatA = MainWindow._envBottom.GetImageBuffer("FilteredImage")._range;
+                        byte[] byteA = MainWindow._envBottom.GetImageBuffer("FilteredImage")._intensity;
+                        int width = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.Width;
+                        int height = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.Height;
+                        float xScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.XResolution;
+                        float yScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.YResolution;
+                        cntr = cntr + 1;
+                        DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Bottom, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                    }
+                }
+
+
+
                 iCount = 5;
                 int TopX = FindTopX(ProbeCB,paramStorage);
                 int BottomY  = FindBottomY(ProbeCB,paramStorage);
@@ -965,6 +983,27 @@ namespace PalletCheck
 
             if(position == PositionOfPallet.Top)
             {
+
+
+                //to extract datasaet 
+                if (enableDatasetExtraction) {
+                    if (SelectPositionForExtraction == 0)
+                    {
+                        float[] floatA = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
+                        byte[] byteA = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+                        int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
+                        int height = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
+                        float xScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.XResolution;
+                        float yScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.YResolution;
+                        cntr = cntr + 1;
+                        DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Top, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                    }
+                }
+
+
+
+
+
                 RoiType[] roiTypes = new RoiType[7];
                 int[] widths = new int[7];
                 int[] heights = new int[7];

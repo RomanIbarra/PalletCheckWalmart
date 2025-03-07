@@ -61,6 +61,17 @@ namespace PalletCheck
 
         private readonly object _lockFileName = new object();// Define camera names
         string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R" };
+
+
+
+        /*Dataset Extraction*/
+        public static bool enableDatasetExtraction = false;
+        public static int cntr=0;
+        public static int SelectPositionForExtraction = 2; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back
+
+
+
+
         public static ParamStorage GetParamStorage(PositionOfPallet position)
         {
             // 根据 PositionOfPallet 枚举值返回对应的 ParamStorage
@@ -397,7 +408,7 @@ namespace PalletCheck
         {
             // Construct the file path based on the enum value
             //string lastUsedParamFilePath = HistoryRootDir + $"\\LastUsedParamFile{position}.txt"; Used for load txt files
-            string lastUsedParamFilePath = HistoryRootDir + "\\LastUsedParamFile.txt";
+            string lastUsedParamFilePath = HistoryRootDir + "\\LastUsedParamFile_develop.txt";
             string defaultParamFilePath = ConfigRootDir + "\\DefaultParams.xml";
 
             // Check if the history file exists
@@ -451,9 +462,9 @@ namespace PalletCheck
             ButtonBackgroundBrush = btnStart.Background;
 
             // Load starting parameters
-            if (File.Exists(HistoryRootDir + "\\LastUsedConfigFile.txt"))
+            if (File.Exists(HistoryRootDir + "\\LastUsedConfigFile_develop.txt"))
             {
-                lastUsedConfigFile = File.ReadAllText(HistoryRootDir + "\\LastUsedConfigFile.txt");
+                lastUsedConfigFile = File.ReadAllText(HistoryRootDir + "\\LastUsedConfigFile_develop.txt");
                 if (File.Exists(lastUsedConfigFile))
                 {
                     ParamStorageGeneral.LoadXML(lastUsedConfigFile);;
@@ -1232,7 +1243,7 @@ namespace PalletCheck
                     ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file5)));
                     Logger.WriteLine("Loaded file5");
                 }
-
+                
                 Logger.WriteLine("Load Offline Images Completed");
             }
             catch (Exception ex)

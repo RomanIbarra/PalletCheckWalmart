@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using static PalletCheck.Pallet;
+using System.Windows.Media.Media3D;
 
 namespace PalletCheck
 {
@@ -100,6 +101,42 @@ namespace PalletCheck
                     viewer.ClearAll();
                     viewer.DrawImage("FilteredImage", SubComponent.Intensity);
                     viewer.DrawRoi("OutputRegionsForNails", -1, red, 250);
+
+
+
+                    
+                    //Extract dataset
+                    if (position == PositionOfPallet.Left) {
+
+                        if (SelectPositionForExtraction == 2) {
+                            float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
+                            byte[] byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                            int width = env.GetImageBuffer("FilteredImage").Info.Width;
+                            int height = env.GetImageBuffer("FilteredImage").Info.Height;
+                            float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
+                            float yScale = env.GetImageBuffer("FilteredImage").Info.YResolution;
+                            cntr = cntr + 1;
+                            DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Left, byteArray, floatArray, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                        }
+
+                    }
+                    if (position == PositionOfPallet.Right)
+                    {
+                        if (SelectPositionForExtraction == 3)
+                        {
+                            float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
+                            byte[] byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                            int width = env.GetImageBuffer("FilteredImage").Info.Width;
+                            int height = env.GetImageBuffer("FilteredImage").Info.Height;
+                            float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
+                            float yScale = env.GetImageBuffer("FilteredImage").Info.YResolution;
+                            cntr = cntr + 1;
+                            DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Right, byteArray, floatArray, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                        }
+                    }
+
+
+
 
                     for (int i = 0; i < 3; i++)
                     {

@@ -131,6 +131,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CaptureBuffer.cs" />
+    <Compile Include="DatasetExtraction.cs" />
     <Compile Include="FtpFluentUploader.cs" />
     <Compile Include="JackSaveResult.cs" />
     <Compile Include="Logger.cs" />

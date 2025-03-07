@@ -1,0 +1,54 @@
+[Pass / Fail Settings]
+(BN) Leading Narrow Board Minimum Width (in) = 5
+(BN) Leading Board Minimum Width Across Length (in) = 8
+(BN) Middle Narrow Board Minimum Width (in) = 2
+(BN) Leading Missing Chunk Minimum Width (in) = 8
+(BN) Leading Missing Chunk Minimum Length (in) = 4
+(BN) Middle Missing Chunk Minimum Width (in) = 2.0
+(BN) Middle Missing Chunk Minimum Length (in) = 15.0
+(RN) Max Nail Height (mm) = 2
+(MW) Leading Max Allowed Missing Wood (%) = 10
+(MW) Middle Max Allowed Missing Wood (%) = 50
+(RB) Raised Board Maximum Height (in) = 0.25
+(RB) Raised Board Width (%) = 5
+(SH) Min Board Len (%) = 90
+
+[Capture Settings]
+Raw Capture ROI Left (px) = 49
+Raw Capture ROI Right (px) = 2100
+Raw Capture ROI Top (px) = 300
+Raw Capture ROI Bottom (px) = 2400
+Raw Capture ROI Max Z (px) = 800
+Raw Capture ROI Min Z (px) = 1200
+MM Per Pixel X = 0.4969
+MM Per Pixel Y = 0.4912
+MM Per Pixel Z = 1
+
+[Defect Algorithm Settings]
+(RN) Nail Confirmations Required = 5
+(RN) Nail Neighbor Sample Points = 8
+(RN) Nail Neighbor Sample Radius = 15
+(RN) Nail Confirm Surface Radius = 50
+(RN) Nail Confirm Head Inner Radius = 4
+(RN) Nail Confirm Head Outer Radius = 12
+Crack Tracker Block Size = 16
+Crack Tracker Min Pct = 0.05
+Crack Tracker Min Delta = 40
+Auto Start Capturing = 1
+
+[Pallet Dimensions]
+TopH1 Board Width (in) = 11
+TopH2 Board Width (in) = 3.5
+TopH3 Board Width (in) = 3.5
+TopH4 Board Width (in) = 3.5
+TopH5 Board Width (in) = 3.5
+TopH6 Board Width (in) = 3.5
+TopH7 Board Width (in) = 11
+H Board Length (in) = 40.0
+Rotate90 = 1
+
+[BlockROIAreas]
+HBoard Edge Crack Exclusion Zone Percentage = 0.10
+VBoard Edge Crack Exclusion Zone Percentage = 0.17
+Board Center Crack Exclusion Zone Percentage = 0.10
+
