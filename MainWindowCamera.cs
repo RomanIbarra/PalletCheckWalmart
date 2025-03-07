@@ -80,8 +80,8 @@ namespace PalletCheck
             _envTop = new ProcessingEnvironment();
             _envBottom = new ProcessingEnvironment();
             _envRight = new ProcessingEnvironment();
-            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides_develop.env");
-            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides_develop.env");
+            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
 
