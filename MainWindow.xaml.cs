@@ -408,7 +408,7 @@ namespace PalletCheck
         {
             // Construct the file path based on the enum value
             //string lastUsedParamFilePath = HistoryRootDir + $"\\LastUsedParamFile{position}.txt"; Used for load txt files
-            string lastUsedParamFilePath = HistoryRootDir + "\\LastUsedParamFile_develop.txt";
+            string lastUsedParamFilePath = HistoryRootDir + "\\LastUsedParamFile.txt";
             string defaultParamFilePath = ConfigRootDir + "\\DefaultParams.xml";
 
             // Check if the history file exists
@@ -462,9 +462,9 @@ namespace PalletCheck
             ButtonBackgroundBrush = btnStart.Background;
 
             // Load starting parameters
-            if (File.Exists(HistoryRootDir + "\\LastUsedConfigFile_develop.txt"))
+            if (File.Exists(HistoryRootDir + "\\LastUsedConfigFile.txt"))
             {
-                lastUsedConfigFile = File.ReadAllText(HistoryRootDir + "\\LastUsedConfigFile_develop.txt");
+                lastUsedConfigFile = File.ReadAllText(HistoryRootDir + "\\LastUsedConfigFile.txt");
                 if (File.Exists(lastUsedConfigFile))
                 {
                     ParamStorageGeneral.LoadXML(lastUsedConfigFile);;
