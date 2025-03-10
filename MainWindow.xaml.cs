@@ -65,7 +65,7 @@ namespace PalletCheck
 
 
         /*Dataset Extraction*/
-        public static bool enableDatasetExtraction = false;
+        public static bool enableDatasetExtraction = true;
         public static int cntr=0;
         public static int SelectPositionForExtraction = 2; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back
 
