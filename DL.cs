@@ -23,8 +23,14 @@ namespace PalletCheck
 {
     public class model
     {
-        private static string modelPath = @"C:\Users\MICHE\Desktop\Git_Sick\PalletCheckWalmart\DL\maskrcnn_model.onnx";
-        private static string modelPath2 = @"C:\Users\MICHE\Desktop\Git_Sick\PalletCheckWalmart\DL\RaisedNailsDetector4.onnx";
+       // private static string modelPath = @"C:\Users\MICHE\Desktop\Git_Sick\PalletCheckWalmart\DL\maskrcnn_model.onnx";
+       // private static string modelPath2 = @"C:\Users\MICHE\Desktop\Git_Sick\PalletCheckWalmart\DL\RaisedNailsDetector4.onnx";
+
+
+        private static string modelPath = "../../../DL/maskrcnn_model.onnx";
+        private static string modelPath2 = "../../../DL/RaisedNailsDetector4.onnx";
+       
+
         private static InferenceSession session;
         private static InferenceSession session2;
 
@@ -156,7 +162,7 @@ namespace PalletCheck
         {
             // Redimensionar la imagen a  ( según el tamaño esperado por el modelo)
             Bitmap resizedImage = new Bitmap(image, new System.Drawing.Size(width, heigth));
-            resizedImage.Save("C:/Users/MICHE/Desktop/Git_Sick/DL/MaskRcnn/Training/data/TopSplit/result.png", ImageFormat.Png);
+            //resizedImage.Save("../../../DL/Viz/ result.png", ImageFormat.Png);
             // Convertir la imagen a un array de píxeles (canales RGB)
 
             float[] imageData = new float[3 * width * heigth]; // CHW en lugar de HWC
