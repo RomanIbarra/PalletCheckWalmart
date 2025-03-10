@@ -383,3 +383,4 @@ FodyWeavers.xsd
 /bin/x64/Debug/PalletCheck.exe
 /obj/x64/Debug/PalletCheck.exe
 /obj/x64/Debug/PalletCheck_MarkupCompile.lref
+*.onnx

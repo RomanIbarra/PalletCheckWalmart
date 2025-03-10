@@ -46,6 +46,8 @@ namespace PalletCheck
             T_H5,
             T_H6,
             T_H7,
+            T_H8,
+            T_H9,
             L_B1,
             L_B2,
             L_B3,

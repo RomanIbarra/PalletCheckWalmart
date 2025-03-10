@@ -9,7 +9,10 @@ namespace PalletCheck
     internal class DatasetExtraction
     {
 
+        private static string _Range = "../../../Dataset/Range/";
+        private static string _Reflectance = "../../../Dataset/Reflectance/";
 
+        /*
         private static string Top_Range = "../../../Dataset/Top/Range/";
         private static string Top_Reflectance = "../../../Dataset/Top/Reflectance/";
 
@@ -28,7 +31,7 @@ namespace PalletCheck
         private static string Back_Range = "../../../Dataset/Back/Range/";
         private static string Back_Reflectance = "../../../Dataset/Back/Reflectance/";
 
-
+        */
 
 
 
@@ -77,17 +80,7 @@ namespace PalletCheck
                 };
 
                 String format = Convert.ToString(cntr) + ".png";
-                if (PalletPos == 0) Range.SaveImage(Top_Range + format, true); Refl.SaveImage(Top_Reflectance + format, true);
-                if (PalletPos == 1) Range.SaveImage(Bottom_Range + format, true); Refl.SaveImage(Bottom_Reflectance + format, true);
-                if (PalletPos == 2) Range.SaveImage(Left_Range + format, true); Refl.SaveImage(Left_Reflectance + format, true);
-                if (PalletPos == 3) Range.SaveImage(Right_Range + format, true); Refl.SaveImage(Right_Reflectance + format, true);
-                if (PalletPos == 4) Range.SaveImage(Front_Range + format, true); Refl.SaveImage(Front_Reflectance + format, true);
-                if (PalletPos == 5) Range.SaveImage(Back_Range + format, true); Refl.SaveImage(Back_Reflectance + format, true);
-
-
-
-
-
+                 Range.SaveImage(_Range + format, true); Refl.SaveImage(_Reflectance + format, true);
 
             }
   
