@@ -21,7 +21,6 @@ using System.Windows.Shapes;
 using static PalletCheck.Pallet;
 using IFrame = Sick.GenIStream.IFrame;
 
-
 namespace PalletCheck
 {
     using static FromGenIStreamFrameConverter;
@@ -48,27 +47,6 @@ namespace PalletCheck
         TIMEOUT
     }
 
-    public static class CustomProperties
-    {
-        public static readonly DependencyProperty ShowScaleButtonProperty =
-            DependencyProperty.RegisterAttached(
-                "ShowScaleButton",
-                typeof(Visibility),
-                typeof(CustomProperties),
-                new FrameworkPropertyMetadata(Visibility.Visible, FrameworkPropertyMetadataOptions.Inherits)
-            );
-
-        public static void SetShowScaleButton(DependencyObject element, Visibility value)
-        {
-            element.SetValue(ShowScaleButtonProperty, value);
-        }
-
-        public static Visibility GetShowScaleButton(DependencyObject element)
-        {
-            return (Visibility)element.GetValue(ShowScaleButtonProperty);
-        }
-    }
-
     public partial class MainWindow : Window
     {
         public static MainWindow Singleton;
@@ -85,6 +63,12 @@ namespace PalletCheck
 
         private readonly object _lockFileName = new object();// Define camera names
         string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R", "F", "B" };
+
+        /*Dataset Extraction*/
+        public static bool enableDatasetExtraction = true;
+        public static int cntr = 0;
+        public static int SelectPositionForExtraction = 2; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back
+
         public static ParamStorage GetParamStorage(PositionOfPallet position)
         {
             // Returns the corresponding ParamStorage according to the value of the PositionOfPallet enum.
