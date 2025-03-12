@@ -219,6 +219,43 @@ namespace PalletCheck
             }        
         }
 
+        private void ProcessMeasurementFrontBack(Action<bool> callback, PositionOfPallet position)
+        {
+            var env = (position == PositionOfPallet.Front) ? _envFront : _envBack;
+            var viewer = (position == PositionOfPallet.Front) ? ViewerFront : ViewerBack;
+            Pallet P = new Pallet(null, null, position);
+            P.BList = new List<Board>();
+            bool isFail = false;
+            //var paramStorage = position == PositionOfPallet.Left ? ParamStorageLeft : ParamStorageRight;
+
+            try
+            {
+                env.GetStepProgram("Main").RunFromBeginning();
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    viewer.ClearAll();
+                    viewer.DrawImage("FilteredImage", SubComponent.Intensity);
+                    P.BList.Clear();
+                });
+
+                ProcessCameraResult((int)position, !isFail ? InspectionResult.PASS : InspectionResult.FAIL);
+                callback?.Invoke(!isFail);
+            }
+
+            catch (Exception ex) 
+            {
+                UpdateTextBlock(LogText, ex.Message, MessageState.Normal);
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    viewer.ClearAll();
+                    viewer.DrawImage("Image", SubComponent.Intensity);
+                    MessageBox.Show(ex.Message);
+                });
+                ProcessCameraResult((int)position, false ? InspectionResult.PASS : InspectionResult.FAIL);
+                callback?.Invoke(false);
+            }          
+        }
+
         /// <summary>
         /// Attempts to generate and assign _FilenameDateTime. If it is null, a value is assigned.
         /// </summary>

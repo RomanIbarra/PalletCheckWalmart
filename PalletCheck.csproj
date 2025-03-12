@@ -293,6 +293,9 @@
   <ItemGroup>
     <Resource Include="JackTest.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SICKWhiteLogo.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

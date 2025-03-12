@@ -47,6 +47,28 @@ namespace PalletCheck
         ERROR,
         TIMEOUT
     }
+
+    public static class CustomProperties
+    {
+        public static readonly DependencyProperty ShowScaleButtonProperty =
+            DependencyProperty.RegisterAttached(
+                "ShowScaleButton",
+                typeof(Visibility),
+                typeof(CustomProperties),
+                new FrameworkPropertyMetadata(Visibility.Visible, FrameworkPropertyMetadataOptions.Inherits)
+            );
+
+        public static void SetShowScaleButton(DependencyObject element, Visibility value)
+        {
+            element.SetValue(ShowScaleButtonProperty, value);
+        }
+
+        public static Visibility GetShowScaleButton(DependencyObject element)
+        {
+            return (Visibility)element.GetValue(ShowScaleButtonProperty);
+        }
+    }
+
     public partial class MainWindow : Window
     {
         public static MainWindow Singleton;
@@ -370,8 +392,8 @@ namespace PalletCheck
 
 
             InitializeComponent();
-            Instance = this;
-            for (int i = 0; i < 6; i++)
+            Instance = this;       
+            for (int i = 0; i < 8; i++)
             {
                 string statusTextName = $"Camera{i + 1}StatusText";
                 string indicatorName = $"Camera{i + 1}StatusIndicator";
@@ -538,6 +560,8 @@ namespace PalletCheck
             });
             ViewerLeft.Environment = _envLeft;
             ViewerRight.Environment = _envRight;
+            ViewerFront.Environment = _envFront;
+            ViewerBack.Environment = _envBack;
            
             btnLoad_Right.IsEnabled = true; btnLoad_Left.IsEnabled = true;
             btnLoad_Top.IsEnabled = true; btnLoad_Bottom.IsEnabled = true;
@@ -741,7 +765,7 @@ namespace PalletCheck
 
                 try
                 {
-                    ProcessMeasurement(_status =>
+                    ProcessMeasurementFrontBack(_status =>
                     {
                     }, PositionOfPallet.Front);
                 }
@@ -767,7 +791,7 @@ namespace PalletCheck
 
                 try
                 {
-                    ProcessMeasurement(_status =>
+                    ProcessMeasurementFrontBack(_status =>
                     {
                     }, PositionOfPallet.Back);
                 }
@@ -1137,9 +1161,6 @@ namespace PalletCheck
                 throw new InvalidOperationException("An unexpected error occurred while processing the pallet.", ex);
             }
         }
-
-
-
 
         public Pallet CreateBottomPallet()
         {
@@ -1753,12 +1774,12 @@ namespace PalletCheck
                     else if (fileName.Contains("_R.XML"))
                     {
                         ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
-                        Logger.WriteLine("Loaded Right file: " + file.FullName);
+                        Logger.WriteLine("Loaded Front file: " + file.FullName);
                     }
                     else if (fileName.Contains("_R.XML"))
                     {
                         ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
-                        Logger.WriteLine("Loaded Right file: " + file.FullName);
+                        Logger.WriteLine("Loaded Back file: " + file.FullName);
                     }
                 }
                 catch (Exception ex)
@@ -2049,14 +2070,15 @@ namespace PalletCheck
 
         private readonly ConcurrentDictionary<int, InspectionResult> _results = new ConcurrentDictionary<int, InspectionResult>();
 
-
-
         private int _completedCount = 0; // Counter for completed cameras
         private readonly object _lockResult = new object();
-        private readonly int _totalCameras = 4; // Total number of cameras
+        private readonly int _totalCameras = ParamStorageGeneral.GetInt("CameraCount");
+        
 
         public void ProcessCameraResult(int cameraId, InspectionResult result)
         {
+            int cameras = ParamStorageGeneral.GetInt("CameraCount");
+            int _totalViews = cameras - 2; // Minus 2 because Bottom View uses 3 cameras
             // Store the result of the current camera
             lock (_lock)
             {
@@ -2065,7 +2087,7 @@ namespace PalletCheck
             }
 
             // Check if all cameras are completed
-            if (_completedCount == _totalCameras)
+            if (_completedCount == _totalViews)
             {
                 // Invoke final logic
                 FinalizeResults();
@@ -2097,7 +2119,7 @@ namespace PalletCheck
             // Update screen
             Console.WriteLine($"Total Results: {finalResult}");
             stopwatchProcess.Stop();
-            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.Green, 30);
+            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 20);
 
             // Save Results To CSV File
             Application.Current.Dispatcher.Invoke(() =>
@@ -2231,5 +2253,6 @@ namespace PalletCheck
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        
     }
 }
