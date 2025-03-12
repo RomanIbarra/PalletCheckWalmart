@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿#define SPLIT_BOARD_MODE
+
+
+
+using System.Windows;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,6 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sick.EasyRanger.Base;
 using static PalletCheck.MainWindow;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+
+
+
 
 namespace PalletCheck
 {
@@ -636,6 +645,43 @@ namespace PalletCheck
         //}
 
         //=====================================================================
+        public void ByteArray2bitmap(byte[] byteArray, int width, int height, Bitmap bitmap)
+        {
+            try
+            {
+                if (byteArray == null || byteArray.Length != width * height)
+                {
+                    throw new ArgumentException("El tamaño del byteArray no coincide con las dimensiones de la imagen.");
+                }
+
+                // Establecer paleta de grises
+                ColorPalette palette = bitmap.Palette;
+                for (int i = 0; i < 256; i++)
+                {
+                    palette.Entries[i] = Color.FromArgb(i, i, i);
+                }
+                bitmap.Palette = palette;
+
+                // Bloquear bits y copiar datos
+                BitmapData bmpData = bitmap.LockBits(
+                    new Rectangle(0, 0, width, height),
+                    ImageLockMode.WriteOnly,
+                    PixelFormat.Format8bppIndexed
+                );
+
+                Marshal.Copy(byteArray, 0, bmpData.Scan0, byteArray.Length);
+                bitmap.UnlockBits(bmpData);
+
+                // Return image
+
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al guardar la imagen: {ex.Message}");
+            }
+        }
         private void DeNoiseInPlace(CaptureBuffer CB,ParamStorage paramStorage)
         {
             UInt16[] Source = CB.Buf;
@@ -872,6 +918,24 @@ namespace PalletCheck
             
             if(position == PositionOfPallet.Bottom)
             {
+                //to extract datasaet 
+                if (enableDatasetExtraction)
+                {
+                    if (SelectPositionForExtraction == 1)
+                    {
+                        float[] floatA = MainWindow._envBottom.GetImageBuffer("FilteredImage")._range;
+                        byte[] byteA = MainWindow._envBottom.GetImageBuffer("FilteredImage")._intensity;
+                        int width = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.Width;
+                        int height = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.Height;
+                        float xScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.XResolution;
+                        float yScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.YResolution;
+                        cntr = cntr + 1;
+                        DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Bottom, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                    }
+                }
+
+
+
                 iCount = 5;
                 int TopX = FindTopX(ProbeCB,paramStorage);
                 int BottomY  = FindBottomY(ProbeCB,paramStorage);
@@ -965,6 +1029,27 @@ namespace PalletCheck
 
             if(position == PositionOfPallet.Top)
             {
+
+
+                //to extract datasaet 
+                if (enableDatasetExtraction) {
+                    if (SelectPositionForExtraction == 0)
+                    {
+                        float[] floatA = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
+                        byte[] byteA = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+                        int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
+                        int height = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
+                        float xScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.XResolution;
+                        float yScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.YResolution;
+                        cntr = cntr + 1;
+                        DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Top, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                    }
+                }
+
+
+
+
+
                 RoiType[] roiTypes = new RoiType[7];
                 int[] widths = new int[7];
                 int[] heights = new int[7];
@@ -978,8 +1063,11 @@ namespace PalletCheck
                 iCount = 7;
                 //
                 List<CaptureBuffer> captureBuffers = new List<CaptureBuffer>();
+                List<byte[]> bytesIntensity = new List<byte[]>();
+                List<int> W = new List<int>();
+                List<int> Y = new List<int>();
 
-                
+
                 for (int boardIndex = 0; boardIndex < 7; boardIndex++)
                 {
                     
@@ -987,15 +1075,28 @@ namespace PalletCheck
 
                    
                     float[] floatArray = MainWindow._envTop.GetImageBuffer(boardName)._range;
+                    byte[] byteArray = MainWindow._envTop.GetImageBuffer(boardName)._intensity;
+                    
+                    bytesIntensity.Add(byteArray);
+                    W.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Width);
+                    Y.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Height);
 
-                    //Convert to ushort 
+
+                    //Convert Range to ushort 
                     ushort[] ushortArray = new ushort[floatArray.Length];
                     for (int i = 0; i < floatArray.Length; i++)
                     {
                         ushortArray[i] = (ushort)(floatArray[i] +1000);
                     }
+                    //Convert Reflectance to ushort
+                    ushort[] ushortArrayRef = new ushort[byteArray.Length];
+                    for (int i = 0; i < ushortArrayRef.Length; i++)
+                    {
+                        ushortArrayRef[i] = byteArray[i];
+                    }
 
-                    // 创建并存储 CaptureBuffer
+
+                    // 创建并存储 CaptureBuffer Range
                     CaptureBuffer captureBuffer = new CaptureBuffer
                     {
                         Buf = ushortArray
@@ -1004,11 +1105,254 @@ namespace PalletCheck
                     captureBuffer.Width = MainWindow._envTop.GetImageBuffer(boardName).Info.Width;
                     captureBuffer.Height = MainWindow._envTop.GetImageBuffer(boardName).Info.Height;
                     captureBuffers.Add(captureBuffer);
+                    //Capture Buffer Reflectance        
+                    CaptureBuffer ReflBuf = new CaptureBuffer
+                    {
+                        Buf = ushortArrayRef,
+                        PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                        Width = MainWindow._envTop.GetImageBuffer(boardName).Info.Width,
+                        Height = MainWindow._envTop.GetImageBuffer(boardName).Info.Height,
+
+                    };
                 }
 
 
                 try
                 {
+#if SPLIT_BOARD_MODE
+                    ////Leading split inference//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //define the bitmap
+
+                    Bitmap bitmap = new Bitmap(W[0], Y[0], PixelFormat.Format8bppIndexed);
+
+                    //Convert the byte array to bitmap
+                    ByteArray2bitmap(bytesIntensity[0], W[0], Y[0], bitmap);
+                    // Define area of interest and cropp
+                     int startC = 0; int endC = W[0]; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
+                   // int startC = 49; int endC = 2400; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
+                    Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
+                    Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
+
+                    //Process the image for inference
+                    float[] imageData = model.ProcessBitmapForInference(croppedBitmap, croppedBitmap.Width, croppedBitmap.Height);
+                    float[][] results = model.RunInference(imageData, croppedBitmap.Height, croppedBitmap.Width);
+
+                    //Get the results
+                    float[] boxes = results[0];
+                    float[] labels = results[1];
+                    float[] scores = results[2];
+                    float[] masks = results[3];
+                    //Vizualice BB Results
+                    string LeadingMainImage = "VizDL/TopSplit/Leading.png";
+                    croppedBitmap.Save(LeadingMainImage, ImageFormat.Png);
+                    model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
+
+                    // Convert to32bppArgb to draw results and display it 
+                    Bitmap tempBitmap = new Bitmap(croppedBitmap.Width, croppedBitmap.Height, PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(tempBitmap))
+                    {
+                        g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmap.Width, croppedBitmap.Height));
+                    }
+                    croppedBitmap.Dispose(); // Liberar el anterior
+                    croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
+
+                    // Draw the segmented objects
+                    List<bool[,]> binaryMasks = model.ConvertMasksToBinary(masks, croppedBitmap.Width, croppedBitmap.Height, scores.Length);
+                    List<bool[]> binaryMasks2=model.ConvertMasksToBinary2(masks, croppedBitmap.Width, croppedBitmap.Height, scores.Length);
+                    
+                    string name = "Leading";
+
+
+                    bool img1Exist= false;
+                    bool img2Exist= false;
+                    int upperY1 = 0;
+                    int upperY2 = 0;
+                    int lowerY1 = 0;
+                    int lowerY2 = 0;
+
+                    model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
+                      ref img1Exist,ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2,true);
+
+                    Board H1 = null;
+                    Board H2 = null;
+
+                    int bM = binaryMasks2[0].Length;
+                    int cropedDimentions = croppedBitmap.Width * croppedBitmap.Height;
+                    int bufferLength = captureBuffers[0].Buf.Length;
+                    int bufferWidth = captureBuffers[0].Width;
+                    int bufferHeight = captureBuffers[0].Height;
+                    ushort[] ushortArray = new ushort[captureBuffers[0].Buf.Length];
+                    CaptureBuffer Test = new CaptureBuffer
+                    {
+                        Buf = captureBuffers[0].Buf,
+                        PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                        Width = W[0],
+                        Height = Y[0],
+
+                    };
+
+
+
+                    /*
+                    for (int i = 0; i < binaryMasks2[0].Length; i++) {
+
+                        if (binaryMasks2[0][i] == false) { 
+                        
+                        Test.Buf[i] = 0;
+
+                        }
+                    }
+
+
+
+                    */
+
+
+
+ 
+
+
+
+
+                    if (img1Exist && img2Exist)
+                    {//Both images exist Upper Y taked intop account
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                              startR, upperY2 + startR, paramStorage);
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                               upperY2 + startR, endR, paramStorage);
+                    }
+                    else if (img1Exist && !img2Exist)
+                    {//Only Upper exist Y taked intop account  
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                              startR, upperY2 + startR, paramStorage);
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                               upperY2 + startR, endR, paramStorage);
+                    }
+                    else if (!img1Exist && img2Exist)
+                    {//Only Lower exist lowerY taked intop account  
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                              startR, lowerY1 + startR, paramStorage);
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                                lowerY1 + startR, endR, paramStorage);
+                    }
+                    else
+                    {//No boards found then split the Main ROI at the middle
+                     //No image
+
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                                startR, ((startR + endR) / 2), paramStorage);
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                                ((startR + endR) / 2), endR, paramStorage);
+                    }
+
+
+
+
+
+                    Board H3 = ProbeVerticallyRotate90(captureBuffers[1], "H3", PalletDefect.DefectLocation.T_H3, 49, 2400, 1,
+                        (int)(ycs[1] - heights[1] / 2), (int)(ycs[1] + heights[1] / 2), paramStorage);
+
+
+                    Board H4 = ProbeVerticallyRotate90(captureBuffers[2], "H4", PalletDefect.DefectLocation.T_H4, 49, 2400, 1,
+                        (int)(ycs[2] - heights[2] / 2), (int)(ycs[2] + heights[2] / 2), paramStorage);
+                    Board H5 = ProbeVerticallyRotate90(captureBuffers[3], "H5", PalletDefect.DefectLocation.T_H5, 49, 2400, 1,
+                        (int)(ycs[3] - heights[3] / 2), (int)(ycs[3] + heights[3] / 2), paramStorage);
+                    Board H6 = ProbeVerticallyRotate90(captureBuffers[4], "H6", PalletDefect.DefectLocation.T_H6, 49, 2400, 1,
+                        (int)(ycs[4] - heights[4] / 2), (int)(ycs[4] + heights[4] / 2), paramStorage);
+                    Board H7 = ProbeVerticallyRotate90(captureBuffers[5], "H7", PalletDefect.DefectLocation.T_H7, 49, 2400, 1,
+                        (int)(ycs[5] - heights[5] / 2), (int)(ycs[5] + heights[5] / 2), paramStorage);
+
+
+
+
+
+
+                    //define the bitmap
+                    bitmap = new Bitmap(W[6], Y[6], PixelFormat.Format8bppIndexed);
+                    //Convert the byte array to bitmap
+                    ByteArray2bitmap(bytesIntensity[6], W[6], Y[6], bitmap);
+
+
+                    // Define area of interest and cropp
+                    startR = (int)(ycs[6] - heights[6] / 2);
+                    endR = (int)(ycs[6] + heights[6] / 2);
+                    cropRect = new Rectangle(startC, startR, endC - startC, endR - startR);
+                    croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
+
+
+                    //Process the image for inference
+                    imageData = model.ProcessBitmapForInference(croppedBitmap, croppedBitmap.Width, croppedBitmap.Height);
+                    results = model.RunInference(imageData, croppedBitmap.Height, croppedBitmap.Width);
+
+                    //Get the results
+                    boxes = results[0];
+                    labels = results[1];
+                    scores = results[2];
+                    masks = results[3];
+
+                    //Vizualice BB Results
+                    string TrailingMainImage = "vizDL/TopSplit/Trailing.png";
+                    croppedBitmap.Save(TrailingMainImage, ImageFormat.Png);
+                    model.DrawTopBoxes2(TrailingMainImage, boxes, scores, "BB_Trailing.png");
+
+                    // Convert to32bppArgb to draw results and display it 
+                    tempBitmap = new Bitmap(croppedBitmap.Width, croppedBitmap.Height, PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(tempBitmap))
+                    {
+                        g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmap.Width, croppedBitmap.Height));
+                    }
+                    croppedBitmap.Dispose(); // Liberar el anterior
+                    croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
+
+                    // Draw the segmented objects
+                    binaryMasks = model.ConvertMasksToBinary(masks, croppedBitmap.Width, croppedBitmap.Height, scores.Length);
+                    name = "Trailing";
+
+
+                    img1Exist = false;
+                    img2Exist = false;
+                    upperY1 = 0;
+                    upperY2 = 0;
+                    lowerY1 = 0;
+                    lowerY2 = 0;
+
+                    model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
+                      ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2,true);
+                    Board H8 = null;
+                    Board H9 = null;
+
+                    if (img1Exist && img2Exist)
+                    {//Both images exist Upper Y taked intop account
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                              startR, upperY2 + startR, paramStorage);
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                               upperY2 + startR, endR, paramStorage);
+                    }
+                    else if (img1Exist && !img2Exist)
+                    {//Only Upper exist Y taked intop account  
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                              startR, upperY2 + startR, paramStorage);
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                               upperY2 + startR, endR, paramStorage);
+                    }
+                    else if (!img1Exist && img2Exist)
+                    {//Only Lower exist lowerY taked intop account  
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                              startR, lowerY1 + startR, paramStorage);
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                                lowerY1 + startR, endR, paramStorage);
+                    }
+                    else
+                    {//No boards found then split the Main ROI at the middle
+                     //No image
+
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                                startR, ((startR + endR) / 2), paramStorage);
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                                ((startR + endR) / 2), endR, paramStorage);
+                    }
+#else
+
                     Board H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
                         (int)(ycs[0] - heights[0] / 2), (int)(ycs[0] + heights[0] / 2), paramStorage);
                     Board H2 = ProbeVerticallyRotate90(captureBuffers[1], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
@@ -1023,13 +1367,16 @@ namespace PalletCheck
                         (int)(ycs[5] - heights[5] / 2), (int)(ycs[5] + heights[5] / 2), paramStorage);
                     Board H7 = ProbeVerticallyRotate90(captureBuffers[6], "H7", PalletDefect.DefectLocation.T_H7, 49, 2400, 1,
                         (int)(ycs[6] - heights[6] / 2), (int)(ycs[6] + heights[6] / 2), paramStorage);
+#endif
 
-                    int numberOfWidths = 7; // Total Board
+
+
+                    int numberOfWidths = 9; // Total Board
                     int[] expWidths = new int[numberOfWidths]; // for expected width
                                                                // ：ExpHeight
                     int ExpHeight = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.HBoardLength_in);
 
-                    for (int i = 1; i <= numberOfWidths; i++)
+                    for (int i = 1; i+2 <= numberOfWidths; i++)
                     {
                         string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i);
                         expWidths[i - 1] = (int)MainWindow.GetParamStorage(position).GetPixY(paramName);
@@ -1042,6 +1389,8 @@ namespace PalletCheck
                     H5.ExpectedAreaPix = expWidths[4] * ExpHeight;
                     H6.ExpectedAreaPix = expWidths[5] * ExpHeight;
                     H7.ExpectedAreaPix = expWidths[6] * ExpHeight;
+                    H8.ExpectedAreaPix = expWidths[7] * ExpHeight;
+                    H9.ExpectedAreaPix = expWidths[8] * ExpHeight;
 
                     H1.XResolution = SourceCB.xScale;
                     H2.XResolution = SourceCB.xScale;
@@ -1050,6 +1399,8 @@ namespace PalletCheck
                     H5.XResolution = SourceCB.xScale;
                     H6.XResolution = SourceCB.xScale;
                     H7.XResolution = SourceCB.xScale;
+                    H8.XResolution = SourceCB.xScale;
+                    H9.XResolution = SourceCB.xScale;
 
 
                     H1.YResolution = SourceCB.yScale;
@@ -1059,6 +1410,8 @@ namespace PalletCheck
                     H5.YResolution = SourceCB.yScale;
                     H6.YResolution = SourceCB.yScale;
                     H7.YResolution = SourceCB.yScale;
+                    H8.YResolution = SourceCB.yScale;
+                    H9.YResolution = SourceCB.yScale;
 
                     //H1.MinWidth = expWidths[0] * 0.7;
                     //H2.MinWidth = expWidths[1] * 0.5;
@@ -1070,34 +1423,53 @@ namespace PalletCheck
 
                     // Assigning minimum widths for narrow boards
                     H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingNarrowBoardMinimumWidth);
-                    H7.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingNarrowBoardMinimumWidth);
                     H2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2NarrowBoardMinimumWidth);
                     H3.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3NarrowBoardMinimumWidth);
                     H4.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4NarrowBoardMinimumWidth);
                     H5.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5NarrowBoardMinimumWidth);
+/*note*/            //Change H7, H8, H9 WHEN INTEGRATED IN THE XML
                     H6.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
+                    H7.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
+                    H8.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
+                    H9.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingNarrowBoardMinimumWidth);
+
+
+
 
                     // Assigning minimum widths for missing chunks
                     H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMissingChunkMinimumWidth);
-                    H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumWidth);
                     H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumWidth);
                     H3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumWidth);
                     H4.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumWidth);
                     H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth);
                     H6.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
+                    H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
+                    H8.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
+                    H9.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumWidth);
 
                     // Assigning minimum lengths for missing chunks
                     H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMissingChunkMinimumLength);
-                    H7.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumLength);
                     H2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumLength);
                     H3.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumLength);
                     H4.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumLength);
                     H5.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumLength);
                     H6.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
+                    H7.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
+                    H8.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
+                    H9.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumLength);
 
                     //  20250110 New Added for Missing wood across length //H Board lengs parameters on pallet dimension file
                     H1.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+
+                    /*H2.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H3.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H4.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H5.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
+                    H6.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);*/
+
                     H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+                  
+                    
                     H1.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
                     H7.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
 
@@ -1111,13 +1483,13 @@ namespace PalletCheck
                     float maxallowableH6 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MaxAllowedMissingWood);
 
                     H1.MaxAllowable = maxallowableLeading;
-                    H7.MaxAllowable = maxallowableTrailing;
                     H2.MaxAllowable = maxallowableH2;
                     H3.MaxAllowable = maxallowableH3;
                     H4.MaxAllowable = maxallowableH4;
                     H5.MaxAllowable = maxallowableH5;
                     H6.MaxAllowable = maxallowableH6;
-                  
+                    H7.MaxAllowable = maxallowableTrailing;
+
                     BList.Add(H1);
                     BList.Add(H2);
                     BList.Add(H3);
@@ -1125,6 +1497,8 @@ namespace PalletCheck
                     BList.Add(H5);
                     BList.Add(H6);
                     BList.Add(H7);
+                    BList.Add(H8);
+                    BList.Add(H9);
                 }
 
                 catch (Exception ex)
@@ -1137,7 +1511,7 @@ namespace PalletCheck
                 }              
             }
 
-            for (int i = 0; i < iCount; i++)
+            for (int i = 0; i < iCount+2; i++)
             {
                 Board B = BList[i]; // Get the current board from the list
 
@@ -2400,7 +2774,7 @@ namespace PalletCheck
             }
 
             // Jack Note: Retrieve the maximum height a nail can have to be considered raised
-            int MNH = (int)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+            float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
 
             // Jack Note: Get parameters for nail detection algorithm
             int NSP = paramStorage.GetInt(StringsLocalization.NailNeighborSamplePoints);

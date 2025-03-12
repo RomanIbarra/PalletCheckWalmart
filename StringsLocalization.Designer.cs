@@ -466,6 +466,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BN_HNarrowBoardMinimumWidthAcrossLenght.
+        /// </summary>
+        internal static string HNarrowBoardMinimumWidthAcrossLenght {
+            get {
+                return ResourceManager.GetString("HNarrowBoardMinimumWidthAcrossLenght", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BN_LeadingBoardMinimumWidthAcrossLength.
         /// </summary>
         internal static string LeadingBoardMinimumWidthAcrossLength {
