@@ -65,11 +65,30 @@ namespace PalletCheck
 
 
         /*Dataset Extraction*/
-        public static bool enableDatasetExtraction = true;
+        public static bool enableDatasetExtraction = false;
         public static int cntr=0;
-        public static int SelectPositionForExtraction = 2; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back
+        public static int SelectPositionForExtraction = 0; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
+
+        /*Is resize is needed for inference or for sabing images use:  EX. Bitmap resizedImage = model.ResizeBitmap(bitmapClassifier, 512, 512);*/
+
+        /*Save results Top Split images*/
+        public static bool isSaveTopSplitResults = false;
+        /*Save results Sides nails protruding outside of pallet*/
+        public static bool isSaveSideNailsProtrudingResults = false;
+        /*Save results for pallet classifier*/
+        public static bool isSavePalletClassifierResults = false;
+        /*Save results Top nails with head cutoff*/
+        public static bool isSaveTopRNWHCO = true;
+        /*Save results Bottom nails with head cutoff*/
+        public static bool isSaveBottomRNWHCO = false;
 
 
+
+        /*Deep Learning activaion for Right and Left*/
+        public static bool isDeepLActive = false;
+
+        /*Pallet Classifier*/
+        public static int PalletClassifier = 5;
 
 
         public static ParamStorage GetParamStorage(PositionOfPallet position)
@@ -921,6 +940,7 @@ namespace PalletCheck
             try
             {
                 TotalResultTextBlock.Text = "";
+                PalletType.Text = "Pallet Class";
                 //// Ensure controls are initialized and updated on the UI thread
                 //if (imgPassSymbol == null || imgPassText == null || imgFailSymbol == null || imgFailText == null)
                 //{
@@ -1618,7 +1638,7 @@ namespace PalletCheck
 
                             // Wait 10 seconds
                             Console.WriteLine("Waiting 10 seconds...");
-                            await Task.Delay(4000);
+                            await Task.Delay(2000);
                         }
 
                         Console.WriteLine("All subfolders processed.");
@@ -2012,6 +2032,8 @@ namespace PalletCheck
             Console.WriteLine($"Total Results: {finalResult}");
             stopwatchProcess.Stop();
             UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.Green, 30);
+            if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
+            if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
 
             // Save Results To CSV File
             Application.Current.Dispatcher.Invoke(() =>
@@ -2082,7 +2104,19 @@ namespace PalletCheck
           
         }
 
-
+        private void btnShowDl_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                isDeepLActive = !isDeepLActive; // Cambia el estado al presionar
+                btnShow_DL.Content = isDeepLActive ? "DeepL ✓" : "DeepL"; // Cambia el texto del botón
+                Console.WriteLine($"DeepL Activo: {isDeepLActive}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
         private void btnShow3D_Click(object sender, RoutedEventArgs e)
         {
             try

@@ -195,6 +195,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center" Grid.Column="1" OpacityMask="Black" >
+                    <Button x:Name="btnShow_DL"  Click="btnShowDl_Click" Margin="10,10,0,0"  Content="DeepL" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="12" Width="60" />
                     <Button x:Name="btnLoad_Right" Click="Load_Right_Click" Margin="10,10,0,0" IsEnabled="False"  Content="Process Right" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
                     <Button x:Name="btnSetting_Right" Click="btnSettingEach_Click" Margin="10,10,0,0"   Content="Setting Right" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
                     <Button x:Name="btnShow_Right"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />
@@ -223,6 +224,7 @@
                 <RowDefinition Height="60"/>
             </Grid.RowDefinitions>
             <TextBlock x:Name="TotalResultTextBlock" Text="Result" Foreground="White" FontSize="80" FontWeight="Heavy" VerticalAlignment="Top" Margin="10,0,0,0"/>
+            <TextBlock x:Name="PalletType" Text="Pallet Class:" Foreground="White" FontSize="20" FontWeight="Heavy" VerticalAlignment="Top" Margin="10,116,0,0"/>
 
 
 
