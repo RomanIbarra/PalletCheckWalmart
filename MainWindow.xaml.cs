@@ -56,6 +56,9 @@ namespace PalletCheck
         public static ParamStorage ParamStorageBottom { get; set; } = new ParamStorage();
         public static ParamStorage ParamStorageLeft { get; set; } = new ParamStorage();
         public static ParamStorage ParamStorageRight { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageFront { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageBack { get; set; } = new ParamStorage();
+
         string _FilenameDateTime { get; set; }
         string _DirectoryDateHour { get; set; }
 
@@ -1810,7 +1813,7 @@ namespace PalletCheck
             {
                 if (Password.Passed)
                 {
-                    ParamConfig PC = new ParamConfig(ParamStorageGeneral, "LastUsedParamFileGeneral.txt");
+                    ParamConfig PC = new ParamConfig(ParamStorageGeneral, "LastUsedParamFileGeneral.txt", null);
                     PC.Show();
                 }
             };
@@ -1924,25 +1927,46 @@ namespace PalletCheck
             // Select the corresponding ParamStorage based on the button name.
             ParamStorage selectedParamStorage = null;
             string LastUsedParamName = null;
+            string position = null;
+
             switch (clickedButton.Name)
             {
                 case "btnSetting_Top":
-
                     selectedParamStorage = ParamStorageTop;
+                    position = "Top";
                     LastUsedParamName = "LastUsedParamFileTop.txt";
                     break;
+
                 case "btnSetting_Bottom":
                     selectedParamStorage = ParamStorageBottom;
+                    position = "Bottom";
                     LastUsedParamName = "LastUsedParamFileBottom.txt";
                     break;
+
                 case "btnSetting_Left":
                     selectedParamStorage = ParamStorageLeft;
+                    position = "Left";
                     LastUsedParamName = "LastUsedParamFileLeft.txt";
                     break;
+
                 case "btnSetting_Right":
                     selectedParamStorage = ParamStorageRight;
+                    position = "Right";
                     LastUsedParamName = "LastUsedParamFileRight.txt";
                     break;
+
+                case "btnSetting_Front":
+                    position = "Front";
+                    selectedParamStorage = ParamStorageFront;
+                    LastUsedParamName = "";
+                    break;
+
+                /*case "btnSetting_Back":
+                    position = "Back";
+                    selectedParamStorage = ParamStorageBack;
+                    LastUsedParamName = "";
+                    break;*/
+
                 default:
                     MessageBox.Show("Unknown button, unable to select ParamStorage.");
                     return;
@@ -1953,7 +1977,7 @@ namespace PalletCheck
             {
                 if (Password.Passed && selectedParamStorage != null)
                 {
-                    ParamConfig PC = new ParamConfig(selectedParamStorage, LastUsedParamName);
+                    ParamConfig PC = new ParamConfig(selectedParamStorage, LastUsedParamName, position);
                     PC.Text = clickedButton.Name;
                     PC.Show();
                 }
