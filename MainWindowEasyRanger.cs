@@ -11,6 +11,31 @@ using System.Windows;
 using System.Windows.Controls;
 using static PalletCheck.Pallet;
 using System.Windows.Media.Media3D;
+using Sick.GenIStream;
+using IFrame = Sick.GenIStream.IFrame;
+using Frame = Sick.GenIStream.Frame;
+using System.Threading;
+using System.Collections.Concurrent;
+using System.Data;
+using System.Runtime.CompilerServices;
+using static ScottPlot.Plottable.PopulationPlot;
+using Sick.EasyRanger;
+using Sick.EasyRanger.Controls;
+using Sick.EasyRanger.Base;
+using Sick.EasyRanger.Controls.Common;
+using Sick.StreamUI.ImageFormat;
+using System.Threading.Tasks;
+using System.Windows.Shapes;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using GDI = System.Drawing; // Alias para System.Drawing
+using GDII = System.Drawing.Imaging;
+using System.Drawing;
+using System.Windows.Media.Imaging;
+using System.Collections;
+using Path = System.IO.Path;
+
 
 namespace PalletCheck
 {
@@ -26,6 +51,126 @@ namespace PalletCheck
         System.Windows.Media.Color yellow = System.Windows.Media.Color.FromRgb(255, 255, 0);
         System.Windows.Media.Color blue = System.Windows.Media.Color.FromRgb(0, 0, 255);
         System.Windows.Media.Color white = System.Windows.Media.Color.FromRgb(255, 255, 255);
+
+        public float GetRangeValueAt(int x, int y, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            // Validar que la coordenada esté dentro de los límites de la imagen
+            if (x < 0 || x >= rangeBuffer.Width || y < 0 || y >= rangeBuffer.Height)
+            {
+                throw new ArgumentOutOfRangeException("Las coordenadas están fuera del rango de la imagen.");
+            }
+
+            // Calcular el índice en el buffer unidimensional
+            int index = y * rangeBuffer.Width + x;
+
+            return floatArray[index];
+        }
+
+
+
+        public float GetMaxRangeInSquare(int x, int y, int l, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            // Definir los límites de la región de interés
+            int startX = Math.Max(0, x - l);
+            int endX = Math.Min(rangeBuffer.Width - 1, x + l);
+            int startY = Math.Max(0, y - l);
+            int endY = Math.Min(rangeBuffer.Height - 1, y + l);
+
+            float maxVal = float.MinValue;
+
+            Console.WriteLine("Cuadrado de valores en la región de interés:");
+
+            // Recorrer la región de interés
+            for (int i = startY; i <= endY; i++)
+            {
+                string rowValues = "";
+                for (int j = startX; j <= endX; j++)
+                {
+                    int index = i * rangeBuffer.Width + j;
+                    float value = floatArray[index];
+                    if (!float.IsNaN(value))
+                    {
+                        maxVal = Math.Max(maxVal, value);
+                    }
+                    rowValues += value.ToString("F2") + " ";
+                }
+                Console.WriteLine(rowValues.Trim());
+            }
+
+            return maxVal;
+        }
+        public int GetHorizontalPosition(int x, CaptureBuffer rangeBuffer)
+        {
+            int third = rangeBuffer.Width / 3;
+            if (x < third)
+            {
+                return 0;
+            }
+            else if (x < 2 * third)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+
+        public float GetMaxRangeInCircle(int x, int y, int diameter, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            int radius = diameter / 2;
+            float maxVal = 0;
+
+            for (int i = -radius; i <= radius; i++)
+            {
+                for (int j = -radius; j <= radius; j++)
+                {
+                    int newX = x + i;
+                    int newY = y + j;
+
+                    // Verificar si el punto está dentro del círculo y dentro de los límites de la imagen
+                    if (newX >= 0 && newX < rangeBuffer.Width && newY >= 0 && newY < rangeBuffer.Height &&
+                        (i * i + j * j) <= (radius * radius))
+                    {
+                        float value = GetRangeValueAt(newX, newY, rangeBuffer, floatArray);
+                        if (value > maxVal)
+                        {
+                            maxVal = value;
+                        }
+                    }
+                }
+            }
+
+            return maxVal;
+        }
+
+        public float GetMaxRangeInCircle2(int x, int y, int diameter, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            int radius = diameter / 2;
+            float maxVal = 0;
+
+            for (int i = -radius; i <= radius; i++)
+            {
+                for (int j = -radius; j <= radius; j++)
+                {
+                    int newX = x + i;
+                    int newY = y + j;
+
+                    // Verificar si el punto está dentro del círculo y dentro de los límites de la imagen
+                    if (newX >= 0 && newX < rangeBuffer.Width && newY >= 0 && newY < rangeBuffer.Height &&
+                        (i * i + j * j) <= (radius * radius))
+                    {
+                        float value = GetRangeValueAt(newX, newY, rangeBuffer, floatArray);
+                        if (!float.IsNaN(value) && !float.IsInfinity(value) && value > maxVal)
+                        {
+                            maxVal = value;
+                        }
+                    }
+                }
+            }
+
+            return maxVal;
+        }
 
         private void ProcessMeasurement(Action<bool> callback, PositionOfPallet position)
         {
@@ -87,7 +232,8 @@ namespace PalletCheck
                 double[] missingChunks = env.GetDouble("OutputMissChunk");
                 double[] RotateResult = env.GetDouble("OutputAngle");
                 double[] blockHeight = env.GetDouble("OutputHeights");
-                Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
+                //Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
+                System.Windows.Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
                 double XResolutin = env.GetDouble("M_XResolution", 0);
                 double YResolutin = env.GetDouble("M_YResolution", 0);
                 int [] intClearance = env.GetInteger("ClearanceInt");
@@ -96,6 +242,55 @@ namespace PalletCheck
                 int[] middleBoardHasBlobs = env.GetInteger("MiddleBoardHasBlobs");
                 bool isFail = false;
 
+
+
+
+                //to extract datasaet 
+                float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
+                byte[] byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                //Range- Convert to ushort 
+                ushort[] ushortArray = new ushort[floatArray.Length];
+                for (int i = 0; i < floatArray.Length; i++)
+                {
+                    ushortArray[i] = (ushort)(floatArray[i] + 1000);
+                }
+                // 创建并存储 CaptureBuffer
+                CaptureBuffer rangeBuffer = new CaptureBuffer
+                {
+                    Buf = ushortArray,
+
+                    Width = env.GetImageBuffer("FilteredImage").Info.Width,
+                    Height = env.GetImageBuffer("FilteredImage").Info.Height,
+                    xScale = env.GetImageBuffer("FilteredImage").Info.XResolution,
+                    yScale = env.GetImageBuffer("FilteredImage").Info.YResolution
+
+                };
+
+
+                // Convert to ushort array (byte -> ushort)
+                ushort[] ushortArrayRef = new ushort[byteArray.Length];
+                for (int i = 0; i < ushortArrayRef.Length; i++)
+                {
+                    ushortArrayRef[i] = byteArray[i];
+                }
+
+                // Create a reference buffer
+                CaptureBuffer ReflBuf = new CaptureBuffer
+                {
+                    Buf = ushortArrayRef,
+                    PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                    Width = env.GetImageBuffer("FilteredImage").Info.Width,
+                    Height = env.GetImageBuffer("FilteredImage").Info.Height,
+                    xScale = env.GetImageBuffer("FilteredImage").Info.XResolution,
+                    yScale = env.GetImageBuffer("FilteredImage").Info.YResolution
+                };
+
+
+
+
+
+
+
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     viewer.ClearAll();
@@ -103,14 +298,101 @@ namespace PalletCheck
                     viewer.DrawRoi("OutputRegionsForNails", -1, red, 250);
 
 
+                    if (position == PositionOfPallet.Right)
+                    {
+                        if (SelectPositionForExtraction == 3)
+                        {
+                             floatArray = env.GetImageBuffer("FilteredImage")._range;
+                             byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                            int width = env.GetImageBuffer("FilteredImage").Info.Width;
+                            int height = env.GetImageBuffer("FilteredImage").Info.Height;
+                            float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
+                            float yScale = env.GetImageBuffer("FilteredImage").Info.YResolution;
+                            cntr = cntr + 1;
+                            DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Right, byteArray, floatArray, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                        }
 
-                    
+
+                        if (isDeepLActive)
+                        {
+                            Bitmap bitmap = new Bitmap(ReflBuf.Width, ReflBuf.Height, GDII.PixelFormat.Format8bppIndexed);
+
+                            model model = new model();
+                            model.ByteArray2bitmap(byteArray, bitmap.Width, bitmap.Height, bitmap);
+
+
+                            string exePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                            // Construir la ruta absoluta del archivo de imagen
+                            string relativePath = "VizDL/Rigth/Rigth.png";
+                            string saveAt = Path.Combine(exePath, relativePath);
+                            ReflBuf.SaveImage(relativePath, true);
+                           // bitmap.Save(saveAt, GDII.ImageFormat.Png);
+
+
+                            //Process the image for inference
+                            float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
+                            float[][] results = model.RunInference2(imageData, bitmap.Height, bitmap.Width);
+
+
+                            //Get the results
+                            float[] boxes = results[0];
+                            float[] labels = results[1];
+                            float[] scores = results[2];
+                            float[] masks = results[3];
+
+                            //Vizualice BB Results
+
+                            //model.DrawTopBoxes2(saveAt, boxes, scores, "RigthTest.png");
+                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Rigth/RigthResults.png",isSaveSideNailsProtrudingResults);
+                            if (centroids.Length == 2)
+                            {
+                                int Cx1 = centroids[0];
+                                int Cy1 = centroids[1];
+
+                                float maxHeight = GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, floatArray);
+                                Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
+                                float Object1 = GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, floatArray);
+                                int pos1 = GetHorizontalPosition(Cx1, rangeBuffer);
+                                if (Object1 > NailHeight)
+                                {
+
+
+                                    for (int i = 0; i < 3; i++)
+                                    {
+
+                                        if (pos1 == i)
+                                        {
+                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                            viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
+
+                                        }
+
+
+
+
+                                    }
+                                }
+                                else
+                                {
+
+                                     viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
+                                }
+
+
+                            }
+
+
+                        }
+
+                    }
+
                     //Extract dataset
                     if (position == PositionOfPallet.Left) {
 
                         if (SelectPositionForExtraction == 2) {
-                            float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
-                            byte[] byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                             floatArray = env.GetImageBuffer("FilteredImage")._range;
+                             byteArray = env.GetImageBuffer("FilteredImage")._intensity;
                             int width = env.GetImageBuffer("FilteredImage").Info.Width;
                             int height = env.GetImageBuffer("FilteredImage").Info.Height;
                             float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
@@ -119,25 +401,87 @@ namespace PalletCheck
                             DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Left, byteArray, floatArray, width, height, xScale, yScale, cntr, enableDatasetExtraction);
                         }
 
-                    }
-                    if (position == PositionOfPallet.Right)
-                    {
-                        if (SelectPositionForExtraction == 3)
+                        if (isDeepLActive)
                         {
-                            float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
-                            byte[] byteArray = env.GetImageBuffer("FilteredImage")._intensity;
-                            int width = env.GetImageBuffer("FilteredImage").Info.Width;
-                            int height = env.GetImageBuffer("FilteredImage").Info.Height;
-                            float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
-                            float yScale = env.GetImageBuffer("FilteredImage").Info.YResolution;
-                            cntr = cntr + 1;
-                            DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Right, byteArray, floatArray, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                            Bitmap bitmap = new Bitmap(ReflBuf.Width, ReflBuf.Height, GDII.PixelFormat.Format8bppIndexed);
+
+                            model model = new model();
+                            model.ByteArray2bitmap(byteArray, bitmap.Width, bitmap.Height, bitmap);
+
+                            //String saveAt = "C:/Users/MICHE/Desktop/Git_Sick/DL/MaskRcnn/Training/data/FullLeft/Images/test.png";
+                            string exePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                            // Construir la ruta absoluta del archivo de imagen
+                            string relativePath = "VizDL/Left/Left.png";
+                            string saveAt = Path.Combine(exePath, relativePath);
+                            ReflBuf.SaveImage(relativePath, true);
+                           // bitmap.Save(saveAt, GDII.ImageFormat.Png);
+
+
+                            //Process the image for inference
+                            float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
+                            float[][] results = model.RunInference2(imageData, bitmap.Height, bitmap.Width);
+
+
+                            //Get the results
+                            float[] boxes = results[0];
+                            float[] labels = results[1];
+                            float[] scores = results[2];
+                            float[] masks = results[3];
+
+                            //Vizualice BB Results
+
+                            
+                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Left/LeftResults.png",isSaveSideNailsProtrudingResults);
+                            if (centroids.Length == 2)
+                            {
+                                int Cx1 = centroids[0];
+                                int Cy1 = centroids[1];
+
+                                float maxHeight = GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, floatArray);
+                                Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
+                                float Object1 = GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, floatArray);
+                                int pos1 = GetHorizontalPosition(Cx1, rangeBuffer);
+                                if (Object1 > NailHeight)
+                                {
+
+
+                                    for (int i = 0; i < 3; i++)
+                                    {
+
+                                        if (pos1 == i)
+                                        {
+                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                            viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
+
+                                        }
+
+
+
+
+                                    }
+                                }
+                                else
+                                {
+
+                                    viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
+                                }
+
+
+                            }
+
+
                         }
+
                     }
 
 
 
 
+
+
+
+                    /*
                     for (int i = 0; i < 3; i++)
                     {
                         if (HasNails[i] == 1)
@@ -146,6 +490,8 @@ namespace PalletCheck
                             isFail = true;
                         }
                     }
+
+                    */
 
                     for (int i = 0; i < 2; i++)
                     {

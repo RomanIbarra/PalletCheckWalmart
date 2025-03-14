@@ -267,6 +267,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="DL_Models\" />
     <Folder Include="icons\" />
     <Folder Include="Resources\" />
     <Folder Include="SICK\" />

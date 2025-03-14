@@ -12,6 +12,8 @@ using Sick.EasyRanger.Base;
 using static PalletCheck.MainWindow;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Windows.Media.Imaging;
+using System.Collections;
 
 
 
@@ -1048,6 +1050,101 @@ namespace PalletCheck
 
 
 
+                if (isDeepLActive)
+                {
+                    /*Classifier inference---------------------------------------------------------------------------------------------------------------------------------*/
+                    int widthC = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
+                    int heightC = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
+                    byte[] byteArrayTop = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+                    Bitmap bitmapTop = new Bitmap(widthC, heightC, PixelFormat.Format8bppIndexed);
+
+                    //Convert the byte array to bitmap
+                    ByteArray2bitmap(byteArrayTop, widthC, heightC, bitmapTop);
+                    Bitmap resizedImage = model.ResizeBitmap(bitmapTop, 512, 512);
+
+                    if (isSavePalletClassifierResults)
+                    {
+                        resizedImage.Save("VizDL/Classifier/classification.png", ImageFormat.Png);
+                    }
+
+
+                    //Process the image for inference
+                    float[] imageDataClass = model.ProcessBitmapForInference(resizedImage, resizedImage.Width, resizedImage.Height);
+                    int resultClass = model.RunInferenceClassifier(imageDataClass, resizedImage.Height, resizedImage.Width);
+                    PalletClassifier = resultClass;
+                    Console.WriteLine($"Predicción: Clase {resultClass} con de confianza");
+
+
+
+                    /*TopRNWHCO Iference-----------------------------------------------------------------------------------------------------------------------------------*/
+                    //Process the image for inference
+
+                    float[] rangeArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
+                    byte[] reflectanceArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+                    int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
+                    int height = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
+                    float xScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.XResolution;
+                    float yScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.YResolution;
+
+                    //Convert Range to ushort 
+                    ushort[] ushortArray = new ushort[rangeArray.Length];
+                    for (int i = 0; i < rangeArray.Length; i++)
+                    {
+                        ushortArray[i] = (ushort)(rangeArray[i] + 1000);
+                    }
+                    CaptureBuffer rangeBuffer = new CaptureBuffer
+                    {
+                        Buf = ushortArray,
+
+                        Width =width,
+                        Height = height,
+                        xScale = xScale,
+                        yScale = yScale
+
+                    };
+
+                    float[] imageDataTop = model.ProcessBitmapForInference(bitmapTop, bitmapTop.Width, bitmapTop.Height);
+                    float[][] resultsTop = model.RunInferenceTop(imageDataTop, bitmapTop.Height, bitmapTop.Width);
+
+                    //Get the results
+                    float[] boxesTop = resultsTop[0];
+                    float[] labelsTop = resultsTop[1];
+                    float[] scoresTop = resultsTop[2];
+                    float[] masksTop = resultsTop[3];
+                    //Vizualice BB Results
+                    string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
+
+                    //Condition to save the results as png Images
+                    if (isSaveTopRNWHCO)
+                    {
+                        bitmapTop.Save(TopRNWHCO, ImageFormat.Png);
+                        model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
+
+                    }
+
+                    /*
+                    int[] centroids = model.DrawCentroids4(TopRNWHCO, boxesTop, scoresTop, "VizDL/TopRNWHCO/Results.png", isSaveTopRNWHCO, 0.7);
+                    float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+                    
+
+                        int Cx1 = centroids[0];
+                        int Cy1 = centroids[1];
+
+                        float maxHeight = model.GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, rangeArray);
+                        Logger.WriteLine("MaxHeight Obj1 " + MNH);
+                        float Object1 = new model().GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, rangeArray);
+                       
+                        SetDefectMarker(Cx1 - 20, Cy1 - 20, Cx1 + 20, Cy1 + 20);
+                        Console.WriteLine("Altura del objeto"+ Object1);
+                        if (Object1 > MNH) {
+                           
+                           
+                        }
+                        */
+
+                    
+                }
+
 
 
                 RoiType[] roiTypes = new RoiType[7];
@@ -1144,8 +1241,14 @@ namespace PalletCheck
                     float[] masks = results[3];
                     //Vizualice BB Results
                     string LeadingMainImage = "VizDL/TopSplit/Leading.png";
-                    croppedBitmap.Save(LeadingMainImage, ImageFormat.Png);
-                    model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
+
+                    //Condition to save the results as png Images
+                    if (isSaveTopSplitResults) {
+                        croppedBitmap.Save(LeadingMainImage, ImageFormat.Png);
+                        model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
+
+                    }
+
 
                     // Convert to32bppArgb to draw results and display it 
                     Bitmap tempBitmap = new Bitmap(croppedBitmap.Width, croppedBitmap.Height, PixelFormat.Format32bppArgb);
@@ -1171,45 +1274,51 @@ namespace PalletCheck
                     int lowerY2 = 0;
 
                     model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
-                      ref img1Exist,ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2,true);
+                      ref img1Exist,ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
 
                     Board H1 = null;
                     Board H2 = null;
 
-                    int bM = binaryMasks2[0].Length;
-                    int cropedDimentions = croppedBitmap.Width * croppedBitmap.Height;
-                    int bufferLength = captureBuffers[0].Buf.Length;
-                    int bufferWidth = captureBuffers[0].Width;
-                    int bufferHeight = captureBuffers[0].Height;
-                    ushort[] ushortArray = new ushort[captureBuffers[0].Buf.Length];
-                    CaptureBuffer Test = new CaptureBuffer
+
+                    
+                    ushort[] Clone =captureBuffers[0].Buf.Clone() as ushort[];
+
+                   CaptureBuffer Clon = new CaptureBuffer
                     {
-                        Buf = captureBuffers[0].Buf,
+                        Buf = Clone,
                         PaletteType = CaptureBuffer.PaletteTypes.Gray,
-                        Width = W[0],
-                        Height = Y[0],
+                        Width = croppedBitmap.Width,
+                        Height = croppedBitmap.Height,
 
-                    };
+                   };
 
-
-
+                    
                     /*
-                    for (int i = 0; i < binaryMasks2[0].Length; i++) {
+                    for (int i = 0; i < binaryMasks2[1].Length- (58 * croppedBitmap.Width); i++) {
 
-                        if (binaryMasks2[0][i] == false) { 
-                        
-                        Test.Buf[i] = 0;
+                        if (binaryMasks2[1][i] == false) {
+
+                            captureBuffers[0].Buf[i+(58 * croppedBitmap.Width)] = 0;
 
                         }
                     }
 
 
 
+                    for (int i = 0; i < binaryMasks2[0].Length - (58 * croppedBitmap.Width); i++)
+                    {
+
+                        if (binaryMasks2[0][i] == false)
+                        {
+
+                            Clon.Buf[i + (58 * croppedBitmap.Width)] = 0;
+
+                        }
+                    }
+
                     */
 
 
-
- 
 
 
 
@@ -1218,8 +1327,8 @@ namespace PalletCheck
                     {//Both images exist Upper Y taked intop account
                         H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
                               startR, upperY2 + startR, paramStorage);
-                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
-                               upperY2 + startR, endR, paramStorage);
+                        H2 = ProbeVerticallyRotate90(Clon, "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                               lowerY1 + startR, endR, paramStorage);
                     }
                     else if (img1Exist && !img2Exist)
                     {//Only Upper exist Y taked intop account  
@@ -1292,8 +1401,11 @@ namespace PalletCheck
 
                     //Vizualice BB Results
                     string TrailingMainImage = "vizDL/TopSplit/Trailing.png";
-                    croppedBitmap.Save(TrailingMainImage, ImageFormat.Png);
-                    model.DrawTopBoxes2(TrailingMainImage, boxes, scores, "BB_Trailing.png");
+                    if (isSaveTopSplitResults) {
+                        croppedBitmap.Save(TrailingMainImage, ImageFormat.Png);
+                        model.DrawTopBoxes2(TrailingMainImage, boxes, scores, "BB_Trailing.png");
+                    }
+
 
                     // Convert to32bppArgb to draw results and display it 
                     tempBitmap = new Bitmap(croppedBitmap.Width, croppedBitmap.Height, PixelFormat.Format32bppArgb);
@@ -1317,16 +1429,28 @@ namespace PalletCheck
                     lowerY2 = 0;
 
                     model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
-                      ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2,true);
+                      ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2,isSaveTopSplitResults);
                     Board H8 = null;
                     Board H9 = null;
+
+
+                    ushort[] Clone2 = captureBuffers[6].Buf.Clone() as ushort[];
+
+                    CaptureBuffer Clon2 = new CaptureBuffer
+                    {
+                        Buf = Clone2,
+                        PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                        Width = croppedBitmap.Width,
+                        Height = croppedBitmap.Height,
+
+                    };
 
                     if (img1Exist && img2Exist)
                     {//Both images exist Upper Y taked intop account
                         H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
                               startR, upperY2 + startR, paramStorage);
-                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
-                               upperY2 + startR, endR, paramStorage);
+                        H9 = ProbeVerticallyRotate90(Clon2, "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                               lowerY1 + startR, endR, paramStorage);
                     }
                     else if (img1Exist && !img2Exist)
                     {//Only Upper exist Y taked intop account  
@@ -1441,6 +1565,13 @@ namespace PalletCheck
                     H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumWidth);
                     H3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumWidth);
                     H4.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumWidth);
+                    //If international pallet then   change parameters.....
+                    if (PalletClassifier == 1) //
+                    { H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth);}
+                    else
+                    { H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth); }
+
+
                     H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth);
                     H6.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
                     H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
@@ -1661,8 +1792,13 @@ namespace PalletCheck
 
             try
             {
-                FindCracks(B, paramStorage);  
-                FindRaisedNails(B, paramStorage);
+                FindCracks(B, paramStorage);
+                if (!isDeepLActive)
+                {
+                    FindRaisedNails(B, paramStorage);
+                }
+
+                
                 CalculateMissingWood(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
                 //FindRaisedBoard(B, paramStorage);  No Requirement for Walmart
@@ -1742,21 +1878,21 @@ namespace PalletCheck
             float PPIY;
             float MissingWoodLength = 0;
 
-            // Jack Note: Retrieve PPI values from parameter storage
+            //  Retrieve PPI values from parameter storage
             PPIY = paramStorage.GetPPIY();
             PPIX = paramStorage.GetPPIX();
 
-            // Jack Note: Get dimensions of the crack tracker array
+            //  Get dimensions of the crack tracker array
             int w = B.CrackTracker.GetLength(1);
             int h = B.CrackTracker.GetLength(0);
 
-            // Jack Note: Initialize the counter for bad edges
+            //  Initialize the counter for bad edges
             int nBadEdges = 0;
 
-            // Jack Note: Determine exclusion length based on whether ends should be excluded
+            // Determine exclusion length based on whether ends should be excluded
             int Exclusion = ExcludeEnds ? 60 : 0;
 
-            // Jack Note: Check if the board is oriented horizontally
+            //  Check if the board is oriented horizontally
             if (w > h)
             {
                 Console.WriteLine("Horizontally oriented");
