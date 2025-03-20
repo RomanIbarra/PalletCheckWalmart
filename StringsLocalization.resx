@@ -435,4 +435,7 @@
   <data name="HNarrowBoardMinimumWidthAcrossLenght" xml:space="preserve">
     <value>BN_HNarrowBoardMinimumWidthAcrossLenght</value>
   </data>
+  <data name="CameraEnabled" xml:space="preserve">
+    <value>CameraEnabled</value>
+  </data>
 </root>

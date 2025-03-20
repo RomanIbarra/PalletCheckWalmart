@@ -392,7 +392,7 @@ namespace PalletCheck
 
         private bool ProcessRealCamera(CameraDiscovery discovery)
         {
-            if (ParamStorageGeneral.GetInt("Camera Enabled") == 0)
+            if (ParamStorageGeneral.GetInt(StringsLocalization.CameraEnabled) == 0)
             {
                 Thread.Sleep(100);
                 return true;

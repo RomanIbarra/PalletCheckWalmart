@@ -408,3 +408,9 @@ obj/x64/Debug/MainWindow.g.i.cs
 /obj/x64/Debug
 obj/x64/Debug/MainWindow.baml
 obj/x64/Debug/MainWindow.g.i.cs
+/DL_Models/Classifier.onnx
+/DL_Models/Classifier2.onnx
+/DL_Models/ClassifierNoNOM.onnx
+/DL_Models/maskrcnn_model.onnx
+/DL_Models/RaisedNailsDetector4.onnx
+/DL_Models/TopRNWHCO.onnx
