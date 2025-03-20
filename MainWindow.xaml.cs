@@ -2045,18 +2045,22 @@ namespace PalletCheck
                     selectedParamStorage = ParamStorageTop;
                     LastUsedParamName = "LastUsedParamFileTop.txt";
                     break;
+
                 case "btnSetting_Bottom":
                     selectedParamStorage = ParamStorageBottom;
                     LastUsedParamName = "LastUsedParamFileBottom.txt";
                     break;
+
                 case "btnSetting_Left":
                     selectedParamStorage = ParamStorageLeft;
                     LastUsedParamName = "LastUsedParamFileLeft.txt";
                     break;
+
                 case "btnSetting_Right":
                     selectedParamStorage = ParamStorageRight;
                     LastUsedParamName = "LastUsedParamFileRight.txt";
                     break;
+
                 default:
                     MessageBox.Show("Unknown button, unable to select ParamStorage.");
                     return;
