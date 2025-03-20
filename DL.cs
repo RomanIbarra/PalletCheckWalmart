@@ -23,16 +23,17 @@ namespace PalletCheck
 {
     public class model
     {
-       // private static string modelPath = @"C:\Users\MICHE\Desktop\Git_Sick\PalletCheckWalmart\DL\maskrcnn_model.onnx";
-       // private static string modelPath2 = @"C:\Users\MICHE\Desktop\Git_Sick\PalletCheckWalmart\DL\RaisedNailsDetector4.onnx";
 
 
-        private static string modelPath = "../../../DL/maskrcnn_model.onnx";
-        private static string modelPath2 = "../../../DL/RaisedNailsDetector4.onnx";
-       
 
+        private static string modelPath = "../../../DL_Models/maskrcnn_model.onnx";        //TopSplit leading and trailing boards
+        private static string modelPath2 = "../../../DL_Models/RaisedNailsDetector4.onnx"; //Side Nails protruding
+        private static string modelPath3 = "../../../DL_Models/ClassifierNoNOM.onnx";      //Classifier
+        private static string modelPath4 = "../../../DL_Models/TopRNWHCO.onnx";            //TopRNWHCO
         private static InferenceSession session;
         private static InferenceSession session2;
+        private static InferenceSession session3;
+        private static InferenceSession session4;
 
         // Inicializar el modelo solo una vez
         static model()
@@ -41,11 +42,13 @@ namespace PalletCheck
             {
                 session = new InferenceSession(modelPath);
                 session2 = new InferenceSession(modelPath2);
-                Console.WriteLine("Modelo ONNX cargado correctamente.");
+                session3 = new InferenceSession(modelPath3);
+                session4 = new InferenceSession(modelPath4);
+                Console.WriteLine("Modelos ONNX cargado correctamente.");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error al cargar el modelo ONNX: " + e.Message);
+                Console.WriteLine("Error al cargar  modelos ONNX: " + e.Message);
             }
         }
 
@@ -128,6 +131,129 @@ namespace PalletCheck
 
             return outputData;
         }
+
+
+
+
+
+        // Método para la inferencia del modelo Classifier.onnx
+        public static int  RunInferenceClassifier(float[] imageData, int height, int width)
+        {
+
+            
+            var inputTensor = new DenseTensor<float>(imageData, new[] { 1, 3, height, width });
+
+            var inputs = new List<NamedOnnxValue>
+        {
+            NamedOnnxValue.CreateFromTensor("input", inputTensor)
+        };
+
+            try
+            {
+                using (var results = session3.Run(inputs))
+                {
+                    if (results.Count > 0)
+                    {
+                        // Obtener los scores de las clases
+                        var outputTensor = results[0].AsTensor<float>().ToArray();
+
+                        // Encontrar la clase con la probabilidad más alta
+                        int predictedClass = Array.IndexOf(outputTensor, outputTensor.Max());
+                        float confidence = outputTensor.Max();
+
+                        Console.WriteLine($"Predicción: Clase {predictedClass} con {confidence:P} de confianza");
+                        return predictedClass;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error durante la inferencia del clasificador: " + ex.Message);
+            }
+
+            return 5; 
+        }
+        public static float[][] RunInferenceTop(float[] imageData, int heigth, int width)
+        {
+            // Crear un tensor de entrada para el modelo
+            var inputTensor = new DenseTensor<float>(imageData, new[] { 1, 3, heigth, width });
+
+            var inputs = new List<NamedOnnxValue>
+            {
+                NamedOnnxValue.CreateFromTensor("input", inputTensor) // Double check  de que el nombre del input sea el correcto
+            };
+
+            float[][] outputData = new float[4][];
+
+            try
+            {
+                // Ejecutar la inferencia
+                using (var results = session4.Run(inputs))
+                {
+                    if (results != null && results.Count > 0)
+                    {
+                        outputData[0] = results[0].AsTensor<float>()?.ToArray() ?? new float[0]; // Boxes
+                        outputData[1] = results[1].AsTensor<float>()?.ToArray() ?? new float[0]; // Labels
+                        outputData[2] = results[2].AsTensor<float>()?.ToArray() ?? new float[0]; // Scores
+                        outputData[3] = results[3].AsTensor<float>()?.ToArray() ?? new float[0]; // Masks
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: No se obtuvieron resultados válidos de la inferencia.");
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error durante la inferencia: " + ex.Message);
+            }
+
+            return outputData;
+        }
+
+        public static Bitmap ResizeBitmap(Bitmap original, int width, int height)
+        {
+            Bitmap resizedBitmap = new Bitmap(width, height);
+            using (Graphics graphics = Graphics.FromImage(resizedBitmap))
+            {
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                graphics.DrawImage(original, 0, 0, width, height);
+            }
+            return resizedBitmap;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Función para leer la imagen y pasarla a la función RunInference
         public static float[] ProcessImage(string imagePath, int heigth, int width)
@@ -286,7 +412,72 @@ namespace PalletCheck
             Console.WriteLine($"Imagen guardada en {savePath}");
         }
 
-        public static int[] DrawCentroids(string imagePath, float[] boxes, float[] scores, string savePath)
+        public static void DrawTopBoxes4(string imagePath, float[] boxes, float[] scores, string savePath,double Score)
+        {
+            // Cargar imagen original
+            // Obtener la ruta del ejecutable
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Construir la ruta completa de la imagen
+            string path = Path.Combine(exeDirectory, imagePath);
+
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"Error: La imagen '{path}' no existe.");
+                return;
+            }
+            WMI.BitmapImage bitmapImage = new WMI.BitmapImage(new Uri(path, UriKind.Absolute));
+            int width = bitmapImage.PixelWidth;
+            int height = bitmapImage.PixelHeight;
+
+            // Crear un WriteableBitmap para modificar la imagen
+            WMI.WriteableBitmap writableBitmap = new WMI.WriteableBitmap(bitmapImage);
+            WM.DrawingVisual visual = new WM.DrawingVisual();
+
+            using (WM.DrawingContext dc = visual.RenderOpen())
+            {
+                dc.DrawImage(bitmapImage, new W.Rect(0, 0, width, height));
+
+                // Seleccionar los dos mejores bounding boxes
+                int[] topIndices = scores
+                    .Select((score, index) => new { Score = score, Index = index })
+                    .Where(x => x.Score > Score) // Filtrar por score mayor a 0.7 (score)
+                    .OrderByDescending(x => x.Score)
+                    .Take(5) // Tomar los dos mejores
+                    .Select(x => x.Index)
+                    .ToArray();
+
+                WM.Pen pen = new WM.Pen(WM.Brushes.Red, 3);
+
+                foreach (int i in topIndices)
+                {
+                    int x1 = (int)boxes[i * 4];
+                    int y1 = (int)boxes[i * 4 + 1];
+                    int x2 = (int)boxes[i * 4 + 2];
+                    int y2 = (int)boxes[i * 4 + 3];
+
+                    W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);
+                    dc.DrawRectangle(null, pen, rect);
+                }
+            }
+
+            // Renderizar y guardar la imagen modificada
+            WMI.RenderTargetBitmap rtb = new WMI.RenderTargetBitmap(width, height, 96, 96, WM.PixelFormats.Pbgra32);
+            rtb.Render(visual);
+
+            WMI.PngBitmapEncoder encoder = new WMI.PngBitmapEncoder();
+            encoder.Frames.Add(WMI.BitmapFrame.Create(rtb));
+
+            using (FileStream fs = new FileStream("VizDL/TopRNHCO/" + savePath, FileMode.Create))
+            {
+                encoder.Save(fs);
+            }
+
+            Console.WriteLine($"Imagen guardada en {savePath}");
+        }
+
+
+        public static int[] DrawCentroids(string imagePath, float[] boxes, float[] scores, string savePath,bool saveViz)
         {
             // Cargar imagen original
             WMI.BitmapImage bitmapImage = new WMI.BitmapImage(new Uri(imagePath, UriKind.Absolute));
@@ -304,7 +495,7 @@ namespace PalletCheck
                 dc.DrawImage(bitmapImage, new W.Rect(0, 0, width, height));
 
                 // Seleccionar hasta dos mejores bounding boxes (o menos si no hay suficientes)
-                int numObjects = Math.Min(scores.Length, 2); // Evita errores si hay menos de 2 objetos
+                int numObjects = Math.Min(scores.Length, 3); // Evita errores si hay menos de 2 objetos
                 int[] topIndices = scores
                     .Select((score, index) => new { Score = score, Index = index })
                     .OrderByDescending(x => x.Score)
@@ -333,18 +524,93 @@ namespace PalletCheck
             }
 
             // Renderizar y guardar la imagen modificada
-            WMI.RenderTargetBitmap rtb = new WMI.RenderTargetBitmap(width, height, 96, 96, WM.PixelFormats.Pbgra32);
-            rtb.Render(visual);
+            if (saveViz) {
+                WMI.RenderTargetBitmap rtb = new WMI.RenderTargetBitmap(width, height, 96, 96, WM.PixelFormats.Pbgra32);
+                rtb.Render(visual);
 
-            WMI.PngBitmapEncoder encoder = new WMI.PngBitmapEncoder();
-            encoder.Frames.Add(WMI.BitmapFrame.Create(rtb));
+                WMI.PngBitmapEncoder encoder = new WMI.PngBitmapEncoder();
+                encoder.Frames.Add(WMI.BitmapFrame.Create(rtb));
 
-            using (FileStream fs = new FileStream(savePath, FileMode.Create))
-            {
-                encoder.Save(fs);
+                using (FileStream fs = new FileStream(savePath, FileMode.Create))
+                {
+                    encoder.Save(fs);
+                }
+
+                Console.WriteLine($"Imagen guardada en {savePath}");
+
+
             }
 
-            Console.WriteLine($"Imagen guardada en {savePath}");
+
+            return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
+        }
+
+        public static int[] DrawCentroids4(string imagePath, float[] boxes, float[] scores, string savePath, bool saveViz,Double Score)
+        {
+            // Cargar imagen original
+            WMI.BitmapImage bitmapImage = new WMI.BitmapImage(new Uri(imagePath, UriKind.Absolute));
+            int width = bitmapImage.PixelWidth;
+            int height = bitmapImage.PixelHeight;
+
+            // Crear un WriteableBitmap para modificar la imagen
+            WMI.WriteableBitmap writableBitmap = new WMI.WriteableBitmap(bitmapImage);
+            WM.DrawingVisual visual = new WM.DrawingVisual();
+
+            List<int> centroids = new List<int>();
+
+            using (WM.DrawingContext dc = visual.RenderOpen())
+            {
+                dc.DrawImage(bitmapImage, new W.Rect(0, 0, width, height));
+
+                // Seleccionar hasta dos mejores bounding boxes (o menos si no hay suficientes)
+                int numObjects = Math.Min(scores.Length, 5); // Evita errores si hay menos de 2 objetos
+                int[] topIndices = scores
+                    .Select((score, index) => new { Score = score, Index = index })
+                    .Where(x => x.Score > Score) // Filtrar por score mayor a 0.5
+                    .OrderByDescending(x => x.Score)
+                    .Take(numObjects) // Toma 1 o 2 elementos dinámicamente
+                    .Select(x => x.Index)
+                    .ToArray();
+
+                WM.Pen pen = new WM.Pen(WM.Brushes.Red, 3);
+
+                foreach (int i in topIndices)
+                {
+                    int x1 = (int)boxes[i * 4];
+                    int y1 = (int)boxes[i * 4 + 1];
+                    int x2 = (int)boxes[i * 4 + 2];
+                    int y2 = (int)boxes[i * 4 + 3];
+
+                    // Calcular el centroide del bounding box
+                    int centerX = (x1 + x2) / 2;
+                    int centerY = (y1 + y2) / 2;
+                    centroids.Add(centerX);
+                    centroids.Add(centerY);
+
+                    W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);
+                    dc.DrawRectangle(null, pen, rect);
+                }
+            }
+
+            // Renderizar y guardar la imagen modificada
+            if (saveViz)
+            {
+                WMI.RenderTargetBitmap rtb = new WMI.RenderTargetBitmap(width, height, 96, 96, WM.PixelFormats.Pbgra32);
+                rtb.Render(visual);
+
+                WMI.PngBitmapEncoder encoder = new WMI.PngBitmapEncoder();
+                encoder.Frames.Add(WMI.BitmapFrame.Create(rtb));
+
+                using (FileStream fs = new FileStream(savePath, FileMode.Create))
+                {
+                    encoder.Save(fs);
+                }
+
+                Console.WriteLine($"Imagen guardada en {savePath}");
+
+
+            }
+
 
             return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
         }
@@ -493,7 +759,95 @@ namespace PalletCheck
         }
 
 
+        public static float GetMaxRangeInCircle(int x, int y, int diameter, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            int radius = diameter / 2;
+            float maxVal = 0;
 
+            for (int i = -radius; i <= radius; i++)
+            {
+                for (int j = -radius; j <= radius; j++)
+                {
+                    int newX = x + i;
+                    int newY = y + j;
+
+                    // Verificar si el punto está dentro del círculo y dentro de los límites de la imagen
+                    if (newX >= 0 && newX < rangeBuffer.Width && newY >= 0 && newY < rangeBuffer.Height &&
+                        (i * i + j * j) <= (radius * radius))
+                    {
+                        float value = GetRangeValueAt(newX, newY, rangeBuffer, floatArray);
+                        if (value > maxVal)
+                        {
+                            maxVal = value;
+                        }
+                    }
+                }
+            }
+
+            return maxVal;
+        }
+
+        public static float GetRangeValueAt(int x, int y, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            // Validar que la coordenada esté dentro de los límites de la imagen
+            if (x < 0 || x >= rangeBuffer.Width || y < 0 || y >= rangeBuffer.Height)
+            {
+                throw new ArgumentOutOfRangeException("Las coordenadas están fuera del rango de la imagen.");
+            }
+
+            // Calcular el índice en el buffer unidimensional
+            int index = y * rangeBuffer.Width + x;
+
+            return floatArray[index];
+        }
+
+        public float GetMaxRangeInSquare(int x, int y, int l, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            // Definir los límites de la región de interés
+            int startX = Math.Max(0, x - l);
+            int endX = Math.Min(rangeBuffer.Width - 1, x + l);
+            int startY = Math.Max(0, y - l);
+            int endY = Math.Min(rangeBuffer.Height - 1, y + l);
+
+            float maxVal = float.MinValue;
+
+            Console.WriteLine("Cuadrado de valores en la región de interés:");
+
+            // Recorrer la región de interés
+            for (int i = startY; i <= endY; i++)
+            {
+                string rowValues = "";
+                for (int j = startX; j <= endX; j++)
+                {
+                    int index = i * rangeBuffer.Width + j;
+                    float value = floatArray[index];
+                    if (!float.IsNaN(value))
+                    {
+                        maxVal = Math.Max(maxVal, value);
+                    }
+                    rowValues += value.ToString("F2") + " ";
+                }
+                Console.WriteLine(rowValues.Trim());
+            }
+
+            return maxVal;
+        }
+        public int GetHorizontalPosition(int x, CaptureBuffer rangeBuffer)
+        {
+            int third = rangeBuffer.Width / 3;
+            if (x < third)
+            {
+                return 0;
+            }
+            else if (x < 2 * third)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
+            }
+        }
 
         public static void SplitBoard(Bitmap bitmap, float[] boxes, float[] scores, List<bool[,]> masks, string savePath)
         {
