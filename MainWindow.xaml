@@ -19,7 +19,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="200" />
             <RowDefinition Height="50" />
         </Grid.RowDefinitions>
 
@@ -37,14 +36,14 @@
 
             <TextBlock x:Name="ModeStatus" FontSize="28" Foreground="White"  Margin="50,0,0,0" TextAlignment="Center"  OpacityMask="Black"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-            </StackPanel>
+            <Image Width="300" Height="100" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5,5,5,5" Source="/WalmartLogo.png" />
         </DockPanel>
 
-        <Image Width="300" Height="40" Grid.Column="4"  VerticalAlignment="Top" HorizontalAlignment="Right" Grid.RowSpan="2" Margin="5,5,5,5" Source="/SICKWhiteLogo.png" />
+        
 
         <Grid  Grid.Row="1" Grid.ColumnSpan="3" OpacityMask="Black" Margin="0,0,0,0" Grid.RowSpan="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="450" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -138,7 +137,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="1" OpacityMask="Black">
+            <Grid Grid.Row="2" Grid.Column="0" OpacityMask="Black">
                 <Border BorderBrush="#3B7CBD" BorderThickness="2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
                     <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
@@ -160,7 +159,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="0" Grid.Column="3" OpacityMask="Black">
+            <Grid Grid.Row="1" Grid.Column="1" OpacityMask="Black">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="*"/>
@@ -186,7 +185,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="3" OpacityMask="Black">
+            <Grid Grid.Row="2" Grid.Column="1" OpacityMask="Black">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="*"/>
@@ -215,25 +214,35 @@
 
         </Grid>
         
+        
         <!-- ********** Grid for Data Tables and Results ********** -->
-        <Grid Margin="5,5,5,5" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4">
+        <Grid Margin="5,5,5,5" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="4">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="400"/>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
-            <DataGrid Name="defectTable" Grid.Column="0" Grid.Row="0" Background="Transparent" AlternatingRowBackground="Transparent" 
+
+            <TextBlock x:Name="TotalResultTextBlock" Text="Result" Grid.Column="0" Grid.Row="0" Foreground="White" FontSize="80" FontWeight="Heavy" VerticalAlignment="Top" Margin="10,0,0,0"/>
+
+            <Button x:Name="btnDefects"  Margin="10,10,10,10" Grid.Column="1" Grid.Row="0" Click="btnDefects_Click" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Bottom"  FontSize="25" Width="150" OpacityMask="Black" HorizontalAlignment="Right">
+                Defects
+            </Button>
+
+            <DataGrid Name="defectTable" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Background="Transparent" AlternatingRowBackground="Transparent" 
                         AlternationCount="2" AutoGenerateColumns="False" Margin="10,10,10,10" 
                         FontWeight="Normal" ColumnHeaderHeight="30" 
                         IsSynchronizedWithCurrentItem="True" 
                         Foreground="Black" GridLinesVisibility="All"
                         HorizontalGridLinesBrush="White" VerticalGridLinesBrush="White" BorderBrush="White">
-            
-             <!-- Line Style -->
+
+                <!-- Line Style -->
                 <DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}">
                         <!--<Setter Property="FontWeight" Value="Bold" />-->
@@ -285,7 +294,11 @@
                 </DataGrid.Columns>
             </DataGrid>
 
-            <DataGrid Name="statisticsTable" Grid.Column="1" Grid.Row="0" Background="Transparent" AlternatingRowBackground="Transparent" 
+            <Button x:Name="btnStatistics" Grid.Column="1" Grid.Row="2"  Margin="10,10,10,10"  Click="btnStatistics_Click" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Center" FontSize="25" Width="150" OpacityMask="Black" HorizontalAlignment="Right">
+                Reset
+            </Button>
+
+            <DataGrid Name="statisticsTable" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Background="Transparent" AlternatingRowBackground="Transparent" 
                         AlternationCount="2" AutoGenerateColumns="False" Margin="10,10,10,10"
                         FontSize="50" VerticalAlignment="Stretch" 
                         Foreground="White" GridLinesVisibility="All"
@@ -347,40 +360,17 @@
                     </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
-            
-        </Grid>
-               
-        <Grid Grid.Row="2" Grid.Column="3" OpacityMask="Black" Grid.RowSpan="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            
-            <TextBlock x:Name="TotalResultTextBlock" Text="Result" Grid.Column="0" Grid.Row="0" Foreground="White" FontSize="80" FontWeight="Heavy" VerticalAlignment="Top" Margin="10,0,0,0"/>
 
-            <ProgressBar x:Name="ProgressBar" Height="46" Grid.Column="0" Grid.Row="1" Margin="10,10,10,5" Visibility="Hidden" VerticalAlignment="Bottom"  Minimum="0" Maximum="100" Value="0">
+            <ProgressBar x:Name="ProgressBar" Height="46" Grid.Column="0" Grid.Row="4" Margin="10,10,10,5" Visibility="Hidden" VerticalAlignment="Bottom"  Minimum="0" Maximum="100" Value="0">
                 <ProgressBar.Template>
                     <ControlTemplate TargetType="ProgressBar">
                         <Grid>
                             <!-- Outer Border -->
-                            <Border
-                    BorderBrush="#1E90FF"
-                    BorderThickness="3"
-                    CornerRadius="10"
-                    Background="#D3D3D3"
-                    SnapsToDevicePixels="True">
+                            <Border BorderBrush="#1E90FF" BorderThickness="3" CornerRadius="10" Background="#D3D3D3" SnapsToDevicePixels="True">
                                 <!--Track (Background) -->
                                 <Grid x:Name="PART_Track">
                                     <!--Progress Indicator -->
-                                    <Rectangle
-                            x:Name="PART_Indicator"
-                            HorizontalAlignment="Left"
-                            RadiusX="10"
-                            RadiusY="10">
+                                    <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" RadiusX="10" RadiusY="10">
                                         <Rectangle.Fill>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                                 <GradientStop Color="#1E90FF" Offset="0.0" />
@@ -394,14 +384,7 @@
                                 </Grid>
                             </Border>
                             <!-- Text Overlay for Progress -->
-                            <TextBlock
-                    x:Name="ProgressText"
-                    Text="0% (0 of 0)"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Foreground="Black"
-                    FontWeight="Bold"
-                    FontSize="26">
+                            <TextBlock x:Name="ProgressText" Text="0% (0 of 0)" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black" FontWeight="Bold" FontSize="26">
                                 <TextBlock.Effect>
                                     <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" />
                                 </TextBlock.Effect>
@@ -411,14 +394,6 @@
                 </ProgressBar.Template>
             </ProgressBar>
 
-            <Button x:Name="btnDefects"  Margin="10,10,10,10" Grid.Column="1" Grid.Row="0" Click="btnDefects_Click" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="25" Width="150" OpacityMask="Black" HorizontalAlignment="Right">
-                Defects
-            </Button>
-
-            <Button x:Name="btnStatistics" Grid.Column="1" Grid.Row="2"  Margin="10,10,10,10"  Click="btnStatistics_Click" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="25" Width="150" OpacityMask="Black" HorizontalAlignment="Right">
-                Reset
-            </Button>
-            
         </Grid>
 
         <Grid Margin="1,1,1,1" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Background="#3B7CBD">
