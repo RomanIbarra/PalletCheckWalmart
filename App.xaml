@@ -2,8 +2,56 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PalletCheck"
+             xmlns:control ="clr-namespace:Sick.EasyRanger.Controls;assembly=Sick.EasyRanger.Controls"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
+        <Style x:Key="Transparent3DButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="Black"/>
+            <!-- Default Font Color -->
+            <Setter Property="FontSize" Value="18"/>
+            <!--<Setter Property="FontWeight" Value="Bold"/>-->
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#FF177DC3"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Gray" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+                                </Border.Effect>
+                            </Border>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- Mouse Hover Trigger -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#FFCCE7FF"/>
+                                <Setter Property="Foreground" Value="Black"/><!-- Mouse Hover Font Black -->                           
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True"> <!-- Mouse Down Trigger -->
+                                <Setter TargetName="Border" Property="Background" Value="#FF99C9FF"/>
+                                <Setter Property="BorderBrush" Value="#FF0056A3"/> <!-- Changing the border color -->                             
+                            </Trigger>                          
+                            <Trigger Property="IsEnabled" Value="False"> <!-- Disable Status Trigger -->
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="Background" Value="#FFE0E0E0"/>
+                                <Setter Property="BorderBrush" Value="#FFA0A0A0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Application.Resources>
 </Application>

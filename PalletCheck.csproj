@@ -313,6 +313,12 @@
   <ItemGroup>
     <Resource Include="JackTest.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SICKWhiteLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="WalmartLogo.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -21,7 +21,6 @@ using System.Windows.Shapes;
 using static PalletCheck.Pallet;
 using IFrame = Sick.GenIStream.IFrame;
 
-
 namespace PalletCheck
 {
     using static FromGenIStreamFrameConverter;
@@ -35,7 +34,9 @@ namespace PalletCheck
         Top = 0,
         Bottom = 1,
         Left = 2,
-        Right=3
+        Right=3,
+        Front = 4,
+        Back = 5
     }
 
     public enum InspectionResult
@@ -45,6 +46,7 @@ namespace PalletCheck
         ERROR,
         TIMEOUT
     }
+
     public partial class MainWindow : Window
     {
         public static MainWindow Singleton;
@@ -60,9 +62,7 @@ namespace PalletCheck
         string _DirectoryDateHour { get; set; }
 
         private readonly object _lockFileName = new object();// Define camera names
-        string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R" };
-
-
+        string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R", "F", "B" };
 
         /*Dataset Extraction*/
         public static bool enableDatasetExtraction = false;
@@ -93,7 +93,7 @@ namespace PalletCheck
 
         public static ParamStorage GetParamStorage(PositionOfPallet position)
         {
-            // 根据 PositionOfPallet 枚举值返回对应的 ParamStorage
+            // Returns the corresponding ParamStorage according to the value of the PositionOfPallet enum.
             switch (position)
             {
                 case PositionOfPallet.Top:
@@ -104,6 +104,8 @@ namespace PalletCheck
                     return ParamStorageLeft;
                 case PositionOfPallet.Right:
                     return ParamStorageRight;
+                /*case PositionOfPallet.Front:
+                    return ParamStorageRight;*/
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -120,10 +122,15 @@ namespace PalletCheck
                     return PalletName2;
                 case PositionOfPallet.Right:
                     return PalletName3;
+                /*case PositionOfPallet.Front:
+                    return PalletName4;
+                case PositionOfPallet.Back:
+                    return PalletName5;*/
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
         }
+
         public StackPanel GetButtonList(PositionOfPallet position)
         {
             switch (position)
@@ -136,6 +143,10 @@ namespace PalletCheck
                     return CBB_Button_List2;
                 case PositionOfPallet.Right:
                     return CBB_Button_List3;
+                case PositionOfPallet.Front:
+                    return CBB_Button_List4;
+                case PositionOfPallet.Back:
+                    return CBB_Button_List5;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -159,7 +170,7 @@ namespace PalletCheck
         }
         InspectionReport IR;
         JackSaveLog JackSaveLog = JackSaveLog.Instance();
-        private bool[] loadFrameFlags = new bool[6];
+        private bool[] loadFrameFlags = new bool[8];
 
         bool isSaveFrames = true;
 
@@ -387,8 +398,8 @@ namespace PalletCheck
 
 
             InitializeComponent();
-            Instance = this;
-            for (int i = 0; i < 6; i++)
+            Instance = this;       
+            for (int i = 0; i < 8; i++)
             {
                 string statusTextName = $"Camera{i + 1}StatusText";
                 string indicatorName = $"Camera{i + 1}StatusIndicator";
@@ -555,9 +566,12 @@ namespace PalletCheck
             });
             ViewerLeft.Environment = _envLeft;
             ViewerRight.Environment = _envRight;
+            ViewerFront.Environment = _envFront;
+            ViewerBack.Environment = _envBack;
            
             btnLoad_Right.IsEnabled = true; btnLoad_Left.IsEnabled = true;
             btnLoad_Top.IsEnabled = true; btnLoad_Bottom.IsEnabled = true;
+            btnLoad_Front.IsEnabled = true; btnLoad_Back.IsEnabled = true;
             btnProcessRecording.IsEnabled = true;
             btnProcessPallet.IsEnabled = true;
         }
@@ -672,6 +686,8 @@ namespace PalletCheck
 
         private readonly object _envLeftLock = new object();
         private readonly object _envRightLock = new object();
+        private readonly object _envFrontLock = new object();
+        private readonly object _envBackLock = new object();
         /// <summary>
         /// For the Left
         /// </summary>
@@ -714,7 +730,7 @@ namespace PalletCheck
         private void ProcessFrameForCameraRightCallback(GrabResult result)
         {
             //TryGenerateFilenameDateTime();
-            UpdateTextBlock(LogText, "Bottom New Frame", MessageState.Normal);
+            UpdateTextBlock(LogText, "Right New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName3, "▲");
             result.IfCompleteFrame(frame =>
             {
@@ -739,7 +755,58 @@ namespace PalletCheck
             });
         }
 
+        private void ProcessFrameForCameraFrontCallback(GrabResult result)
+        {
+            UpdateTextBlock(LogText, "Front New Frame", MessageState.Normal);
+            UpdateTextBlock(PalletName4, "▲");
+            result.IfCompleteFrame(frame =>
+            {
+                SickFrames[6] = frame.Copy();
 
+                lock (_envFrontLock)
+                {
+                    AddFrameToEnvironment(frame, "Image", _envFront);
+
+                }
+
+                try
+                {
+                    ProcessMeasurementFrontBack(_status =>
+                    {
+                    }, PositionOfPallet.Front);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine($"Error: {ex.Message}");
+                }
+            });
+        }
+        private void ProcessFrameForCameraBackCallback(GrabResult result)
+        {
+            UpdateTextBlock(LogText, "Back New Frame", MessageState.Normal);
+            UpdateTextBlock(PalletName5, "▲");
+            result.IfCompleteFrame(frame =>
+            {
+                SickFrames[7] = frame.Copy();
+
+                lock (_envBackLock)
+                {
+                    AddFrameToEnvironment(frame, "Image", _envBack);
+
+                }
+
+                try
+                {
+                    ProcessMeasurementFrontBack(_status =>
+                    {
+                    }, PositionOfPallet.Back);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine($"Error: {ex.Message}");
+                }
+            });
+        }
 
 
         private void SaveSettingsColorUpdate(object sender, EventArgs e)
@@ -1102,9 +1169,6 @@ namespace PalletCheck
             }
         }
 
-
-
-
         public Pallet CreateBottomPallet()
         {
             // Add frames to the environment
@@ -1205,15 +1269,9 @@ namespace PalletCheck
                 Logger.WriteLine($"Error loading file: {ex.Message}");
             }
 
-            
-           
-
             string selectedFile = OFD.FileName;
-
             string directory = System.IO.Path.GetDirectoryName(selectedFile);
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);
-            
-
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);           
             string baseName = fileName.Substring(0, fileName.LastIndexOf('_') + 1);
             UpdateTextBlock(ModeStatus, "Loading: " + fileName.Substring(0, fileName.LastIndexOf('_')));
             _FilenameDateTime = fileName.Substring(0, fileName.LastIndexOf('_'));
@@ -1223,6 +1281,8 @@ namespace PalletCheck
             string file3 = System.IO.Path.Combine(directory, baseName + "B3.xml");
             string file4 = System.IO.Path.Combine(directory, baseName + "L.xml");
             string file5 = System.IO.Path.Combine(directory, baseName + "R.xml");
+            string file6 = System.IO.Path.Combine(directory, baseName + "R.xml");
+            string file7 = System.IO.Path.Combine(directory, baseName + "R.xml");
             try
             {
                 if (loadFrameFlags[0])
@@ -1263,7 +1323,19 @@ namespace PalletCheck
                     ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file5)));
                     Logger.WriteLine("Loaded file5");
                 }
-                
+
+                if (loadFrameFlags[6])
+                {
+                    ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file6)));
+                    Logger.WriteLine("Loaded file6");
+                }
+
+                if (loadFrameFlags[7])
+                {
+                    ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file7)));
+                    Logger.WriteLine("Loaded file7");
+                }
+
                 Logger.WriteLine("Load Offline Images Completed");
             }
             catch (Exception ex)
@@ -1277,7 +1349,7 @@ namespace PalletCheck
         {
             for (int i = 0; i < loadFrameFlags.Length; i++)
             {
-                loadFrameFlags[i] = indices.Contains(i); // 如果索引在传入的数组中，则设置为 true
+                loadFrameFlags[i] = indices.Contains(i); // If the index is in the passed-in array, set true
             }
         }
         //=====================================================================
@@ -1331,7 +1403,7 @@ namespace PalletCheck
         {
             Logger.ButtonPressed(btnProcessPallet.Content.ToString());
             //TryGenerateFilenameDateTime();
-            SetLoadFlags(0,1,2,3,4,5);
+            SetLoadFlags(0,1,2,3,4,5,6,7);
             LoadAndProcessCapture6FileFrame();
         }
 
@@ -1674,7 +1746,7 @@ namespace PalletCheck
             {
                 try
                 {
-                    string fileName = file.Name.ToUpper(); // 获取文件名并转换为大写
+                    string fileName = file.Name.ToUpper(); // Get the filename and convert to uppercase
 
                     if (fileName.Contains("_T.XML"))
                     {
@@ -1706,10 +1778,20 @@ namespace PalletCheck
                         ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Right file: " + file.FullName);
                     }
+                    else if (fileName.Contains("_R.XML"))
+                    {
+                        ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded Front file: " + file.FullName);
+                    }
+                    else if (fileName.Contains("_R.XML"))
+                    {
+                        ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
+                        Logger.WriteLine("Loaded Back file: " + file.FullName);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"处理文件 {file.FullName} 时发生错误: {ex.Message}");
+                    Console.WriteLine($"Processing of document {file.FullName} error: {ex.Message}");
                 }
             }
         }
@@ -1926,6 +2008,18 @@ namespace PalletCheck
             LoadAndProcessCapture6FileFrame();
 
         }
+        private void Load_Front_Click(object sender, RoutedEventArgs e)
+        {
+            SetLoadFlags(6);
+            LoadAndProcessCapture6FileFrame();
+
+        }
+        private void Load_Back_Click(object sender, RoutedEventArgs e)
+        {
+            SetLoadFlags(7);
+            LoadAndProcessCapture6FileFrame();
+
+        }
         private void btnSettingEach_Click(object sender, RoutedEventArgs e)
         {
             Logger.ButtonPressed(btnSettingsControl.Content.ToString());
@@ -1983,14 +2077,15 @@ namespace PalletCheck
 
         private readonly ConcurrentDictionary<int, InspectionResult> _results = new ConcurrentDictionary<int, InspectionResult>();
 
-
-
         private int _completedCount = 0; // Counter for completed cameras
         private readonly object _lockResult = new object();
-        private readonly int _totalCameras = 4; // Total number of cameras
+        private readonly int _totalCameras = ParamStorageGeneral.GetInt("CameraCount");
+        
 
         public void ProcessCameraResult(int cameraId, InspectionResult result)
         {
+            int cameras = ParamStorageGeneral.GetInt("CameraCount");
+            int _totalViews = cameras - 2; // Minus 2 because Bottom View uses 3 cameras
             // Store the result of the current camera
             lock (_lock)
             {
@@ -1999,7 +2094,7 @@ namespace PalletCheck
             }
 
             // Check if all cameras are completed
-            if (_completedCount == _totalCameras)
+            if (_completedCount == _totalViews)
             {
                 // Invoke final logic
                 FinalizeResults();
@@ -2031,7 +2126,7 @@ namespace PalletCheck
             // Update screen
             Console.WriteLine($"Total Results: {finalResult}");
             stopwatchProcess.Stop();
-            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.Green, 30);
+            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 30);
             if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
             if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
 
@@ -2146,7 +2241,18 @@ namespace PalletCheck
                     title = "Right View";
                 }
 
-                // 
+                else if (sender == btnShow_Front)
+                {
+                    environment = _envFront;
+                    title = "Front View";
+                }
+
+                else if (sender == btnShow_Back) 
+                { 
+                    environment = _envBack;
+                    title = "Back View";
+                }
+   
                 if (environment == null)
                 {
                     Console.WriteLine("No environment found for this button.");
@@ -2169,5 +2275,6 @@ namespace PalletCheck
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        
     }
 }
