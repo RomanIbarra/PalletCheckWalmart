@@ -525,15 +525,28 @@ namespace PalletCheck
             var viewer = (position == PositionOfPallet.Front) ? ViewerFront : ViewerBack;
             Pallet P = new Pallet(null, null, position);
             P.BList = new List<Board>();
-            var paramStorage = position == PositionOfPallet.Back ? ParamStorageLeft : ParamStorageRight;
+            var paramStorage = position == PositionOfPallet.Front ? ParamStorageFront : ParamStorageBack;
 
-            env.GetStepProgram("Main").StepList[1].Enabled = false;
-            env.GetStepProgram("Main").StepList[2].Enabled = true;
-            env.GetStepProgram("Main").StepList[3].Enabled = true;
-            P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.F_B1, true, 0, 0));
-            P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.F_B2, true, 0, 0));
-            P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.F_B3, true, 0, 0));        
-            
+            if (position == PositionOfPallet.Front)
+            {
+                env.GetStepProgram("Main").StepList[1].Enabled = true;
+                env.GetStepProgram("Main").StepList[2].Enabled = false;
+                env.GetStepProgram("Main").StepList[3].Enabled = false;
+                P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.F_B1, true, 0, 0));
+                P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.F_B2, true, 0, 0));
+                P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.F_B3, true, 0, 0));
+            }
+
+            else
+            {
+                env.GetStepProgram("Main").StepList[1].Enabled = false;
+                env.GetStepProgram("Main").StepList[2].Enabled = true;
+                env.GetStepProgram("Main").StepList[3].Enabled = true;
+                P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.BK_B1, true, 0, 0));
+                P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.BK_B2, true, 0, 0));
+                P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.BK_B3, true, 0, 0));
+            }
+
             double[] BlockHeight = new double[3];
             double[] BlockWidth = new double[3];
             BlockHeight[0] = paramStorage.GetFloat(StringsLocalization.BlockHeight1);
