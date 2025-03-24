@@ -530,9 +530,9 @@ namespace PalletCheck
             env.GetStepProgram("Main").StepList[1].Enabled = false;
             env.GetStepProgram("Main").StepList[2].Enabled = true;
             env.GetStepProgram("Main").StepList[3].Enabled = true;
-            P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.R_B1, true, 0, 0));
-            P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.R_B2, true, 0, 0));
-            P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.R_B3, true, 0, 0));        
+            P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.F_B1, true, 0, 0));
+            P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.F_B2, true, 0, 0));
+            P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.F_B3, true, 0, 0));        
             
             double[] BlockHeight = new double[3];
             double[] BlockWidth = new double[3];

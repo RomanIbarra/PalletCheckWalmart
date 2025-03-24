@@ -54,7 +54,12 @@ namespace PalletCheck
             R_B1,
             R_B2,
             R_B3,
-            // For Left and Right //Added by Jack
+            F_B1,
+            F_B2,
+            F_B3,
+            BK_B1,
+            BK_B2,
+            BK_B3,
         }
 
         public DefectType Type { get; set; }

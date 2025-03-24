@@ -481,6 +481,10 @@ namespace PalletCheck
                     return ParamStorageTop;
                 case PositionOfPallet.Bottom:
                     return ParamStorageBottom;
+                case PositionOfPallet.Front:
+                    return ParamStorageFront;
+                case PositionOfPallet.Back:
+                    return ParamStorageBack;
                 default:
                     throw new ArgumentException("Invalid position", nameof(position));
             }
@@ -515,6 +519,8 @@ namespace PalletCheck
             LoadParameters(PositionOfPallet.Bottom);
             LoadParameters(PositionOfPallet.Left);
             LoadParameters(PositionOfPallet.Right);
+            LoadParameters(PositionOfPallet.Front);
+            LoadParameters(PositionOfPallet.Back);
 
             // Open PLC connection port
             int Port = ParamStorageGeneral.GetInt("TCP Server Port");
@@ -1284,8 +1290,8 @@ namespace PalletCheck
             string file3 = System.IO.Path.Combine(directory, baseName + "B3.xml");
             string file4 = System.IO.Path.Combine(directory, baseName + "L.xml");
             string file5 = System.IO.Path.Combine(directory, baseName + "R.xml");
-            string file6 = System.IO.Path.Combine(directory, baseName + "R.xml");
-            string file7 = System.IO.Path.Combine(directory, baseName + "R.xml");
+            string file6 = System.IO.Path.Combine(directory, baseName + "F.xml");
+            string file7 = System.IO.Path.Combine(directory, baseName + "BK.xml");
             try
             {
                 if (loadFrameFlags[0])
@@ -1693,6 +1699,8 @@ namespace PalletCheck
                                                             .Union(subDirectory.GetFiles("*_B3.xml"))
                                                             .Union(subDirectory.GetFiles("*_L.xml"))
                                                             .Union(subDirectory.GetFiles("*_R.xml"))
+                                                            .Union(subDirectory.GetFiles("*_F.xml"))
+                                                            .Union(subDirectory.GetFiles("*_B.xml"))
                                                             .ToArray();
 
                             if (files.Length > 0)
@@ -1781,12 +1789,12 @@ namespace PalletCheck
                         ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Right file: " + file.FullName);
                     }
-                    else if (fileName.Contains("_R.XML"))
+                    else if (fileName.Contains("_F.XML"))
                     {
                         ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Front file: " + file.FullName);
                     }
-                    else if (fileName.Contains("_R.XML"))
+                    else if (fileName.Contains("_B.XML"))
                     {
                         ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Back file: " + file.FullName);
@@ -2075,11 +2083,11 @@ namespace PalletCheck
                     LastUsedParamName = "";
                     break;
 
-                /*case "btnSetting_Back":
+                case "btnSetting_Back":
                     position = "Back";
                     selectedParamStorage = ParamStorageBack;
                     LastUsedParamName = "";
-                    break;*/
+                    break;
 
                 default:
                     MessageBox.Show("Unknown button, unable to select ParamStorage.");
