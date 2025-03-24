@@ -151,6 +151,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CameraEnabled.
+        /// </summary>
+        internal static string CameraEnabled {
+            get {
+                return ResourceManager.GetString("CameraEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CrackTrackerBlockSize.
         /// </summary>
         internal static string CrackTrackerBlockSize {
