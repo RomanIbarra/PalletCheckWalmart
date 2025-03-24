@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using System.Windows.Controls;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace PalletCheck
 {
@@ -11,9 +12,8 @@ namespace PalletCheck
         public string LastFilename;
         public bool HasChangedSinceLastSave;
         public object ObjectLock = new object();
-
+        public string ParamStoragePositionName;
         public Dictionary<string, Dictionary<string, string>> Categories = new Dictionary<string, Dictionary<string, string>>();
-        public Dictionary<string, Dictionary<string, string>> XMLCategories = new Dictionary<string, Dictionary<string, string>>();
 
         public void SaveInHistory(string Reason)
         {
@@ -77,6 +77,7 @@ namespace PalletCheck
         {
             XmlDocument file = new XmlDocument();
             file.Load(fileName);
+            Categories.Clear();
 
             foreach (XmlNode node in file.DocumentElement.ChildNodes)
             {
@@ -140,6 +141,32 @@ namespace PalletCheck
                 }
 
                 Logger.WriteBorder("ParamStorage::Save() COMPLETE");
+            }
+        }
+        public void SaveXML(string filePath)
+        {
+            lock (ObjectLock)
+            {
+                Logger.WriteBorder("ParamStorage::Save()");
+                Logger.WriteLine(filePath);
+                XElement positionNode = new XElement(this.ParamStoragePositionName);
+
+                XElement parametersFile = XElement.Load(MainWindow.ConfigRootDir + "\\Parameters.xml");
+                XElement targetNode = parametersFile.Descendants(this.ParamStoragePositionName).FirstOrDefault();
+
+                if (targetNode != null)
+                {
+                    // Create a new node with updated child elements
+                    foreach (KeyValuePair<string, Dictionary<string, string>> KVP in Categories)
+                    {
+                        Dictionary<string, string> childNodes = KVP.Value;
+                        XElement categoryElement = new XElement(KVP.Key, childNodes.Select(kv => new XElement(kv.Key, kv.Value)));
+                        positionNode.Add(categoryElement);
+                    }
+
+                    targetNode.ReplaceWith(positionNode); // Replace the old node with the new one
+                    parametersFile.Save(filePath); // Save the modified XML back to the file
+                }
             }
         }
 

@@ -132,7 +132,7 @@ namespace PalletCheck
                 PProcessorBottom.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete, PositionOfPallet.Bottom);
             };
 
-            if (ParamStorageGeneral.GetInt("Auto Start Capturing") == 1)
+            if (ParamStorageGeneral.GetInt(StringsLocalization.AutoStartCapturing) == 1)
             {
                 await Task.Delay(2000); // Wait for 2 seconds
                 this.Dispatcher.Invoke(() =>

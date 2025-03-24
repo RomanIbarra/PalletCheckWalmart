@@ -1,12 +1,7 @@
-﻿using PalletCheck;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
@@ -14,14 +9,13 @@ namespace PalletCheck
 {
     public partial class ParamConfig : Form
     {
-        public static string LastLoadedParamFile = "";
         System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
         System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
         Color SaveSettingsButtonColor;
-        //ParamStorage ParamStorageGeneral = MainWindow.ParamStorageGeneral;
+        public static string LastLoadedParamFile = "";
         ParamStorage ParamStorageCurrent;
         string CurrentLastUsedFileName;
-        public ParamConfig(ParamStorage ParamStorageGeneral,string LastUsedFile)
+        public ParamConfig(ParamStorage ParamStorageGeneral,string LastUsedFile, string ParamStoragePosition)
         {
             InitializeComponent();
 
@@ -41,6 +35,7 @@ namespace PalletCheck
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             ParamStorageCurrent = ParamStorageGeneral;
+            ParamStorageCurrent.ParamStoragePositionName = ParamStoragePosition;
             CurrentLastUsedFileName = LastUsedFile;
             BuildPagesFromParamStorage();
 
@@ -89,20 +84,20 @@ namespace PalletCheck
                 DGV.RowHeadersVisible = false;
                 DGV.Dock = DockStyle.Fill;
 
-                // 设置表头高度
+                // Ajuste de la altura de la cabecera de la tabla
                 DGV.Columns[0].Width = 120;
                 DGV.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-                // 启用单元格文字换行
+                // Activar el avance de línea del texto de la celda
                 DGV.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
-                // 自动调整行高
+                // Ajuste automático de la altura de la línea
                 DGV.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
-                // 设置表头高度
+                // Ajuste de la altura de la cabecera de la tabla
                 DGV.ColumnHeadersHeight = 50;
 
-                // 设置交替行颜色
+                // Establecer colores alternativos para las filas
                 DGV.RowPrePaint += (sender, e) =>
                 {
                     if (e.RowIndex % 2 == 0)
@@ -158,14 +153,14 @@ namespace PalletCheck
         {
             Logger.ButtonPressed("ParamConfig.btnLoadSettings");
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Text files|*.txt";
+            ofd.Filter = "XML Files (*.xml)|*.xml";
             ofd.FileName = LastLoadedParamFile;
             ofd.InitialDirectory = MainWindow.ConfigRootDir;
             MainWindow.SetLastUsedParamFileName(CurrentLastUsedFileName);
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                ParamStorageCurrent.Load(ofd.FileName);
+                ParamStorageCurrent.LoadXML(ofd.FileName);
                 MainWindow.LastUsedParamFile = ofd.FileName;
                 BuildPagesFromParamStorage();
             }
@@ -176,7 +171,7 @@ namespace PalletCheck
         {
             Logger.ButtonPressed("ParamConfig.btnSaveSettings");
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "Text files|*.txt";
+            sfd.Filter = "XML Files (*.xml)|*.xml";
             sfd.FileName = LastLoadedParamFile;
             sfd.InitialDirectory = MainWindow.ConfigRootDir;
             MainWindow.SetLastUsedParamFileName(CurrentLastUsedFileName);
@@ -184,7 +179,7 @@ namespace PalletCheck
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 MainWindow.LastUsedParamFile = sfd.FileName;
-                ParamStorageCurrent.Save(sfd.FileName);
+                ParamStorageCurrent.SaveXML(sfd.FileName);
             }
         }
 

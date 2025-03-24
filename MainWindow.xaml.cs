@@ -58,6 +58,9 @@ namespace PalletCheck
         public static ParamStorage ParamStorageBottom { get; set; } = new ParamStorage();
         public static ParamStorage ParamStorageLeft { get; set; } = new ParamStorage();
         public static ParamStorage ParamStorageRight { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageFront { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageBack { get; set; } = new ParamStorage();
+
         string _FilenameDateTime { get; set; }
         string _DirectoryDateHour { get; set; }
 
@@ -478,6 +481,10 @@ namespace PalletCheck
                     return ParamStorageTop;
                 case PositionOfPallet.Bottom:
                     return ParamStorageBottom;
+                case PositionOfPallet.Front:
+                    return ParamStorageFront;
+                case PositionOfPallet.Back:
+                    return ParamStorageBack;
                 default:
                     throw new ArgumentException("Invalid position", nameof(position));
             }
@@ -512,6 +519,8 @@ namespace PalletCheck
             LoadParameters(PositionOfPallet.Bottom);
             LoadParameters(PositionOfPallet.Left);
             LoadParameters(PositionOfPallet.Right);
+            LoadParameters(PositionOfPallet.Front);
+            LoadParameters(PositionOfPallet.Back);
 
             // Open PLC connection port
             int Port = ParamStorageGeneral.GetInt("TCP Server Port");
@@ -1281,8 +1290,8 @@ namespace PalletCheck
             string file3 = System.IO.Path.Combine(directory, baseName + "B3.xml");
             string file4 = System.IO.Path.Combine(directory, baseName + "L.xml");
             string file5 = System.IO.Path.Combine(directory, baseName + "R.xml");
-            string file6 = System.IO.Path.Combine(directory, baseName + "R.xml");
-            string file7 = System.IO.Path.Combine(directory, baseName + "R.xml");
+            string file6 = System.IO.Path.Combine(directory, baseName + "F.xml");
+            string file7 = System.IO.Path.Combine(directory, baseName + "BK.xml");
             try
             {
                 if (loadFrameFlags[0])
@@ -1690,6 +1699,8 @@ namespace PalletCheck
                                                             .Union(subDirectory.GetFiles("*_B3.xml"))
                                                             .Union(subDirectory.GetFiles("*_L.xml"))
                                                             .Union(subDirectory.GetFiles("*_R.xml"))
+                                                            .Union(subDirectory.GetFiles("*_F.xml"))
+                                                            .Union(subDirectory.GetFiles("*_B.xml"))
                                                             .ToArray();
 
                             if (files.Length > 0)
@@ -1778,12 +1789,12 @@ namespace PalletCheck
                         ProcessFrameForCameraRightCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Right file: " + file.FullName);
                     }
-                    else if (fileName.Contains("_R.XML"))
+                    else if (fileName.Contains("_F.XML"))
                     {
                         ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Front file: " + file.FullName);
                     }
-                    else if (fileName.Contains("_R.XML"))
+                    else if (fileName.Contains("_B.XML"))
                     {
                         ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Back file: " + file.FullName);
@@ -1912,7 +1923,7 @@ namespace PalletCheck
             {
                 if (Password.Passed)
                 {
-                    ParamConfig PC = new ParamConfig(ParamStorageGeneral, "LastUsedParamFileGeneral.txt");
+                    ParamConfig PC = new ParamConfig(ParamStorageGeneral, "LastUsedParamFileGeneral.txt", null);
                     PC.Show();
                 }
             };
@@ -2038,27 +2049,44 @@ namespace PalletCheck
             // Select the corresponding ParamStorage based on the button name.
             ParamStorage selectedParamStorage = null;
             string LastUsedParamName = null;
+            string position = null;
+
             switch (clickedButton.Name)
             {
                 case "btnSetting_Top":
-
                     selectedParamStorage = ParamStorageTop;
+                    position = "Top";
                     LastUsedParamName = "LastUsedParamFileTop.txt";
                     break;
 
                 case "btnSetting_Bottom":
                     selectedParamStorage = ParamStorageBottom;
+                    position = "Bottom";
                     LastUsedParamName = "LastUsedParamFileBottom.txt";
                     break;
 
                 case "btnSetting_Left":
                     selectedParamStorage = ParamStorageLeft;
+                    position = "Left";
                     LastUsedParamName = "LastUsedParamFileLeft.txt";
                     break;
 
                 case "btnSetting_Right":
                     selectedParamStorage = ParamStorageRight;
+                    position = "Right";
                     LastUsedParamName = "LastUsedParamFileRight.txt";
+                    break;
+
+                case "btnSetting_Front":
+                    position = "Front";
+                    selectedParamStorage = ParamStorageFront;
+                    LastUsedParamName = "";
+                    break;
+
+                case "btnSetting_Back":
+                    position = "Back";
+                    selectedParamStorage = ParamStorageBack;
+                    LastUsedParamName = "";
                     break;
 
                 default:
@@ -2071,7 +2099,7 @@ namespace PalletCheck
             {
                 if (Password.Passed && selectedParamStorage != null)
                 {
-                    ParamConfig PC = new ParamConfig(selectedParamStorage, LastUsedParamName);
+                    ParamConfig PC = new ParamConfig(selectedParamStorage, LastUsedParamName, position);
                     PC.Text = clickedButton.Name;
                     PC.Show();
                 }
