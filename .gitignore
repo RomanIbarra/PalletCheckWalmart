@@ -9,6 +9,10 @@
 *.user
 *.userosscache
 *.sln.docstates
+_ReSharper.*
+bin
+obj
+packages
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -383,4 +387,24 @@ FodyWeavers.xsd
 /bin/x64/Debug/PalletCheck.exe
 /obj/x64/Debug/PalletCheck.exe
 /obj/x64/Debug/PalletCheck_MarkupCompile.lref
-*.onnx
+/obj/x64/Debug/App.g.cs
+/obj/x64/Debug/App.g.i.cs
+/obj/x64/Debug/MainWindow.baml
+/obj/x64/Debug/MainWindow.g.cs
+/obj/x64/Debug/MainWindow.g.i.cs
+/obj/x64/Debug/PalletCheck.g.resources
+/obj/x64/Debug/PalletCheck_Content.g.i.cs
+/obj/x64/Debug/Viewer3D.baml
+/obj/x64/Debug/ProcessingRecordingControl.baml
+/obj/x64/Debug/Password.baml
+/obj/x64/Debug/MainWindow.baml
+/obj/x64/Debug/PalletCheck.g.resources
+/obj/x64/Debug/PalletCheck.g.resources
+/obj
+obj/x64/Debug/MainWindow.g.cs
+*.cs
+/obj/x64/Debug
+obj/x64/Debug/MainWindow.g.i.cs
+/obj/x64/Debug
+obj/x64/Debug/MainWindow.baml
+obj/x64/Debug/MainWindow.g.i.cs

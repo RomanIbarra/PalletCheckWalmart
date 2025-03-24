@@ -267,6 +267,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="DL_Models\" />
     <Folder Include="icons\" />
     <Folder Include="Resources\" />
     <Folder Include="SICK\" />
@@ -311,6 +312,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="JackTest.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SICKWhiteLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="WalmartLogo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

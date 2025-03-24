@@ -43,7 +43,7 @@ namespace PalletCheck
 
         ConcurrentDictionary<string, R3Cam.Frame> FrameBuffer = new ConcurrentDictionary<string, R3Cam.Frame>();
 
-        IFrame[] SickFrames = new IFrame[6];
+        IFrame[] SickFrames = new IFrame[8];
 
         private int framesReceivedCount = 0;  // Used to track the number of frames received
         private object _lock = new object();  // Lock for thread safety
@@ -76,25 +76,33 @@ namespace PalletCheck
             }
 
             // EasyRanger
-            _envLeft = new ProcessingEnvironment();
+            
             _envTop = new ProcessingEnvironment();
             _envBottom = new ProcessingEnvironment();
+            _envLeft = new ProcessingEnvironment();
             _envRight = new ProcessingEnvironment();
-            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+            _envFront = new ProcessingEnvironment();
+            _envBack = new ProcessingEnvironment();
+            
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
+            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+            _envFront.Load(RootDir + "/EasyRangerEnvironments/Front.env");
+            _envBack.Load(RootDir + "/EasyRangerEnvironments/Back.env");
 
             // Define a fixed callback array (placed outside the loop)
             GrabResultCallback[] callbacks =
             {
-        ProcessFrameForCameraTopCallback,
-        ProcessFrameForCameraBottomLeftCallback,
-        ProcessFrameForCameraBottomMidCallback,
-        ProcessFrameForCameraBottomRightCallback,
-        ProcessFrameForCameraLeftCallback,
-        ProcessFrameForCameraRightCallback
-    };
+                ProcessFrameForCameraTopCallback,
+                ProcessFrameForCameraBottomLeftCallback,
+                ProcessFrameForCameraBottomMidCallback,
+                ProcessFrameForCameraBottomRightCallback,
+                ProcessFrameForCameraLeftCallback,
+                ProcessFrameForCameraRightCallback,
+                ProcessFrameForCameraFrontCallback,
+                ProcessFrameForCameraBackCallback
+            };
 
             // Initialize cameras in a loop
             for (int i = 0; i < callbacks.Length; i++)
