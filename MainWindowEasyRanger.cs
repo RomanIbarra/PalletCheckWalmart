@@ -527,24 +527,24 @@ namespace PalletCheck
             P.BList = new List<Board>();
             var paramStorage = position == PositionOfPallet.Front ? ParamStorageFront : ParamStorageBack;
 
-            if (position == PositionOfPallet.Front)
+            if (position == PositionOfPallet.Back)
             {
-                env.GetStepProgram("Main").StepList[1].Enabled = true;
-                env.GetStepProgram("Main").StepList[2].Enabled = false;
-                env.GetStepProgram("Main").StepList[3].Enabled = false;
-                P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.F_B1, true, 0, 0));
-                P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.F_B2, true, 0, 0));
-                P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.F_B3, true, 0, 0));
+               // env.GetStepProgram("Main").StepList[1].Enabled = true;
+              //  env.GetStepProgram("Main").StepList[2].Enabled = false;
+             //   env.GetStepProgram("Main").StepList[3].Enabled = false;
+                P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.BK_B1, true, 0, 0));
+                P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.BK_B2, true, 0, 0));
+                P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.BK_B3, true, 0, 0));
             }
 
             else
             {
-                env.GetStepProgram("Main").StepList[1].Enabled = false;
-                env.GetStepProgram("Main").StepList[2].Enabled = true;
-                env.GetStepProgram("Main").StepList[3].Enabled = true;
-                P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.BK_B1, true, 0, 0));
-                P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.BK_B2, true, 0, 0));
-                P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.BK_B3, true, 0, 0));
+                //env.GetStepProgram("Main").StepList[1].Enabled = false;
+                //env.GetStepProgram("Main").StepList[2].Enabled = true;
+                //env.GetStepProgram("Main").StepList[3].Enabled = true;
+                P.BList.Add(new Board("Block1", PalletDefect.DefectLocation.F_B1, true, 0, 0));
+                P.BList.Add(new Board("Block2", PalletDefect.DefectLocation.F_B2, true, 0, 0));
+                P.BList.Add(new Board("Block3", PalletDefect.DefectLocation.F_B3, true, 0, 0));
             }
 
             double[] BlockHeight = new double[3];
@@ -696,26 +696,6 @@ namespace PalletCheck
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
-                        }
-                    }
-
-                    if (middleBoardHasBlobs[0] == 1)
-                    {
-                        int[] middleBoardBlobsPixels = env.GetInteger("MB_Blobs_Pixels");
-                        int[] middleBoardROIPixels = env.GetInteger("MB_ROI_Pixels");
-                        int middleBoardBlobsPixelsSum = middleBoardBlobsPixels.Sum();
-                        int middleBoardROIPixelsSum = middleBoardROIPixels.Sum();
-                        float blobPercentage = ((float)middleBoardBlobsPixelsSum / (float)middleBoardROIPixelsSum) * 100;
-
-                        if (blobPercentage < MiddleBoardMissingWoodMaxPercentage)
-                        {
-                            viewer.DrawRoi("MB_ROI", -1, green, 100);
-                        }
-
-                        else
-                        {
-                            P.AddDefect(null, PalletDefect.DefectType.missing_wood, "Missing Wood");
-                            viewer.DrawRoi("MB_ROI", -1, red, 100);
                         }
                     }
 

@@ -88,8 +88,8 @@ namespace PalletCheck
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
             _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
             _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-            _envFront.Load(RootDir + "/EasyRangerEnvironments/Front&Back.env");
-            _envBack.Load(RootDir + "/EasyRangerEnvironments/Front&Back.env");
+            _envFront.Load(RootDir + "/EasyRangerEnvironments/Front.env");
+            _envBack.Load(RootDir + "/EasyRangerEnvironments/Back.env");
 
             // Define a fixed callback array (placed outside the loop)
             GrabResultCallback[] callbacks =
