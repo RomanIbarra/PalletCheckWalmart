@@ -634,7 +634,7 @@ namespace PalletCheck
 
                     if (position == PositionOfPallet.Front)
                     {
-                        if (SelectPositionForExtraction == 3)
+                        if (SelectPositionForExtraction == 4)
                         {
                             floatArray = env.GetImageBuffer("FilteredImage")._range;
                             byteArray = env.GetImageBuffer("FilteredImage")._intensity;
@@ -710,7 +710,7 @@ namespace PalletCheck
                     if (position == PositionOfPallet.Back)
                     {
 
-                        if (SelectPositionForExtraction == 2)
+                        if (SelectPositionForExtraction == 5)
                         {
                             floatArray = env.GetImageBuffer("FilteredImage")._range;
                             byteArray = env.GetImageBuffer("FilteredImage")._intensity;

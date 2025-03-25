@@ -68,9 +68,9 @@ namespace PalletCheck
         string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R", "F", "B" };
 
         /*Dataset Extraction*/
-        public static bool enableDatasetExtraction = false;
+        public static bool enableDatasetExtraction = true;
         public static int cntr=0;
-        public static int SelectPositionForExtraction = 0; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
+        public static int SelectPositionForExtraction = 4; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
 
         /*Is resize is needed for inference or for sabing images use:  EX. Bitmap resizedImage = model.ResizeBitmap(bitmapClassifier, 512, 512);*/
 
@@ -84,6 +84,10 @@ namespace PalletCheck
         public static bool isSaveTopRNWHCO = true;
         /*Save results Bottom nails with head cutoff*/
         public static bool isSaveBottomRNWHCO = false;
+        /*Save results for Front*/
+        public static bool isSaveFrontResults = false;
+        /*Save resutls for Back*/
+        public static bool isSaveBackResults = false;
 
 
 
@@ -1700,7 +1704,7 @@ namespace PalletCheck
                                                             .Union(subDirectory.GetFiles("*_L.xml"))
                                                             .Union(subDirectory.GetFiles("*_R.xml"))
                                                             .Union(subDirectory.GetFiles("*_F.xml"))
-                                                            .Union(subDirectory.GetFiles("*_B.xml"))
+                                                            .Union(subDirectory.GetFiles("*_BK.xml"))
                                                             .ToArray();
 
                             if (files.Length > 0)
@@ -1794,7 +1798,7 @@ namespace PalletCheck
                         ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Front file: " + file.FullName);
                     }
-                    else if (fileName.Contains("_B.XML"))
+                    else if (fileName.Contains("_BK.XML"))
                     {
                         ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Back file: " + file.FullName);
