@@ -2162,7 +2162,7 @@ namespace PalletCheck
             // Update screen
             Console.WriteLine($"Total Results: {finalResult}");
             stopwatchProcess.Stop();
-            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 30);
+            //UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 30);
             if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
             if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
 
