@@ -68,7 +68,7 @@ namespace PalletCheck
         string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R", "F", "B" };
 
         /*Dataset Extraction*/
-        public static bool enableDatasetExtraction = true;
+        public static bool enableDatasetExtraction = false;
         public static int cntr=0;
         public static int SelectPositionForExtraction = 4; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
 
@@ -81,7 +81,7 @@ namespace PalletCheck
         /*Save results for pallet classifier*/
         public static bool isSavePalletClassifierResults = false;
         /*Save results Top nails with head cutoff*/
-        public static bool isSaveTopRNWHCO = true;
+        public static bool isSaveTopRNWHCO = false;
         /*Save results Bottom nails with head cutoff*/
         public static bool isSaveBottomRNWHCO = false;
         /*Save results for Front*/

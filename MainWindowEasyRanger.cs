@@ -661,11 +661,12 @@ namespace PalletCheck
                             string saveAt = Path.Combine(exePath, relativePath);
                             ReflBuf.SaveImage(relativePath, true);
                             // bitmap.Save(saveAt, GDII.ImageFormat.Png);
+                            //Resize bitmap
+                            Bitmap bitmapF = model.ResizeBitmap(bitmap, 2500, 400);
+                            float[] imageData = model.ProcessBitmapForInference(bitmapF, bitmapF.Width, bitmapF.Height);
+                            float[][] results = model.RunInference5(imageData, bitmapF.Height, bitmapF.Width);
 
-
-                            //Process the image for inference
-                            float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
-                            float[][] results = model.RunInference2(imageData, bitmap.Height, bitmap.Width);
+                           
 
 
                             //Get the results
@@ -676,33 +677,43 @@ namespace PalletCheck
 
                             //Vizualice BB Results
                             //model.DrawTopBoxes2(saveAt, boxes, scores, "RigthTest.png");
-                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Front/FrontResults.png", isSaveSideNailsProtrudingResults);
-                            if (centroids.Length == 2)
+                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Front/FrontResults.png", isSaveFrontResults);
+                            int defectsfound = centroids.Length / 2;
+
+
+                            if (defectsfound > 0)
                             {
-                                int Cx1 = centroids[0];
-                                int Cy1 = centroids[1];
-
-                                float maxHeight = GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, floatArray);
-                                Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
-                                float Object1 = GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, floatArray);
-                                int pos1 = GetHorizontalPosition(Cx1, rangeBuffer);
-
-                                if (Object1 > NailHeight)
+                                int ii = 0;
+                                for (int i = 0; i < defectsfound; i++)
                                 {
-                                    for (int i = 0; i < 3; i++)
+
+                                    int Cx1 = model.ScaleVal(centroids[ii], 2500, ReflBuf.Width);
+                                    int Cy1 = model.ScaleVal(centroids[ii + 1], 400, ReflBuf.Height);
+                                    ii = ii + 1;
+                                    float maxHeight = GetMaxRangeInCircle(Cx1, Cy1, 40, rangeBuffer, floatArray);
+                                    // Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
+                                    float Object1 = GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, floatArray);
+                                    int pos1 = GetHorizontalPosition(Cx1, rangeBuffer);
+                                    if (Object1 > NailHeight)
                                     {
-                                        if (pos1 == i)
+                                        for (int j = 0; j < 3; j++)
                                         {
-                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
-                                            viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
+                                            if (pos1 == j)
+                                            {
+                                                P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                                viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
+                                            }
                                         }
                                     }
+
+                                    else
+                                    {
+                                        //viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, blue);
+                                    }
+
                                 }
 
-                                else
-                                {
-                                    viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
-                                }
+
                             }
                         }
                     }
@@ -737,9 +748,10 @@ namespace PalletCheck
                             ReflBuf.SaveImage(relativePath, true);
                             // bitmap.Save(saveAt, GDII.ImageFormat.Png);
 
+                            Bitmap bitmapB = model.ResizeBitmap(bitmap, 2500, 400);
                             //Process the image for inference
-                            float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
-                            float[][] results = model.RunInference2(imageData, bitmap.Height, bitmap.Width);
+                            float[] imageData = model.ProcessBitmapForInference(bitmapB, bitmapB.Width, bitmapB.Height);
+                            float[][] results = model.RunInference5(imageData, bitmapB.Height, bitmapB.Width);
 
 
                             //Get the results
@@ -749,33 +761,46 @@ namespace PalletCheck
                             float[] masks = results[3];
 
                             //Vizualice BB Results                          
-                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Back/BackResults.png", isSaveSideNailsProtrudingResults);
+                            
+                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Back/BackResults.png", isSaveBackResults);
+                            int defectsfound = centroids.Length / 2;
 
-                            if (centroids.Length == 2)
+
+                            if (defectsfound > 0)
                             {
-                                int Cx1 = centroids[0];
-                                int Cy1 = centroids[1];
-                                float maxHeight = GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, floatArray);
-                                Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
-                                float Object1 = GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, floatArray);
-                                int pos1 = GetHorizontalPosition(Cx1, rangeBuffer);
-                                if (Object1 > NailHeight)
+                                int ii = 0;
+                                for (int i = 0; i < defectsfound; i++)
                                 {
-                                    for (int i = 0; i < 3; i++)
+
+                                    int Cx1 = model.ScaleVal(centroids[ii], 2500, ReflBuf.Width);
+                                    int Cy1 = model.ScaleVal(centroids[ii + 1], 400, ReflBuf.Height);
+                                    ii = ii + 1;
+                                    float maxHeight = GetMaxRangeInCircle(Cx1, Cy1, 40, rangeBuffer, floatArray);
+                                    // Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
+                                    float Object1 = GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, floatArray);
+                                    int pos1 = GetHorizontalPosition(Cx1, rangeBuffer);
+                                    if (Object1 > NailHeight)
                                     {
-                                        if (pos1 == i)
+                                        for (int j = 0; j < 3; j++)
                                         {
-                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
-                                            viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
+                                            if (pos1 == j)
+                                            {
+                                                P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail (Back): " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                                viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
+                                            }
                                         }
                                     }
+
+                                    else
+                                    {
+                                        //viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, blue);
+                                    }
+
                                 }
 
-                                else
-                                {
-                                    viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
-                                }
+
                             }
+
                         }
                     }
 

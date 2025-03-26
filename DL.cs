@@ -30,10 +30,12 @@ namespace PalletCheck
         private static string modelPath2 = "../../../DL_Models/RaisedNailsDetector4.onnx"; //Side Nails protruding
         private static string modelPath3 = "../../../DL_Models/ClassifierNoNOM.onnx";      //Classifier
         private static string modelPath4 = "../../../DL_Models/TopRNWHCO.onnx";            //TopRNWHCO
+        private static string modelPath5 = "../../../DL_Models/RaisedNailsDetector5.onnx";
         private static InferenceSession session;
         private static InferenceSession session2;
         private static InferenceSession session3;
         private static InferenceSession session4;
+        private static InferenceSession session5;
 
         // Inicializar el modelo solo una vez
         static model()
@@ -44,6 +46,7 @@ namespace PalletCheck
                 session2 = new InferenceSession(modelPath2);
                 session3 = new InferenceSession(modelPath3);
                 session4 = new InferenceSession(modelPath4);
+                session5 = new InferenceSession(modelPath5);
                 Console.WriteLine("Modelos ONNX cargado correctamente.");
             }
             catch (Exception e)
@@ -212,7 +215,45 @@ namespace PalletCheck
 
             return outputData;
         }
+        public static float[][] RunInference5(float[] imageData, int heigth, int width)
+        {
+            // Crear un tensor de entrada para el modelo
+            var inputTensor = new DenseTensor<float>(imageData, new[] { 1, 3, heigth, width });
 
+            var inputs = new List<NamedOnnxValue>
+            {
+                NamedOnnxValue.CreateFromTensor("input", inputTensor) // Double check  de que el nombre del input sea el correcto
+            };
+
+            float[][] outputData = new float[4][];
+
+            try
+            {
+                // Ejecutar la inferencia
+                using (var results = session5.Run(inputs))
+                {
+                    if (results != null && results.Count > 0)
+                    {
+                        outputData[0] = results[0].AsTensor<float>()?.ToArray() ?? new float[0]; // Boxes
+                        outputData[1] = results[1].AsTensor<float>()?.ToArray() ?? new float[0]; // Labels
+                        outputData[2] = results[2].AsTensor<float>()?.ToArray() ?? new float[0]; // Scores
+                        outputData[3] = results[3].AsTensor<float>()?.ToArray() ?? new float[0]; // Masks
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: No se obtuvieron resultados válidos de la inferencia.");
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error durante la inferencia: " + ex.Message);
+            }
+
+            return outputData;
+        }
         public static Bitmap ResizeBitmap(Bitmap original, int width, int height)
         {
             Bitmap resizedBitmap = new Bitmap(width, height);
@@ -224,6 +265,18 @@ namespace PalletCheck
                 graphics.DrawImage(original, 0, 0, width, height);
             }
             return resizedBitmap;
+        }
+
+        //Function to apply a 1DOF transformation from one space to another
+        public static int ScaleVal(int Coord, int SpaceA, int SpaceB)
+        {
+
+            int newCoor = (Coord * SpaceB) / SpaceA;
+
+
+            return newCoor;
+
+
         }
 
 
