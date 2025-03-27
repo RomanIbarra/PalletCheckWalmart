@@ -326,13 +326,14 @@ namespace PalletCheck
                                         {
                                             P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
                                             viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
+                                            isFail = true;
                                         }
                                     }
                                 }
 
                                 else
                                 {
-                                     viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
+                                     //viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
                                 }
                             }
                         }
@@ -397,13 +398,14 @@ namespace PalletCheck
                                         {
                                             P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
                                             viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
+                                            isFail = true;
                                         }
                                     }
                                 }
 
                                 else
                                 {
-                                    viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
+                                    //viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
                                 }
                             }
                         }
@@ -702,6 +704,7 @@ namespace PalletCheck
                                             {
                                                 P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
                                                 viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
+                                                isFail = true;
                                             }
                                         }
                                     }
@@ -787,6 +790,7 @@ namespace PalletCheck
                                             {
                                                 P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail (Back): " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
                                                 viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
+                                                isFail = true;
                                             }
                                         }
                                     }

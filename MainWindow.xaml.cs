@@ -70,18 +70,20 @@ namespace PalletCheck
         /*Dataset Extraction*/
         public static bool enableDatasetExtraction = false;
         public static int cntr=0;
-        public static int SelectPositionForExtraction = 4; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
+        public static int SelectPositionForExtraction = 0; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
 
         /*Is resize is needed for inference or for sabing images use:  EX. Bitmap resizedImage = model.ResizeBitmap(bitmapClassifier, 512, 512);*/
 
         /*Save results Top Split images*/
-        public static bool isSaveTopSplitResults = false;
+        public static bool isSaveTopSplitResults = true;
         /*Save results Sides nails protruding outside of pallet*/
         public static bool isSaveSideNailsProtrudingResults = false;
         /*Save results for pallet classifier*/
         public static bool isSavePalletClassifierResults = false;
         /*Save results Top nails with head cutoff*/
-        public static bool isSaveTopRNWHCO = false;
+        public static bool isSaveTopRNWHCO = true;
+        /*Buffer for saving the defects*/
+        public static bool defectRNWHCO = false;
         /*Save results Bottom nails with head cutoff*/
         public static bool isSaveBottomRNWHCO = false;
         /*Save results for Front*/

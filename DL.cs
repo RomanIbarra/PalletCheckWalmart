@@ -465,11 +465,12 @@ namespace PalletCheck
             Console.WriteLine($"Imagen guardada en {savePath}");
         }
 
-        public static void DrawTopBoxes4(string imagePath, float[] boxes, float[] scores, string savePath,double Score)
+        public static int[] DrawTopBoxes4(string imagePath, float[] boxes, float[] scores, string savePath,double Score)
         {
             // Cargar imagen original
             // Obtener la ruta del ejecutable
             string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            List<int> centroids = new List<int>();
 
             // Construir la ruta completa de la imagen
             string path = Path.Combine(exeDirectory, imagePath);
@@ -477,7 +478,6 @@ namespace PalletCheck
             if (!File.Exists(path))
             {
                 Console.WriteLine($"Error: La imagen '{path}' no existe.");
-                return;
             }
             WMI.BitmapImage bitmapImage = new WMI.BitmapImage(new Uri(path, UriKind.Absolute));
             int width = bitmapImage.PixelWidth;
@@ -509,6 +509,12 @@ namespace PalletCheck
                     int x2 = (int)boxes[i * 4 + 2];
                     int y2 = (int)boxes[i * 4 + 3];
 
+                    // Calcular el centroide del bounding box
+                    int centerX = (x1 + x2) / 2;
+                    int centerY = (y1 + y2) / 2;
+                    centroids.Add(centerX);
+                    centroids.Add(centerY);
+
                     W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);
                     dc.DrawRectangle(null, pen, rect);
                 }
@@ -527,6 +533,7 @@ namespace PalletCheck
             }
 
             Console.WriteLine($"Imagen guardada en {savePath}");
+            return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
         }
 
 
@@ -1153,7 +1160,35 @@ namespace PalletCheck
 
             return new PointF(sumX / (float)count, sumY / (float)count);
         }
+        public static float GetMaxRangeInSquare1(int x, int y, int l, CaptureBuffer rangeBuffer, float[] floatArray)
+        {
+            // Definir los límites de la región de interés
+            int startX = Math.Max(0, x - l);
+            int endX = Math.Min(rangeBuffer.Width - 1, x + l);
+            int startY = Math.Max(0, y - l);
+            int endY = Math.Min(rangeBuffer.Height - 1, y + l);
+            float maxVal = float.MinValue;
+            Console.WriteLine("Cuadrado de valores en la región de interés:");
 
+            // Recorrer la región de interés
+            for (int i = startY; i <= endY; i++)
+            {
+                string rowValues = "";
+                for (int j = startX; j <= endX; j++)
+                {
+                    int index = i * rangeBuffer.Width + j;
+                    float value = floatArray[index];
+                    if (!float.IsNaN(value))
+                    {
+                        maxVal = Math.Max(maxVal, value);
+                    }
+                    rowValues += value.ToString("F2") + " ";
+                }
+                Console.WriteLine(rowValues.Trim());
+            }
+
+            return maxVal;
+        }
         public void ByteArray2bitmap(byte[] byteArray, int width, int height, Bitmap bitmap)
         {
             try

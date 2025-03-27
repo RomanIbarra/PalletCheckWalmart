@@ -1,5 +1,5 @@
 ﻿#define SPLIT_BOARD_MODE
-
+#define NEW_DATASET
 
 
 using System.Windows;
@@ -1077,7 +1077,7 @@ namespace PalletCheck
 
                     /*TopRNWHCO Iference-----------------------------------------------------------------------------------------------------------------------------------*/
                     //Process the image for inference
-
+                    defectRNWHCO = false;
                     float[] rangeArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
                     byte[] reflectanceArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
                     int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
@@ -1110,6 +1110,8 @@ namespace PalletCheck
                     float[] labelsTop = resultsTop[1];
                     float[] scoresTop = resultsTop[2];
                     float[] masksTop = resultsTop[3];
+                    
+                
                     //Vizualice BB Results
                     string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
 
@@ -1117,17 +1119,41 @@ namespace PalletCheck
                     if (isSaveTopRNWHCO)
                     {
                         bitmapTop.Save(TopRNWHCO, ImageFormat.Png);
-                        model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
+                        int[] centroids=model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
+                        float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+                        //int Cx1 = centroids[0];
+                        //int Cy1 = centroids[1];
+                        int defectsfound = centroids.Length / 2;
 
+                        if (defectsfound > 0)
+                        {
+                            int ii = 0;
+                            for (int i = 0; i < defectsfound; i++)
+                            {
+
+                                int Cx1 = centroids[ii];
+                                int Cy1 = centroids[ii + 1];
+                                ii = ii + 1;
+
+                               // float maxHeight = GetMaxRangeInCircle(Cx1, Cy1, 40, rangeBuffer, rangeArray);
+                              // Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
+                              float Object1 = model.GetMaxRangeInSquare1(Cx1, Cy1, 10, rangeBuffer, rangeArray);
+                                if (Object1 > MNH)
+                                {
+                                    defectRNWHCO = true;
+                                
+                                }
+                             }
+                        }
                     }
 
-                    /*
-                    int[] centroids = model.DrawCentroids4(TopRNWHCO, boxesTop, scoresTop, "VizDL/TopRNWHCO/Results.png", isSaveTopRNWHCO, 0.7);
-                    float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
-                    
 
-                        int Cx1 = centroids[0];
-                        int Cy1 = centroids[1];
+                    //int[] centroids = model.DrawCentroids4(TopRNWHCO, boxesTop, scoresTop, "VizDL/TopRNWHCO/Results.png", isSaveTopRNWHCO, 0.7);
+                   // float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+
+                    /*
+
+
 
                         float maxHeight = model.GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, rangeArray);
                         Logger.WriteLine("MaxHeight Obj1 " + MNH);
@@ -1141,7 +1167,7 @@ namespace PalletCheck
                         }
                         */
 
-                    
+
                 }
 
 
@@ -1228,10 +1254,10 @@ namespace PalletCheck
                    // int startC = 49; int endC = 2400; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
                     Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
                     Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
-
+                    Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 2560, 688);
                     //Process the image for inference
-                    float[] imageData = model.ProcessBitmapForInference(croppedBitmap, croppedBitmap.Width, croppedBitmap.Height);
-                    float[][] results = model.RunInference(imageData, croppedBitmap.Height, croppedBitmap.Width);
+                    float[] imageData = model.ProcessBitmapForInference(croppedBitmapR, croppedBitmapR.Width, croppedBitmapR.Height);
+                    float[][] results = model.RunInference(imageData, croppedBitmapR.Height, croppedBitmapR.Width);
 
                     //Get the results
                     float[] boxes = results[0];
@@ -1243,24 +1269,24 @@ namespace PalletCheck
 
                     //Condition to save the results as png Images
                     if (isSaveTopSplitResults) {
-                        croppedBitmap.Save(LeadingMainImage, ImageFormat.Png);
+                        croppedBitmapR.Save(LeadingMainImage, ImageFormat.Png);
                         model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
 
                     }
 
 
                     // Convert to32bppArgb to draw results and display it 
-                    Bitmap tempBitmap = new Bitmap(croppedBitmap.Width, croppedBitmap.Height, PixelFormat.Format32bppArgb);
+                    Bitmap tempBitmap = new Bitmap(croppedBitmapR.Width, croppedBitmapR.Height, PixelFormat.Format32bppArgb);
                     using (Graphics g = Graphics.FromImage(tempBitmap))
                     {
-                        g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmap.Width, croppedBitmap.Height));
+                        g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmapR.Width, croppedBitmapR.Height));
                     }
                     croppedBitmap.Dispose(); // Liberar el anterior
                     croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
 
                     // Draw the segmented objects
-                    List<bool[,]> binaryMasks = model.ConvertMasksToBinary(masks, croppedBitmap.Width, croppedBitmap.Height, scores.Length);
-                    List<bool[]> binaryMasks2=model.ConvertMasksToBinary2(masks, croppedBitmap.Width, croppedBitmap.Height, scores.Length);
+                    List<bool[,]> binaryMasks = model.ConvertMasksToBinary(masks, croppedBitmapR.Width, croppedBitmapR.Height, scores.Length);
+                    List<bool[]> binaryMasks2=model.ConvertMasksToBinary2(masks, croppedBitmapR.Width, croppedBitmapR.Height, scores.Length);
                     
                     string name = "Leading";
 
@@ -1272,7 +1298,7 @@ namespace PalletCheck
                     int lowerY1 = 0;
                     int lowerY2 = 0;
 
-                    model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
+                    model.SplitBoard2(croppedBitmapR, boxes, scores, binaryMasks, name,
                       ref img1Exist,ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
 
                     Board H1 = null;
@@ -1291,7 +1317,7 @@ namespace PalletCheck
 
                    };
 
-                    
+
                     /*
                     for (int i = 0; i < binaryMasks2[1].Length- (58 * croppedBitmap.Width); i++) {
 
@@ -1319,37 +1345,44 @@ namespace PalletCheck
 
 
 
-
-
+                    int X1 = 49;
+                    int X2 = 2400;
+#if NEW_DATASET
+                    upperY2 = model.ScaleVal(upperY2, 688, 786);
+                    lowerY1 = model.ScaleVal(lowerY1, 688, 786);
+                    X1 = 49;
+                    X2 = 3800;
+#endif
 
                     if (img1Exist && img2Exist)
                     {//Both images exist Upper Y taked intop account
-                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
                               startR, upperY2 + startR, paramStorage);
-                        H2 = ProbeVerticallyRotate90(Clon, "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                        captureBuffers[0].SaveImage("H1.png");
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2, 1,
                                lowerY1 + startR, endR, paramStorage);
                     }
                     else if (img1Exist && !img2Exist)
                     {//Only Upper exist Y taked intop account  
-                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
                               startR, upperY2 + startR, paramStorage);
-                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2, 1,
                                upperY2 + startR, endR, paramStorage);
                     }
                     else if (!img1Exist && img2Exist)
                     {//Only Lower exist lowerY taked intop account  
-                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
                               startR, lowerY1 + startR, paramStorage);
-                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2, 1,
                                 lowerY1 + startR, endR, paramStorage);
                     }
                     else
                     {//No boards found then split the Main ROI at the middle
                      //No image
 
-                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, 49, 2400, 1,
+                        H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
                                 startR, ((startR + endR) / 2), paramStorage);
-                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, 49, 2400, 1,
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2 , 1,
                                 ((startR + endR) / 2), endR, paramStorage);
                     }
 
@@ -1357,17 +1390,17 @@ namespace PalletCheck
 
 
 
-                    Board H3 = ProbeVerticallyRotate90(captureBuffers[1], "H3", PalletDefect.DefectLocation.T_H3, 49, 2400, 1,
+                    Board H3 = ProbeVerticallyRotate90(captureBuffers[1], "H3", PalletDefect.DefectLocation.T_H3, X1, X2, 1,
                         (int)(ycs[1] - heights[1] / 2), (int)(ycs[1] + heights[1] / 2), paramStorage);
 
 
-                    Board H4 = ProbeVerticallyRotate90(captureBuffers[2], "H4", PalletDefect.DefectLocation.T_H4, 49, 2400, 1,
+                    Board H4 = ProbeVerticallyRotate90(captureBuffers[2], "H4", PalletDefect.DefectLocation.T_H4, X1, X2, 1,
                         (int)(ycs[2] - heights[2] / 2), (int)(ycs[2] + heights[2] / 2), paramStorage);
-                    Board H5 = ProbeVerticallyRotate90(captureBuffers[3], "H5", PalletDefect.DefectLocation.T_H5, 49, 2400, 1,
+                    Board H5 = ProbeVerticallyRotate90(captureBuffers[3], "H5", PalletDefect.DefectLocation.T_H5, X1, X2, 1,
                         (int)(ycs[3] - heights[3] / 2), (int)(ycs[3] + heights[3] / 2), paramStorage);
-                    Board H6 = ProbeVerticallyRotate90(captureBuffers[4], "H6", PalletDefect.DefectLocation.T_H6, 49, 2400, 1,
+                    Board H6 = ProbeVerticallyRotate90(captureBuffers[4], "H6", PalletDefect.DefectLocation.T_H6, X1, X2, 1,
                         (int)(ycs[4] - heights[4] / 2), (int)(ycs[4] + heights[4] / 2), paramStorage);
-                    Board H7 = ProbeVerticallyRotate90(captureBuffers[5], "H7", PalletDefect.DefectLocation.T_H7, 49, 2400, 1,
+                    Board H7 = ProbeVerticallyRotate90(captureBuffers[5], "H7", PalletDefect.DefectLocation.T_H7, X1, X2, 1,
                         (int)(ycs[5] - heights[5] / 2), (int)(ycs[5] + heights[5] / 2), paramStorage);
 
 
@@ -1386,11 +1419,11 @@ namespace PalletCheck
                     endR = (int)(ycs[6] + heights[6] / 2);
                     cropRect = new Rectangle(startC, startR, endC - startC, endR - startR);
                     croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
-
+                    Bitmap croppedBitmapT = model.ResizeBitmap(croppedBitmap, 2560, 688);
 
                     //Process the image for inference
-                    imageData = model.ProcessBitmapForInference(croppedBitmap, croppedBitmap.Width, croppedBitmap.Height);
-                    results = model.RunInference(imageData, croppedBitmap.Height, croppedBitmap.Width);
+                    imageData = model.ProcessBitmapForInference(croppedBitmapT, croppedBitmapT.Width, croppedBitmapT.Height);
+                    results = model.RunInference(imageData, croppedBitmapT.Height, croppedBitmapT.Width);
 
                     //Get the results
                     boxes = results[0];
@@ -1401,13 +1434,13 @@ namespace PalletCheck
                     //Vizualice BB Results
                     string TrailingMainImage = "vizDL/TopSplit/Trailing.png";
                     if (isSaveTopSplitResults) {
-                        croppedBitmap.Save(TrailingMainImage, ImageFormat.Png);
+                        croppedBitmapT.Save(TrailingMainImage, ImageFormat.Png);
                         model.DrawTopBoxes2(TrailingMainImage, boxes, scores, "BB_Trailing.png");
                     }
 
 
                     // Convert to32bppArgb to draw results and display it 
-                    tempBitmap = new Bitmap(croppedBitmap.Width, croppedBitmap.Height, PixelFormat.Format32bppArgb);
+                    tempBitmap = new Bitmap(croppedBitmapT.Width, croppedBitmapT.Height, PixelFormat.Format32bppArgb);
                     using (Graphics g = Graphics.FromImage(tempBitmap))
                     {
                         g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmap.Width, croppedBitmap.Height));
@@ -1444,34 +1477,39 @@ namespace PalletCheck
 
                     };
 
+
+#if NEW_DATASET
+                    upperY2 = model.ScaleVal(upperY2, 688, 640);
+                    lowerY1 = model.ScaleVal(lowerY1, 688, 640);
+#endif
                     if (img1Exist && img2Exist)
                     {//Both images exist Upper Y taked intop account
-                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, X1, X2, 1,
                               startR, upperY2 + startR, paramStorage);
-                        H9 = ProbeVerticallyRotate90(Clon2, "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, X1, X2, 1,
                                lowerY1 + startR, endR, paramStorage);
                     }
                     else if (img1Exist && !img2Exist)
                     {//Only Upper exist Y taked intop account  
-                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, X1, X2, 1,
                               startR, upperY2 + startR, paramStorage);
-                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, X1, X2, 1,
                                upperY2 + startR, endR, paramStorage);
                     }
                     else if (!img1Exist && img2Exist)
                     {//Only Lower exist lowerY taked intop account  
-                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, X1, X2, 1,
                               startR, lowerY1 + startR, paramStorage);
-                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, X1, X2, 1,
                                 lowerY1 + startR, endR, paramStorage);
                     }
                     else
                     {//No boards found then split the Main ROI at the middle
                      //No image
 
-                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, 49, 2400, 1,
+                        H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, X1, X2, 1,
                                 startR, ((startR + endR) / 2), paramStorage);
-                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, 49, 2400, 1,
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, X1, X2 , 1,
                                 ((startR + endR) / 2), endR, paramStorage);
                     }
 #else
@@ -1790,8 +1828,12 @@ namespace PalletCheck
                 {
                     FindRaisedNails(B, paramStorage);
                 }
+                else
+                {
+                    FindRaisedNailsDL(B, paramStorage,defectRNWHCO);
+                }
 
-                
+
                 CalculateMissingWood(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
                 //FindRaisedBoard(B, paramStorage);  No Requirement for Walmart
@@ -2892,7 +2934,18 @@ namespace PalletCheck
         }
 
         //=====================================================================
+        private void FindRaisedNailsDL(Board B, ParamStorage paramStorage, bool defecActivated) {
 
+
+            if (defecActivated) {
+                defectRNWHCO = false;
+                AddDefect(B, PalletDefect.DefectType.raised_nail, String.Format("Raised Nail > {0} mm", StringsLocalization.MaxNailHeight_mm)); //$"Raised Nail > mm");
+            }
+
+            //SetDefectMarker(P.X, P.Y, 30);
+
+
+        }
         private void FindRaisedNails(Board B,ParamStorage paramStorage)
         {
             // Jack Note: Check if there are enough edges detected to proceed
