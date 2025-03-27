@@ -1,5 +1,5 @@
 ﻿#define SPLIT_BOARD_MODE
-#define NEW_DATASET
+//#define NEW_DATASET
 
 
 using System.Windows;
@@ -1629,11 +1629,18 @@ namespace PalletCheck
                     H5.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
                     H6.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);*/
 
-                    H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9BoardMinimumWidthAcrossLength);
+                    H9.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9BoardMinimumWidthAcrossLength);
                   
                     
                     H1.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H2.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H3.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H4.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H5.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H6.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
                     H7.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H8.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
+                    H9.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
 
                     // Assigning maximum allowable missing wood percentages
                     float maxallowableH1 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MaxAllowedMissingWood);                   
@@ -1642,7 +1649,10 @@ namespace PalletCheck
                     float maxallowableH4 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MaxAllowedMissingWood);
                     float maxallowableH5 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MaxAllowedMissingWood);
                     float maxallowableH6 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MaxAllowedMissingWood);
-                    float maxallowableH7 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9MaxAllowedMissingWood);
+
+                    float maxallowableH7 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H7MaxAllowedMissingWood);
+                    float maxallowableH8 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H8MaxAllowedMissingWood);
+                    float maxallowableH9 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9MaxAllowedMissingWood);
 
                     H1.MaxAllowable = maxallowableH1;
                     H2.MaxAllowable = maxallowableH2;
@@ -1651,6 +1661,8 @@ namespace PalletCheck
                     H5.MaxAllowable = maxallowableH5;
                     H6.MaxAllowable = maxallowableH6;
                     H7.MaxAllowable = maxallowableH7;
+                    H8.MaxAllowable = maxallowableH8;
+                    H9.MaxAllowable = maxallowableH9;
 
                     BList.Add(H1);
                     BList.Add(H2);

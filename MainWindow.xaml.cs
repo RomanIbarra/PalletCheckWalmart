@@ -1307,7 +1307,7 @@ namespace PalletCheck
             string file4 = System.IO.Path.Combine(directory, baseName + "L.xml");
             string file5 = System.IO.Path.Combine(directory, baseName + "R.xml");
             string file6 = System.IO.Path.Combine(directory, baseName + "F.xml");
-            string file7 = System.IO.Path.Combine(directory, baseName + "BK.xml");
+            string file7 = System.IO.Path.Combine(directory, baseName + "B.xml");
             try
             {
                 if (loadFrameFlags[0])
@@ -1716,7 +1716,7 @@ namespace PalletCheck
                                                             .Union(subDirectory.GetFiles("*_L.xml"))
                                                             .Union(subDirectory.GetFiles("*_R.xml"))
                                                             .Union(subDirectory.GetFiles("*_F.xml"))
-                                                            .Union(subDirectory.GetFiles("*_BK.xml"))
+                                                            .Union(subDirectory.GetFiles("*_B.xml"))
                                                             .ToArray();
 
                             if (files.Length > 0)
@@ -1737,7 +1737,7 @@ namespace PalletCheck
 
                             // Wait 10 seconds
                             Console.WriteLine("Waiting 10 seconds...");
-                            await Task.Delay(2000);
+                            await Task.Delay(6000);
                         }
 
                         Console.WriteLine("All subfolders processed.");
@@ -1810,7 +1810,7 @@ namespace PalletCheck
                         ProcessFrameForCameraFrontCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Front file: " + file.FullName);
                     }
-                    else if (fileName.Contains("_BK.XML"))
+                    else if (fileName.Contains("_B.XML"))
                     {
                         ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file.FullName)));
                         Logger.WriteLine("Loaded Back file: " + file.FullName);
