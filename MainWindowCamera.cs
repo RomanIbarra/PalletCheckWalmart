@@ -86,8 +86,8 @@ namespace PalletCheck
             
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
-            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Left.env");
+            _envRight.Load(RootDir + "/EasyRangerEnvironments/Right.env");
             _envFront.Load(RootDir + "/EasyRangerEnvironments/Front.env");
             _envBack.Load(RootDir + "/EasyRangerEnvironments/Back.env");
 

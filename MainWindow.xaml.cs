@@ -111,8 +111,10 @@ namespace PalletCheck
                     return ParamStorageLeft;
                 case PositionOfPallet.Right:
                     return ParamStorageRight;
-                /*case PositionOfPallet.Front:
-                    return ParamStorageRight;*/
+                case PositionOfPallet.Front:
+                    return ParamStorageFront;
+                case PositionOfPallet.Back:
+                    return ParamStorageBack;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -129,10 +131,10 @@ namespace PalletCheck
                     return PalletName2;
                 case PositionOfPallet.Right:
                     return PalletName3;
-                /*case PositionOfPallet.Front:
+                case PositionOfPallet.Front:
                     return PalletName4;
                 case PositionOfPallet.Back:
-                    return PalletName5;*/
+                    return PalletName5;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -171,6 +173,10 @@ namespace PalletCheck
                     return CBB_Container;
                 case PositionOfPallet.Right:
                     return CBB_Container;
+                case PositionOfPallet.Front:
+                    return CBB_Container;
+                case PositionOfPallet.Back:
+                    return CBB_Container;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -207,6 +213,10 @@ namespace PalletCheck
             "Left Fork Clearance",
             "Left Block Protruding From Pallet",
             "Left Side Nail Protruding",
+            "Front Nail Protruding",
+            "Front Missing Block",
+            "Back Nail Protruding",
+            "Back Missing Block",
             "Result"
         };
 
@@ -2120,7 +2130,7 @@ namespace PalletCheck
 
         public void ProcessCameraResult(int cameraId, InspectionResult result)
         {
-            int cameras = ParamStorageGeneral.GetInt("CameraCount");
+            int cameras = ParamStorageGeneral.GetInt(StringsLocalization.CameraCount);
             int _totalViews = cameras - 2; // Minus 2 because Bottom View uses 3 cameras
             // Store the result of the current camera
             lock (_lock)
@@ -2128,7 +2138,7 @@ namespace PalletCheck
                 _results[cameraId] = result; // Store the camera result
                 _completedCount++; // Increment the counter
             }
-
+            
             // Check if all cameras are completed
             if (_completedCount == _totalViews)
             {

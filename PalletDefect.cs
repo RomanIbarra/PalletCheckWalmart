@@ -220,14 +220,18 @@ namespace PalletCheck
         public enum DefectsCSV_Phase1A
         {
             T_MWA = 1,      // Top Missing Wood Across Lenght
-            T_RN = 2,     // Top Raised Nail Fastener Cut off
-            B_RN = 3,     // Bottom Raised Nail Fastener Cut off
+            T_RN = 2,       // Top Raised Nail Fastener Cut off
+            B_RN = 3,       // Bottom Raised Nail Fastener Cut off
             R_FC = 4,       // Right Fork Clearance
             R_BPFP = 5,     // Right Block Protruding From Pallet
-            R_RN = 6,      // Right Side Nail Protruding
+            R_RN = 6,       // Right Side Nail Protruding
             L_FC = 7,       // Left Fork Clearance
             L_BPFP = 8,     // Left Block Protruding From Pallet
-            L_RN = 9       // Left Side Nail Protruding
+            L_RN = 9,       // Left Side Nail Protruding
+            F_RN = 10,      // Front Nail Protruding
+            F_MO= 11,       // Front Missing Block
+            BK_RN = 12,     // Back Nail Protruding
+            BK_MO = 13,     // Back Missing Block
         }
 
     }

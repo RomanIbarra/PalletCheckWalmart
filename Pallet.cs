@@ -210,7 +210,6 @@ namespace PalletCheck
         public InspectionState State = InspectionState.Unprocessed;
         public string Directory;
         public string Filename;
-
         public CaptureBuffer Original;
         public CaptureBuffer Denoised;
         public List<PalletDefect> AllDefects = new List<PalletDefect>();
@@ -1546,51 +1545,45 @@ namespace PalletCheck
                     //H7.MinWidth = expWidths[6] * 0.7;
 
                     // Assigning minimum widths for narrow boards
-                    H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingNarrowBoardMinimumWidth);
+                    H1.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1NarrowBoardMinimumWidth);
                     H2.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2NarrowBoardMinimumWidth);
                     H3.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3NarrowBoardMinimumWidth);
                     H4.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4NarrowBoardMinimumWidth);
                     H5.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5NarrowBoardMinimumWidth);
-/*note*/            //Change H7, H8, H9 WHEN INTEGRATED IN THE XML
                     H6.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
-                    H7.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
-                    H8.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6NarrowBoardMinimumWidth);
-                    H9.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingNarrowBoardMinimumWidth);
-
-
-
+                    H7.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H7NarrowBoardMinimumWidth);
+                    H8.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H8NarrowBoardMinimumWidth);
+                    H9.MinWidthTooNarrow = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9NarrowBoardMinimumWidth);
 
                     // Assigning minimum widths for missing chunks
-                    H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMissingChunkMinimumWidth);
+                    H1.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MissingChunkMinimumWidth);
                     H2.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumWidth);
                     H3.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumWidth);
                     H4.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumWidth);
                     //If international pallet then   change parameters.....
                     if (PalletClassifier == 1) //
-                    { H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth);}
+                    { H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidthStandard);}
                     else
-                    { H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth); }
+                    { H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidthInternational); }
 
-
-                    H5.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumWidth);
                     H6.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
-                    H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
-                    H8.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumWidth);
-                    H9.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumWidth);
+                    H7.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H7MissingChunkMinimumWidth);
+                    H8.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H8MissingChunkMinimumWidth);
+                    H9.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9MissingChunkMinimumWidth);
 
                     // Assigning minimum lengths for missing chunks
-                    H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMissingChunkMinimumLength);
+                    H1.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MissingChunkMinimumLength);
                     H2.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MissingChunkMinimumLength);
                     H3.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MissingChunkMinimumLength);
                     H4.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MissingChunkMinimumLength);
                     H5.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MissingChunkMinimumLength);
                     H6.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
-                    H7.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
-                    H8.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MissingChunkMinimumLength);
-                    H9.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMissingChunkMinimumLength);
+                    H7.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H7MissingChunkMinimumLength);
+                    H8.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H8MissingChunkMinimumLength);
+                    H9.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9MissingChunkMinimumLength);
 
                     //  20250110 New Added for Missing wood across length //H Board lengs parameters on pallet dimension file
-                    H1.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+                    H1.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1BoardMinimumWidthAcrossLength);
 
                     /*H2.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
                     H3.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
@@ -1598,28 +1591,28 @@ namespace PalletCheck
                     H5.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);
                     H6.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HNarrowBoardMinimumWidthAcrossLenght);*/
 
-                    H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingBoardMinimumWidthAcrossLength);
+                    H7.MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9BoardMinimumWidthAcrossLength);
                   
                     
                     H1.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
                     H7.ExpLength = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.HBoardLength_in);
 
                     // Assigning maximum allowable missing wood percentages
-                    float maxallowableLeading = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.LeadingMaxAllowedMissingWood);
-                    float maxallowableTrailing = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.TrailingMaxAllowedMissingWood);
+                    float maxallowableH1 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H1MaxAllowedMissingWood);                   
                     float maxallowableH2 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H2MaxAllowedMissingWood);
                     float maxallowableH3 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H3MaxAllowedMissingWood);
                     float maxallowableH4 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H4MaxAllowedMissingWood);
                     float maxallowableH5 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H5MaxAllowedMissingWood);
                     float maxallowableH6 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H6MaxAllowedMissingWood);
+                    float maxallowableH7 = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.H9MaxAllowedMissingWood);
 
-                    H1.MaxAllowable = maxallowableLeading;
+                    H1.MaxAllowable = maxallowableH1;
                     H2.MaxAllowable = maxallowableH2;
                     H3.MaxAllowable = maxallowableH3;
                     H4.MaxAllowable = maxallowableH4;
                     H5.MaxAllowable = maxallowableH5;
                     H6.MaxAllowable = maxallowableH6;
-                    H7.MaxAllowable = maxallowableTrailing;
+                    H7.MaxAllowable = maxallowableH7;
 
                     BList.Add(H1);
                     BList.Add(H2);
