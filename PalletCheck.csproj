@@ -270,7 +270,6 @@
   <ItemGroup>
     <Folder Include="DL_Models\" />
     <Folder Include="icons\" />
-    <Folder Include="Resources\" />
     <Folder Include="SICK\" />
   </ItemGroup>
   <ItemGroup>
@@ -319,6 +318,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="WalmartLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Parameters.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

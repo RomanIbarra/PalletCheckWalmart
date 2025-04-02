@@ -1,4 +1,9 @@
-﻿using Microsoft.Win32;
+﻿#define NEW_DATASET
+
+
+
+
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,10 +91,17 @@ namespace PalletCheck
             
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
-            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-            _envFront.Load(RootDir + "/EasyRangerEnvironments/Front&Back.env");
-            _envBack.Load(RootDir + "/EasyRangerEnvironments/Front&Back.env");
+
+
+#if NEW_DATASET
+            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Left.env");
+            _envRight.Load(RootDir + "/EasyRangerEnvironments/Right.env");
+#else
+             _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+             _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+#endif
+            _envFront.Load(RootDir + "/EasyRangerEnvironments/Front.env");
+            _envBack.Load(RootDir + "/EasyRangerEnvironments/Back.env");
 
             // Define a fixed callback array (placed outside the loop)
             GrabResultCallback[] callbacks =

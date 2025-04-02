@@ -75,15 +75,21 @@ namespace PalletCheck
         /*Is resize is needed for inference or for sabing images use:  EX. Bitmap resizedImage = model.ResizeBitmap(bitmapClassifier, 512, 512);*/
 
         /*Save results Top Split images*/
-        public static bool isSaveTopSplitResults = false;
+        public static bool isSaveTopSplitResults = true;
         /*Save results Sides nails protruding outside of pallet*/
         public static bool isSaveSideNailsProtrudingResults = false;
         /*Save results for pallet classifier*/
         public static bool isSavePalletClassifierResults = false;
         /*Save results Top nails with head cutoff*/
         public static bool isSaveTopRNWHCO = true;
+        /*Buffer for saving the defects*/
+        public static bool defectRNWHCO = false;
         /*Save results Bottom nails with head cutoff*/
         public static bool isSaveBottomRNWHCO = false;
+        /*Save results for Front*/
+        public static bool isSaveFrontResults = false;
+        /*Save resutls for Back*/
+        public static bool isSaveBackResults = false;
 
 
 
@@ -107,8 +113,10 @@ namespace PalletCheck
                     return ParamStorageLeft;
                 case PositionOfPallet.Right:
                     return ParamStorageRight;
-                /*case PositionOfPallet.Front:
-                    return ParamStorageRight;*/
+                case PositionOfPallet.Front:
+                    return ParamStorageFront;
+                case PositionOfPallet.Back:
+                    return ParamStorageBack;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -125,10 +133,10 @@ namespace PalletCheck
                     return PalletName2;
                 case PositionOfPallet.Right:
                     return PalletName3;
-                /*case PositionOfPallet.Front:
+                case PositionOfPallet.Front:
                     return PalletName4;
                 case PositionOfPallet.Back:
-                    return PalletName5;*/
+                    return PalletName5;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -167,6 +175,10 @@ namespace PalletCheck
                     return CBB_Container;
                 case PositionOfPallet.Right:
                     return CBB_Container;
+                case PositionOfPallet.Front:
+                    return CBB_Container;
+                case PositionOfPallet.Back:
+                    return CBB_Container;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -203,6 +215,12 @@ namespace PalletCheck
             "Left Fork Clearance",
             "Left Block Protruding From Pallet",
             "Left Side Nail Protruding",
+            "Front Nail Protruding",
+            "Front Missing Block",
+            "Back Nail Protruding",
+            "Back Missing Block",
+            "Left-Middle Board Missing Wood",
+            "Right-Middle Board Missing Wood",
             "Result"
         };
 
@@ -1291,7 +1309,7 @@ namespace PalletCheck
             string file4 = System.IO.Path.Combine(directory, baseName + "L.xml");
             string file5 = System.IO.Path.Combine(directory, baseName + "R.xml");
             string file6 = System.IO.Path.Combine(directory, baseName + "F.xml");
-            string file7 = System.IO.Path.Combine(directory, baseName + "BK.xml");
+            string file7 = System.IO.Path.Combine(directory, baseName + "B.xml");
             try
             {
                 if (loadFrameFlags[0])
@@ -2116,7 +2134,7 @@ namespace PalletCheck
 
         public void ProcessCameraResult(int cameraId, InspectionResult result)
         {
-            int cameras = ParamStorageGeneral.GetInt("CameraCount");
+            int cameras = ParamStorageGeneral.GetInt(StringsLocalization.CameraCount);
             int _totalViews = cameras - 2; // Minus 2 because Bottom View uses 3 cameras
             // Store the result of the current camera
             lock (_lock)
@@ -2124,7 +2142,7 @@ namespace PalletCheck
                 _results[cameraId] = result; // Store the camera result
                 _completedCount++; // Increment the counter
             }
-
+            
             // Check if all cameras are completed
             if (_completedCount == _totalViews)
             {
@@ -2158,7 +2176,7 @@ namespace PalletCheck
             // Update screen
             Console.WriteLine($"Total Results: {finalResult}");
             stopwatchProcess.Stop();
-            UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 30);
+            //UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 30);
             if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
             if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
 

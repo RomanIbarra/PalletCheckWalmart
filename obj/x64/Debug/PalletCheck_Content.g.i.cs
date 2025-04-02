@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("walmartlogo.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/parameters.xml")]
 
 
