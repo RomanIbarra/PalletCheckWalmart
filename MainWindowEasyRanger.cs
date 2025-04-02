@@ -435,6 +435,17 @@ namespace PalletCheck
                     viewer.DrawText("ClearanceLeftText", white);
                     viewer.DrawText("ClearanceRightText", white);
 
+                        if (blobPercentage < MiddleBoardMissingWoodMaxPercentage)
+                        {
+                            viewer.DrawRoi("MB_ROI", -1, green, 100);
+                        }
+
+                        else
+                        {
+                            P.AddDefect(null, PalletDefect.DefectType.middle_board_missing_wood, "Middle Board Missing Wood");
+                            viewer.DrawRoi("MB_ROI", -1, red, 100);
+                        }
+                    }
                     for (int i = 0; i < 3; i++)
                     {
                         string[] textArray = new string[] {Math.Abs (RotateResult[i]).ToString() + "°" };
@@ -486,25 +497,7 @@ namespace PalletCheck
                         }                     
                     }
                     
-                    if (middleBoardHasBlobs[0] == 1)
-                    {                      
-                        int[] middleBoardBlobsPixels = env.GetInteger("MB_Blobs_Pixels");
-                        int[] middleBoardROIPixels = env.GetInteger("MB_ROI_Pixels");
-                        int middleBoardBlobsPixelsSum = middleBoardBlobsPixels.Sum();
-                        int middleBoardROIPixelsSum = middleBoardROIPixels.Sum();
-                        float blobPercentage = ((float)middleBoardBlobsPixelsSum / (float)middleBoardROIPixelsSum) * 100;
 
-                        if (blobPercentage < MiddleBoardMissingWoodMaxPercentage)
-                        {
-                            viewer.DrawRoi("MB_ROI", -1, green, 100);
-                        }
-
-                        else
-                        {
-                            P.AddDefect(null, PalletDefect.DefectType.missing_wood, "Missing Wood");
-                            viewer.DrawRoi("MB_ROI", -1, red, 100);
-                        }
-                    }
 
                     P.BList.Clear();              
                 });
@@ -796,9 +789,9 @@ namespace PalletCheck
                                         {
                                             if (pos1 == j)
                                             {
-                                                P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail (Back): " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
-                                                viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
-                                                isFail = true;
+                                                //P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail (Back): " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                               // viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
+                                                //isFail = true;
                                             }
                                         }
                                     }

@@ -1,5 +1,5 @@
 ﻿#define SPLIT_BOARD_MODE
-//#define NEW_DATASET
+#define NEW_DATASET
 
 
 using System.Windows;

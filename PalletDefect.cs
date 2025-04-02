@@ -29,6 +29,7 @@ namespace PalletCheck
             missing_wood_width_across_length,//added by HUB
             blocks_protuded_from_pallet,     //added by HUB
             side_nails_protruding,           //added by HUB 
+            middle_board_missing_wood,            //added by HUB
         }
 
         public enum DefectLocation
@@ -60,6 +61,8 @@ namespace PalletCheck
             BK_B1,
             BK_B2,
             BK_B3,
+            R_MB,
+            L_MB,
         }
 
         public DefectType Type { get; set; }
@@ -123,7 +126,8 @@ namespace PalletCheck
                 case DefectType.raised_nail_fastener_cutoff: return "RNFC";          //Added by HUB
                 case DefectType.blocks_protuded_from_pallet: return "BPFP";         //Added by HUB 
                 case DefectType.side_nails_protruding: return "SNP";               //Added by HUB 
-                 
+                case DefectType.middle_board_missing_wood: return "MWMW";               //Added by HUB 
+
                 default: return "?";
             }
         }
@@ -150,6 +154,7 @@ namespace PalletCheck
                 case "RNFC": return "Raised Nail Fastener Cutoff";      //Added by HUB 
                 case "BPFP": return "Blocks Protruding From Pallet";   //Added by HUB 
                 case "SNP":  return "Side Nails Protruding";          //Added by HUB 
+                case "MWMW": return "Middle Board Missing Wood";          //Added by HUB 
                 default: return "?";
             }
         }
@@ -177,19 +182,20 @@ namespace PalletCheck
                 case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
                 case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB
                 case DefectType.clearance: return "Fork Clearance";
+                case DefectType.middle_board_missing_wood: return "Middle Board Missing Wood";
                 default: return "?";
             }
         }
 
         public static string[] GetCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP" };  //Last 4 added by HUB 
+            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW" };  //Last added by HUB 
             return list;
         }
 
         public static string[] GetPLCCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP" };//Last 4 added by HUB
+            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW" };//Last 4 added by HUB
             return list;
         }
 
@@ -215,6 +221,7 @@ namespace PalletCheck
             R_SNP = 18,     // Right Side Nails Protruding From Pallet
             R_BPFP = 19,    // Right Block Protuded From Pallet
             T_MWA = 20      // Top Missing Wood Across the Length
+
         }
 
         public enum DefectsCSV_Phase1A
@@ -232,6 +239,8 @@ namespace PalletCheck
             F_MO= 11,       // Front Missing Block
             BK_RN = 12,     // Back Nail Protruding
             BK_MO = 13,     // Back Missing Block
+            R_MB = 14,      // Right Middle Board Missing Wood
+            L_MB = 15       // Left Middle Board Missing Wood
         }
 
     }
