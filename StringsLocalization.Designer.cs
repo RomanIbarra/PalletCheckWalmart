@@ -205,6 +205,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CropY.
+        /// </summary>
+        internal static string CropY {
+            get {
+                return ResourceManager.GetString("CropY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to EndX0.
         /// </summary>
         internal static string EndX0 {

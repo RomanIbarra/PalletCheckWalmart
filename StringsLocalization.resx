@@ -462,4 +462,7 @@
   <data name="CameraCount" xml:space="preserve">
     <value>CameraCount</value>
   </data>
+  <data name="CropY" xml:space="preserve">
+    <value>CropY</value>
+  </data>
 </root>

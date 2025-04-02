@@ -194,7 +194,8 @@ namespace PalletCheck
             int ForkClearancePercentage = paramStorage.GetInt(StringsLocalization.ForkClearancePercentage);
             int RefTop = paramStorage.GetInt(StringsLocalization.Top);
             int RefBottom = paramStorage.GetInt(StringsLocalization.Bottom);
-            int CropX = paramStorage.GetInt(StringsLocalization.CropX);  //new for Clearance
+            int CropX = paramStorage.GetInt(StringsLocalization.CropX);
+            int CropY = paramStorage.GetInt(StringsLocalization.CropY);
             double NailHeight = paramStorage.GetFloat(StringsLocalization.ProtrudingNailHeight);
 
             try
@@ -202,6 +203,7 @@ namespace PalletCheck
                 env.SetInteger("InputRefTop", RefTop);
                 env.SetInteger("InputRefBottom", RefBottom);
                 env.SetInteger("InputCropX", CropX);
+                env.SetInteger("InputCropY", CropY);
                 env.SetDouble("NailHeight", NailHeight);
                 env.GetStepProgram("Main").RunFromBeginning();
                 double[] missingBlocks = env.GetDouble("OutputMissBlock");
@@ -212,7 +214,8 @@ namespace PalletCheck
                 System.Windows.Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
                 double XResolutin = env.GetDouble("M_XResolution", 0);
                 double YResolutin = env.GetDouble("M_YResolution", 0);
-                int [] intClearance = env.GetInteger("ClearanceInt");
+                int[] LeftClearancePct = env.GetInteger("ClearanceLeftPctInt");
+                int[] RightClearancePct = env.GetInteger("ClearanceRightPctInt");
                 int NailLength = env.GetInteger("NailLength", 0);
                 int[] HasNails = env.GetInteger("OutputNails");
                 int[] middleBoardHasBlobs = env.GetInteger("MiddleBoardHasBlobs");
@@ -411,21 +414,26 @@ namespace PalletCheck
                         }
                     }
 
-                    for (int i = 0; i < 2; i++)
+                    if (LeftClearancePct[0] < ForkClearancePercentage)
                     {
-                        if(intClearance[i] < ForkClearancePercentage)
-                        {
-                            viewer.DrawRoi("ClearanceRegions", i, red, 100);
-                            P.AddDefect(P.BList[i], PalletDefect.DefectType.clearance, "Fork Clearance is " + intClearance[i] + "% less than " + ForkClearancePercentage + "%");
-                        }
-
-                        else
-                        {
-                            viewer.DrawRoi("ClearanceRegions", i, green, 100);
-                        }
+                        viewer.DrawRoi("ClearanceROILeft", 0, red, 100);
+                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + LeftClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
                     }
 
-                    viewer.DrawText("ClearanceText", white);
+                    else if (RightClearancePct[0] < ForkClearancePercentage)
+                    {
+                        viewer.DrawRoi("ClearanceROIRight", 0, red, 100);
+                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + RightClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
+                    }
+
+                    else
+                    {
+                        viewer.DrawRoi("ClearanceROILeft", 0, green, 100);
+                        viewer.DrawRoi("ClearanceROIRight", 0, green, 100);
+                    }
+
+                    viewer.DrawText("ClearanceLeftText", white);
+                    viewer.DrawText("ClearanceRightText", white);
 
                     for (int i = 0; i < 3; i++)
                     {
