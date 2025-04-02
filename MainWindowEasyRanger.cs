@@ -270,8 +270,8 @@ namespace PalletCheck
                     {
                         if (SelectPositionForExtraction == 3)
                         {
-                             floatArray = env.GetImageBuffer("FilteredImage")._range;
-                             byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                            floatArray = env.GetImageBuffer("FilteredImage")._range;
+                            byteArray = env.GetImageBuffer("FilteredImage")._intensity;
                             int width = env.GetImageBuffer("FilteredImage").Info.Width;
                             int height = env.GetImageBuffer("FilteredImage").Info.Height;
                             float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
@@ -294,7 +294,7 @@ namespace PalletCheck
                             string relativePath = "VizDL/Rigth/Rigth.png";
                             string saveAt = Path.Combine(exePath, relativePath);
                             ReflBuf.SaveImage(relativePath, true);
-                           // bitmap.Save(saveAt, GDII.ImageFormat.Png);
+                            // bitmap.Save(saveAt, GDII.ImageFormat.Png);
 
 
                             //Process the image for inference
@@ -310,7 +310,7 @@ namespace PalletCheck
 
                             //Vizualice BB Results
                             //model.DrawTopBoxes2(saveAt, boxes, scores, "RigthTest.png");
-                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Rigth/RigthResults.png",isSaveSideNailsProtrudingResults);
+                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Rigth/RigthResults.png", isSaveSideNailsProtrudingResults);
                             if (centroids.Length == 2)
                             {
                                 int Cx1 = centroids[0];
@@ -336,17 +336,19 @@ namespace PalletCheck
 
                                 else
                                 {
-                                     //viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
+                                    //viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, blue);
                                 }
                             }
                         }
                     }
 
-                    if (position == PositionOfPallet.Left) {
+                    if (position == PositionOfPallet.Left)
+                    {
 
-                        if (SelectPositionForExtraction == 2) {
-                             floatArray = env.GetImageBuffer("FilteredImage")._range;
-                             byteArray = env.GetImageBuffer("FilteredImage")._intensity;
+                        if (SelectPositionForExtraction == 2)
+                        {
+                            floatArray = env.GetImageBuffer("FilteredImage")._range;
+                            byteArray = env.GetImageBuffer("FilteredImage")._intensity;
                             int width = env.GetImageBuffer("FilteredImage").Info.Width;
                             int height = env.GetImageBuffer("FilteredImage").Info.Height;
                             float xScale = env.GetImageBuffer("FilteredImage").Info.XResolution;
@@ -369,7 +371,7 @@ namespace PalletCheck
                             string relativePath = "VizDL/Left/Left.png";
                             string saveAt = Path.Combine(exePath, relativePath);
                             ReflBuf.SaveImage(relativePath, true);
-                           // bitmap.Save(saveAt, GDII.ImageFormat.Png);
+                            // bitmap.Save(saveAt, GDII.ImageFormat.Png);
 
                             //Process the image for inference
                             float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
@@ -383,7 +385,7 @@ namespace PalletCheck
                             float[] masks = results[3];
 
                             //Vizualice BB Results                          
-                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Left/LeftResults.png",isSaveSideNailsProtrudingResults);
+                            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Left/LeftResults.png", isSaveSideNailsProtrudingResults);
 
                             if (centroids.Length == 2)
                             {
@@ -414,6 +416,7 @@ namespace PalletCheck
                         }
                     }
 
+
                     if (LeftClearancePct[0] < ForkClearancePercentage)
                     {
                         viewer.DrawRoi("ClearanceROILeft", 0, red, 100);
@@ -435,6 +438,14 @@ namespace PalletCheck
                     viewer.DrawText("ClearanceLeftText", white);
                     viewer.DrawText("ClearanceRightText", white);
 
+                    if (middleBoardHasBlobs[0] == 1)
+                    {
+                        int[] middleBoardBlobsPixels = env.GetInteger("MB_Blobs_Pixels");
+                        int[] middleBoardROIPixels = env.GetInteger("MB_ROI_Pixels");
+                        int middleBoardBlobsPixelsSum = middleBoardBlobsPixels.Sum();
+                        int middleBoardROIPixelsSum = middleBoardROIPixels.Sum();
+                        float blobPercentage = ((float)middleBoardBlobsPixelsSum / (float)middleBoardROIPixelsSum) * 100;
+
                         if (blobPercentage < MiddleBoardMissingWoodMaxPercentage)
                         {
                             viewer.DrawRoi("MB_ROI", -1, green, 100);
@@ -442,10 +453,12 @@ namespace PalletCheck
 
                         else
                         {
-                            P.AddDefect(null, PalletDefect.DefectType.middle_board_missing_wood, "Middle Board Missing Wood");
+                            P.AddDefect(null, PalletDefect.DefectType.missing_wood, "Missing Wood");
                             viewer.DrawRoi("MB_ROI", -1, red, 100);
                         }
+
                     }
+
                     for (int i = 0; i < 3; i++)
                     {
                         string[] textArray = new string[] {Math.Abs (RotateResult[i]).ToString() + "°" };
@@ -490,7 +503,9 @@ namespace PalletCheck
                             viewer.DrawText("MyText", green);
                         }
 
-                        lock (LockObjectCombine)
+                    
+
+                    lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
@@ -500,7 +515,7 @@ namespace PalletCheck
 
 
                     P.BList.Clear();              
-                });
+            });
 
                 ProcessCameraResult((int)position, !isFail ? InspectionResult.PASS : InspectionResult.FAIL);
                 callback?.Invoke(!isFail);
