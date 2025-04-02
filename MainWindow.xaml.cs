@@ -219,6 +219,8 @@ namespace PalletCheck
             "Front Missing Block",
             "Back Nail Protruding",
             "Back Missing Block",
+            "Left-Middle Board Missing Wood",
+            "Right-Middle Board Missing Wood",
             "Result"
         };
 
@@ -1737,7 +1739,7 @@ namespace PalletCheck
 
                             // Wait 10 seconds
                             Console.WriteLine("Waiting 10 seconds...");
-                            await Task.Delay(6000);
+                            await Task.Delay(2000);
                         }
 
                         Console.WriteLine("All subfolders processed.");
