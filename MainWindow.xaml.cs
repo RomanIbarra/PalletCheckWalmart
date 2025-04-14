@@ -81,7 +81,7 @@ namespace PalletCheck
         /*Save results for pallet classifier*/
         public static bool isSavePalletClassifierResults = false;
         /*Save results Top nails with head cutoff*/
-        public static bool isSaveTopRNWHCO = true;
+        public static bool isSaveTopRNWHCO = false;
         /*Buffer for saving the defects*/
         public static bool defectRNWHCO = false;
         /*Save results Bottom nails with head cutoff*/
