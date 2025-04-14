@@ -1067,11 +1067,18 @@ namespace PalletCheck
                     }
 
 
+
+
+
+                    /*************************************
+                     *Critical time functions to improve *
+                     *************************************/
+
                     //Process the image for inference
                     float[] imageDataClass = model.ProcessBitmapForInference(resizedImage, resizedImage.Width, resizedImage.Height);
                     int resultClass = model.RunInferenceClassifier(imageDataClass, resizedImage.Height, resizedImage.Width);
                     PalletClassifier = resultClass;
-                    Console.WriteLine($"Predicción: Clase {resultClass} con de confianza");
+                    //Console.WriteLine($"Predicción: Clase {resultClass} con de confianza");
 
 
 
@@ -1095,7 +1102,7 @@ namespace PalletCheck
                     {
                         Buf = ushortArray,
 
-                        Width =width,
+                        Width = width,
                         Height = height,
                         xScale = xScale,
                         yScale = yScale
@@ -1110,21 +1117,28 @@ namespace PalletCheck
                     float[] labelsTop = resultsTop[1];
                     float[] scoresTop = resultsTop[2];
                     float[] masksTop = resultsTop[3];
-                    
-                
+                    //Vector for post evaluation
+                    int[] centroids;
+
+
+
+
                     //Vizualice BB Results
-                    string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
-
-                    //Condition to save the results as png Images
                     if (isSaveTopRNWHCO)
-                    {
+                    {  
+                        string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
                         bitmapTop.Save(TopRNWHCO, ImageFormat.Png);
-                        int[] centroids=model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
-                        float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
-                        //int Cx1 = centroids[0];
-                        //int Cy1 = centroids[1];
-                        int defectsfound = centroids.Length / 2;
+                        centroids = model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
+                    }
+                    else {
 
+                        centroids = model.getCentroids4(boxesTop, scoresTop, 0.7);
+                    }
+
+                    if (centroids != null)
+                    {
+                        float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+                        int defectsfound = centroids.Length / 2;
                         if (defectsfound > 0)
                         {
                             int ii = 0;
@@ -1135,37 +1149,19 @@ namespace PalletCheck
                                 int Cy1 = centroids[ii + 1];
                                 ii = ii + 1;
 
-                               // float maxHeight = GetMaxRangeInCircle(Cx1, Cy1, 40, rangeBuffer, rangeArray);
-                              // Logger.WriteLine("MaxHeight Obj1 " + MaxHeight);
-                              float Object1 = model.GetMaxRangeInSquare1(Cx1, Cy1, 10, rangeBuffer, rangeArray);
+                                float Object1 = model.GetMaxRangeInSquare1(Cx1, Cy1, 10, rangeBuffer, rangeArray);
                                 if (Object1 > MNH)
                                 {
-                                    defectRNWHCO = true;
-                                
+                                    //Add defect here
+
                                 }
-                             }
+
+                            }
                         }
-                    }
+                     }
+                   
 
 
-                    //int[] centroids = model.DrawCentroids4(TopRNWHCO, boxesTop, scoresTop, "VizDL/TopRNWHCO/Results.png", isSaveTopRNWHCO, 0.7);
-                   // float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
-
-                    /*
-
-
-
-                        float maxHeight = model.GetMaxRangeInCircle(centroids[0], centroids[1], 40, rangeBuffer, rangeArray);
-                        Logger.WriteLine("MaxHeight Obj1 " + MNH);
-                        float Object1 = new model().GetMaxRangeInSquare(Cx1, Cy1, 10, rangeBuffer, rangeArray);
-                       
-                        SetDefectMarker(Cx1 - 20, Cy1 - 20, Cx1 + 20, Cy1 + 20);
-                        Console.WriteLine("Altura del objeto"+ Object1);
-                        if (Object1 > MNH) {
-                           
-                           
-                        }
-                        */
 
 
                 }

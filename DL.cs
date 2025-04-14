@@ -536,7 +536,42 @@ namespace PalletCheck
             return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
         }
 
+        public static int[] getCentroids4(float[] boxes, float[] scores, double Score)
+        {
+            // Cargar imagen original
+            // Obtener la ruta del ejecutable
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            List<int> centroids = new List<int>();
 
+            // Seleccionar los dos mejores bounding boxes
+             int[] topIndices = scores
+                   .Select((score, index) => new { Score = score, Index = index })
+                   .Where(x => x.Score > Score) // Filtrar por score mayor a 0.7 (score)
+                   .OrderByDescending(x => x.Score)
+                   .Take(3) // Tomar los 3 mejores
+                   .Select(x => x.Index)
+                   .ToArray();
+
+                foreach (int i in topIndices)
+                {
+                    int x1 = (int)boxes[i * 4];
+                    int y1 = (int)boxes[i * 4 + 1];
+                    int x2 = (int)boxes[i * 4 + 2];
+                    int y2 = (int)boxes[i * 4 + 3];
+
+                    // Calcular el centroide del bounding box
+                    int centerX = (x1 + x2) / 2;
+                    int centerY = (y1 + y2) / 2;
+                    centroids.Add(centerX);
+                    centroids.Add(centerY);
+
+                    W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);
+                    
+                }
+           
+
+            return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
+        }
         public static int[] DrawCentroids(string imagePath, float[] boxes, float[] scores, string savePath,bool saveViz)
         {
             // Cargar imagen original
