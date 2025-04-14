@@ -215,13 +215,13 @@ namespace PalletCheck
         public List<PalletDefect> AllDefects = new List<PalletDefect>();
         public static List<Board> CombinedBoards = new List<Board>();  // Jack Added
 
-        // 静态变量：用于存储所有合并的缺陷
+        // Variables estáticas: se utilizan para almacenar todos los defectos fusionados
         public static List<PalletDefect> CombinedDefects = new List<PalletDefect>();
 
-        // 静态锁：确保多线程操作安全
+        // Bloqueos estáticos: seguridad para operaciones multihilo
         public static object LockObjectCombine = new object();
 
-        // 添加缺陷到合并列表
+        // Añadir defectos a la lista de fusión
         public static void AddToCombinedDefects(List<PalletDefect> defects)
         {
             lock (LockObjectCombine)

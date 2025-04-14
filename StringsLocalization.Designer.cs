@@ -196,20 +196,20 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CropX.
+        ///   Looks up a localized string similar to EndCropX.
         /// </summary>
-        internal static string CropX {
+        internal static string EndCropX {
             get {
-                return ResourceManager.GetString("CropX", resourceCulture);
+                return ResourceManager.GetString("EndCropX", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CropY.
+        ///   Looks up a localized string similar to EndCropY.
         /// </summary>
-        internal static string CropY {
+        internal static string EndCropY {
             get {
-                return ResourceManager.GetString("CropY", resourceCulture);
+                return ResourceManager.GetString("EndCropY", resourceCulture);
             }
         }
         
@@ -912,6 +912,24 @@ namespace PalletCheck {
         internal static string SideLength {
             get {
                 return ResourceManager.GetString("SideLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StartCropX.
+        /// </summary>
+        internal static string StartCropX {
+            get {
+                return ResourceManager.GetString("StartCropX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StartCropY.
+        /// </summary>
+        internal static string StartCropY {
+            get {
+                return ResourceManager.GetString("StartCropY", resourceCulture);
             }
         }
         
