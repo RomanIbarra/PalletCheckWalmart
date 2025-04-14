@@ -153,49 +153,7 @@ namespace PalletCheck
                             }
                         }
                     }
-                 
-                    if (LeftClearancePct[0] < ForkClearancePercentage)
-                    {
-                        viewer.DrawRoi("ClearanceROILeft", 0, red, 100);
-                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + LeftClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
-                    }
-
-                    else if (RightClearancePct[0] < ForkClearancePercentage)
-                    {
-                        viewer.DrawRoi("ClearanceROIRight", 0, red, 100);
-                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + RightClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
-                    }
-
-                    else
-                    {
-                        viewer.DrawRoi("ClearanceROILeft", 0, green, 100);
-                        viewer.DrawRoi("ClearanceROIRight", 0, green, 100);
-                    }
-
-                    viewer.DrawText("ClearanceLeftText", white);
-                    viewer.DrawText("ClearanceRightText", white);
-
-                    if (middleBoardHasBlobs[0] == 1)
-                    {
-                        int[] middleBoardBlobsPixels = env.GetInteger("MB_Blobs_Pixels");
-                        int[] middleBoardROIPixels = env.GetInteger("MB_ROI_Pixels");
-                        int middleBoardBlobsPixelsSum = middleBoardBlobsPixels.Sum();
-                        int middleBoardROIPixelsSum = middleBoardROIPixels.Sum();
-                        float blobPercentage = ((float)middleBoardBlobsPixelsSum / (float)middleBoardROIPixelsSum) * 100;
-
-                        if (blobPercentage < MiddleBoardMissingWoodMaxPercentage)
-                        {
-                            viewer.DrawRoi("MB_ROI", -1, green, 100);
-                        }
-
-                        else
-                        {
-                            P.AddDefect(null, PalletDefect.DefectType.missing_wood, "Missing Wood");
-                            viewer.DrawRoi("MB_ROI", -1, red, 100);
-                        }
-
-                    }
-
+                                  
                     for (int i = 0; i < 3; i++)
                     {
                         string[] textArray = new string[] {Math.Abs (RotateResult[i]).ToString() + "°" };
@@ -246,7 +204,48 @@ namespace PalletCheck
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
                         }                     
                     }
-                    
+
+                    if (LeftClearancePct[0] < ForkClearancePercentage)
+                    {
+                        viewer.DrawRoi("ClearanceROILeft", 0, red, 100);
+                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + LeftClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
+                    }
+
+                    else if (RightClearancePct[0] < ForkClearancePercentage)
+                    {
+                        viewer.DrawRoi("ClearanceROIRight", 0, red, 100);
+                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + RightClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
+                    }
+
+                    else
+                    {
+                        viewer.DrawRoi("ClearanceROILeft", 0, green, 100);
+                        viewer.DrawRoi("ClearanceROIRight", 0, green, 100);
+                    }
+
+                    viewer.DrawText("ClearanceLeftText", white);
+                    viewer.DrawText("ClearanceRightText", white);
+
+                    if (middleBoardHasBlobs[0] == 1)
+                    {
+                        int[] middleBoardBlobsPixels = env.GetInteger("MB_Blobs_Pixels");
+                        int[] middleBoardROIPixels = env.GetInteger("MB_ROI_Pixels");
+                        int middleBoardBlobsPixelsSum = middleBoardBlobsPixels.Sum();
+                        int middleBoardROIPixelsSum = middleBoardROIPixels.Sum();
+                        float blobPercentage = ((float)middleBoardBlobsPixelsSum / (float)middleBoardROIPixelsSum) * 100;
+
+                        if (blobPercentage < MiddleBoardMissingWoodMaxPercentage)
+                        {
+                            viewer.DrawRoi("MB_ROI", -1, green, 100);
+                        }
+
+                        else
+                        {
+                            P.AddDefect(null, PalletDefect.DefectType.missing_wood, "Missing Wood");
+                            viewer.DrawRoi("MB_ROI", -1, red, 100);
+                        }
+                    }
+
                     P.BList.Clear();              
                 });
 
@@ -394,28 +393,7 @@ namespace PalletCheck
                             }
                         }
                     }
-
-                    if (LeftClearancePct[0] < ForkClearancePercentage)
-                    {
-                        viewer.DrawRoi("ClearanceROILeft", 0, red, 100);
-                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + LeftClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
-                    }
-
-                    else if (RightClearancePct[0] < ForkClearancePercentage)
-                    {
-                        viewer.DrawRoi("ClearanceROIRight", 0, red, 100);
-                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + RightClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
-                    }
-
-                    else
-                    {
-                        viewer.DrawRoi("ClearanceROILeft", 0, green, 100);
-                        viewer.DrawRoi("ClearanceROIRight", 0, green, 100);
-                    }
-
-                    viewer.DrawText("ClearanceLeftText", white);
-                    viewer.DrawText("ClearanceRightText", white);
-
+                  
                     for (int i = 0; i < 3; i++)
                     {
                         string[] textArray = new string[] { Math.Abs(RotateResult[i]).ToString() + "°" };
@@ -466,6 +444,27 @@ namespace PalletCheck
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
                         }
                     }
+
+                    if (LeftClearancePct[0] < ForkClearancePercentage)
+                    {
+                        viewer.DrawRoi("ClearanceROILeft", 0, red, 100);
+                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + LeftClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
+                    }
+
+                    else if (RightClearancePct[0] < ForkClearancePercentage)
+                    {
+                        viewer.DrawRoi("ClearanceROIRight", 0, red, 100);
+                        P.AddDefect(P.BList[0], PalletDefect.DefectType.clearance, "Fork Clearance is " + RightClearancePct[0] + "% less than " + ForkClearancePercentage + "%");
+                    }
+
+                    else
+                    {
+                        viewer.DrawRoi("ClearanceROILeft", 0, green, 100);
+                        viewer.DrawRoi("ClearanceROIRight", 0, green, 100);
+                    }
+
+                    viewer.DrawText("ClearanceLeftText", white);
+                    viewer.DrawText("ClearanceRightText", white);
 
                     P.BList.Clear();
                 });
