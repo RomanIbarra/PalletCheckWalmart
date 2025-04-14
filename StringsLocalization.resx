@@ -393,8 +393,8 @@
   <data name="Bottom" xml:space="preserve">
     <value>Bottom</value>
   </data>
-  <data name="CropX" xml:space="preserve">
-    <value>CropX</value>
+  <data name="StartCropX" xml:space="preserve">
+    <value>StartCropX</value>
   </data>
   <data name="BlockHeight1" xml:space="preserve">
     <value>BlockHeight1</value>
@@ -462,7 +462,13 @@
   <data name="CameraCount" xml:space="preserve">
     <value>CameraCount</value>
   </data>
-  <data name="CropY" xml:space="preserve">
-    <value>CropY</value>
+  <data name="StartCropY" xml:space="preserve">
+    <value>StartCropY</value>
+  </data>
+  <data name="EndCropX" xml:space="preserve">
+    <value>EndCropX</value>
+  </data>
+  <data name="EndCropY" xml:space="preserve">
+    <value>EndCropY</value>
   </data>
 </root>
