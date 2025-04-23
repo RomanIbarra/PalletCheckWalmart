@@ -79,7 +79,7 @@ namespace PalletCheck
         /*Save results Sides nails protruding outside of pallet*/
         public static bool isSaveSideNailsProtrudingResults = false;
         /*Save results for pallet classifier*/
-        public static bool isSavePalletClassifierResults = false;
+        public static bool isSavePalletClassifierResults = true;
         /*Save results Top nails with head cutoff*/
         public static bool isSaveTopRNWHCO = false;
         /*Buffer for saving the defects*/
@@ -611,6 +611,7 @@ namespace PalletCheck
             stopwatchProcess.Start();
             UpdateTextBlock(LogText, "Top New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName0, "▲");
+            //_FilenameDateTime
             //TryGenerateFilenameDateTime();
             result.IfCompleteFrame(frame =>
             {
@@ -1302,6 +1303,7 @@ namespace PalletCheck
             string baseName = fileName.Substring(0, fileName.LastIndexOf('_') + 1);
             UpdateTextBlock(ModeStatus, "Loading: " + fileName.Substring(0, fileName.LastIndexOf('_')));
             _FilenameDateTime = fileName.Substring(0, fileName.LastIndexOf('_'));
+            Pallet.folderName = Directory.GetParent(selectedFile).Name;
             string file0 = System.IO.Path.Combine(directory, baseName + "T.xml");
             string file1 = System.IO.Path.Combine(directory, baseName + "B1.xml");
             string file2 = System.IO.Path.Combine(directory, baseName + "B2.xml");
@@ -1567,7 +1569,7 @@ namespace PalletCheck
 
             Logger.WriteLine(string.Format("DEFECT COUNT {0}", c));
 
-            ProcessCameraResult((int)position, result: P.AllDefects.Count == 0 ? InspectionResult.PASS : InspectionResult.FAIL);
+             ProcessCameraResult((int)position, result: P.AllDefects.Count == 0 ? InspectionResult.PASS : InspectionResult.FAIL);
 
             // Build CaptureBufferBrowsers
             if (true)
@@ -1724,7 +1726,7 @@ namespace PalletCheck
                             if (files.Length > 0)
                             {
                                 Console.WriteLine($"Found {files.Length} files in subfolder {subDirectory.Name}...");
-                                ProcessFiles(files);
+                                ProcessFiles(files, _FilenameDateTime);
                                 isSaveFrames = false;
                             }
                             else
@@ -1769,8 +1771,9 @@ namespace PalletCheck
             });
         }
 
-        private void ProcessFiles(FileInfo[] files)
+        private void ProcessFiles(FileInfo[] files, string folderName)
         {
+            Pallet.folderName = folderName;
             foreach (var file in files)
             {
                 try
@@ -2204,21 +2207,31 @@ namespace PalletCheck
                     stringNameOfResult[i] = " ";
                 }
 
-                stringNameOfResult[0] = _FilenameDateTime;
+                stringNameOfResult[0] = Pallet.folderName;
                 stringNameOfResult[stringNameOfResult.Length - 1] = finalResult.ToString();
 
+                string[] finalString = new string[3];
+                string defectString = null;
+                finalString[0] = Pallet.folderName;
+                finalString[1] = finalResult.ToString();
+
                 foreach (var defect in Pallet.CombinedDefects ?? new List<PalletDefect>())
-                {
+                {        
                     defectTable.Items.Add(defect);
                     string defectCSVCode = defect.Location.ToString()[0] + "_" + defect.Code;
 
-                    if (Enum.IsDefined(typeof(DefectsCSV_Phase1A), defectCSVCode))
+                    if (Enum.IsDefined(typeof(DefectsCSV), defectCSVCode))
                     {
-                        int columIndex = (int)Enum.Parse(typeof(DefectsCSV_Phase1A), defectCSVCode); //Gets the correct report column to write in based on location and defect type
-                        stringNameOfResult[columIndex] = "X";
+                        //int columIndex = (int)Enum.Parse(typeof(DefectsCSV), defectCSVCode); //Gets the correct report column to write in based on location and defect type
+                        //stringNameOfResult[columIndex] = "X";
+                        defectString += defect.Comment + "; ";
                     }
                 }
-                SaveDataToFile(string.Join(",", stringNameOfResult));
+                
+                //SaveDataToFile(string.Join(",", stringNameOfResult));
+                finalString[2] = defectString;
+                string path = RecordingRootDir + "\\" + DateTime.Now.ToString("yyyyMMdd") + ".csv";
+                JackSaveLog.DataLog(path, "Name,Result,Defect", string.Join(",", finalString));
 
             });
             lock (LockObjectCombine)
