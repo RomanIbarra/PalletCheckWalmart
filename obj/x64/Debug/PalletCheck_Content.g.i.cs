@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("stringslocalization.xml")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/parameters.xml")]
 
 

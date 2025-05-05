@@ -1,4 +1,9 @@
-﻿using Microsoft.Win32;
+﻿#define NEW_DATASET
+
+
+
+
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +48,7 @@ namespace PalletCheck
 
         ConcurrentDictionary<string, R3Cam.Frame> FrameBuffer = new ConcurrentDictionary<string, R3Cam.Frame>();
 
-        IFrame[] SickFrames = new IFrame[6];
+        IFrame[] SickFrames = new IFrame[8];
 
         private int framesReceivedCount = 0;  // Used to track the number of frames received
         private object _lock = new object();  // Lock for thread safety
@@ -76,25 +81,40 @@ namespace PalletCheck
             }
 
             // EasyRanger
-            _envLeft = new ProcessingEnvironment();
+            
             _envTop = new ProcessingEnvironment();
             _envBottom = new ProcessingEnvironment();
+            _envLeft = new ProcessingEnvironment();
             _envRight = new ProcessingEnvironment();
-            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-            _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+            _envFront = new ProcessingEnvironment();
+            _envBack = new ProcessingEnvironment();
+            
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
+
+
+#if NEW_DATASET
+            _envLeft.Load(RootDir + "/EasyRangerEnvironments/Left.env");
+            _envRight.Load(RootDir + "/EasyRangerEnvironments/Right.env");
+#else
+             _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+             _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
+#endif
+            _envFront.Load(RootDir + "/EasyRangerEnvironments/Front.env");
+            _envBack.Load(RootDir + "/EasyRangerEnvironments/Back.env");
 
             // Define a fixed callback array (placed outside the loop)
             GrabResultCallback[] callbacks =
             {
-        ProcessFrameForCameraTopCallback,
-        ProcessFrameForCameraBottomLeftCallback,
-        ProcessFrameForCameraBottomMidCallback,
-        ProcessFrameForCameraBottomRightCallback,
-        ProcessFrameForCameraLeftCallback,
-        ProcessFrameForCameraRightCallback
-    };
+                ProcessFrameForCameraTopCallback,
+                ProcessFrameForCameraBottomLeftCallback,
+                ProcessFrameForCameraBottomMidCallback,
+                ProcessFrameForCameraBottomRightCallback,
+                ProcessFrameForCameraLeftCallback,
+                ProcessFrameForCameraRightCallback,
+                ProcessFrameForCameraFrontCallback,
+                ProcessFrameForCameraBackCallback
+            };
 
             // Initialize cameras in a loop
             for (int i = 0; i < callbacks.Length; i++)
@@ -124,7 +144,7 @@ namespace PalletCheck
                 PProcessorBottom.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete, PositionOfPallet.Bottom);
             };
 
-            if (ParamStorageGeneral.GetInt("Auto Start Capturing") == 1)
+            if (ParamStorageGeneral.GetInt(StringsLocalization.AutoStartCapturing) == 1)
             {
                 await Task.Delay(2000); // Wait for 2 seconds
                 this.Dispatcher.Invoke(() =>
