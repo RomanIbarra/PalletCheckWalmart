@@ -31,6 +31,7 @@ namespace PalletCheck.Controls
         public FastBitmap   FB;
 
 
+
         bool LeftMouseIsDown = false;
         bool RightMouseIsDown = false;
         bool LeftShiftIsDown = false;

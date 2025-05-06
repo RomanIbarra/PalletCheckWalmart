@@ -29,13 +29,15 @@ namespace PalletCheck
         private static string modelPath = "../../../DL_Models/maskrcnn_model.onnx";        //TopSplit leading and trailing boards
         private static string modelPath2 = "../../../DL_Models/RaisedNailsDetector4.onnx"; //Side Nails protruding
         private static string modelPath3 = "../../../DL_Models/ClassifierNoNOM.onnx";      //Classifier
-        private static string modelPath4 = "../../../DL_Models/TopRNWHCO.onnx";            //TopRNWHCO
+        private static string modelPath4 = "../../../DL_Models/RN_Board.onnx";            //TopRNWHCO
         private static string modelPath5 = "../../../DL_Models/RaisedNailsDetector5.onnx";
+        private static string modelPath6 = "../../../DL_Models/RN_Board.onnx";
         private static InferenceSession session;
         private static InferenceSession session2;
         private static InferenceSession session3;
         private static InferenceSession session4;
         private static InferenceSession session5;
+        private static InferenceSession session6;
 
         // Inicializar el modelo solo una vez
         static model()
@@ -47,6 +49,7 @@ namespace PalletCheck
                 session3 = new InferenceSession(modelPath3);
                 session4 = new InferenceSession(modelPath4);
                 session5 = new InferenceSession(modelPath5);
+                session6 = new InferenceSession(modelPath6);
                 Console.WriteLine("Modelos ONNX cargado correctamente.");
             }
             catch (Exception e)
@@ -215,6 +218,7 @@ namespace PalletCheck
 
             return outputData;
         }
+
         public static float[][] RunInference5(float[] imageData, int heigth, int width)
         {
             // Crear un tensor de entrada para el modelo
@@ -231,6 +235,47 @@ namespace PalletCheck
             {
                 // Ejecutar la inferencia
                 using (var results = session5.Run(inputs))
+                {
+                    if (results != null && results.Count > 0)
+                    {
+                        outputData[0] = results[0].AsTensor<float>()?.ToArray() ?? new float[0]; // Boxes
+                        outputData[1] = results[1].AsTensor<float>()?.ToArray() ?? new float[0]; // Labels
+                        outputData[2] = results[2].AsTensor<float>()?.ToArray() ?? new float[0]; // Scores
+                        outputData[3] = results[3].AsTensor<float>()?.ToArray() ?? new float[0]; // Masks
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: No se obtuvieron resultados válidos de la inferencia.");
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error durante la inferencia: " + ex.Message);
+            }
+
+            return outputData;
+        }
+
+
+        public static float[][] RunInferenceBoard(float[] imageData, int heigth, int width)
+        {
+            // Crear un tensor de entrada para el modelo
+            var inputTensor = new DenseTensor<float>(imageData, new[] { 1, 3, heigth, width });
+
+            var inputs = new List<NamedOnnxValue>
+            {
+                NamedOnnxValue.CreateFromTensor("input", inputTensor) // Double check  de que el nombre del input sea el correcto
+            };
+
+            float[][] outputData = new float[4][];
+
+            try
+            {
+                // Ejecutar la inferencia
+                using (var results = session6.Run(inputs))
                 {
                     if (results != null && results.Count > 0)
                     {

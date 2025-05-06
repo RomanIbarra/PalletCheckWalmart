@@ -416,3 +416,4 @@ obj/x64/Debug/MainWindow.g.i.cs
 /DL_Models/TopRNWHCO.onnx
 /obj/x64/Debug/MainWindow.g.cs
 /DL_Models/RaisedNailsDetector5.onnx
+/DL_Models/RN_Board.onnx
