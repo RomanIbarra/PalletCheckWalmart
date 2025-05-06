@@ -844,6 +844,24 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RaisedNailDL_EndX.
+        /// </summary>
+        internal static string RaisedNailDL_EndX {
+            get {
+                return ResourceManager.GetString("RaisedNailDL_EndX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RaisedNailDL_StartX.
+        /// </summary>
+        internal static string RaisedNailDL_StartX {
+            get {
+                return ResourceManager.GetString("RaisedNailDL_StartX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to RawCaptureROIBottom_px.
         /// </summary>
         internal static string RawCaptureROIBottom_px {
@@ -912,6 +930,42 @@ namespace PalletCheck {
         internal static string SideLength {
             get {
                 return ResourceManager.GetString("SideLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SplitDL_EndX.
+        /// </summary>
+        internal static string SplitDL_EndX {
+            get {
+                return ResourceManager.GetString("SplitDL_EndX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SplitDL_ScaleY_Leading.
+        /// </summary>
+        internal static string SplitDL_ScaleY_Leading {
+            get {
+                return ResourceManager.GetString("SplitDL_ScaleY_Leading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SplitDL_ScaleY_Trailing.
+        /// </summary>
+        internal static string SplitDL_ScaleY_Trailing {
+            get {
+                return ResourceManager.GetString("SplitDL_ScaleY_Trailing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SplitDL_StartX.
+        /// </summary>
+        internal static string SplitDL_StartX {
+            get {
+                return ResourceManager.GetString("SplitDL_StartX", resourceCulture);
             }
         }
         
