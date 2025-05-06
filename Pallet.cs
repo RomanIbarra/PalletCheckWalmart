@@ -1,7 +1,3 @@
-﻿
-
-
-
 using System.Windows;
 using System;
 using System.Collections.Generic;
@@ -218,7 +214,8 @@ namespace PalletCheck
         public CaptureBuffer Original;
         public CaptureBuffer Denoised;
         public List<PalletDefect> AllDefects = new List<PalletDefect>();
-        public static List<Board> CombinedBoards = new List<Board>();  // Jack Added
+        public static List<Board> CombinedBoards = new List<Board>();
+        public static string folderName;
 
         // Variables estáticas: se utilizan para almacenar todos los defectos fusionados
         public static List<PalletDefect> CombinedDefects = new List<PalletDefect>();
@@ -486,45 +483,7 @@ namespace PalletCheck
             Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED  -  {0:0.000} sec", AnalysisTotalSec));      
         }
 
-        private void CheckForInteriorDebris()
-        {
-            // Check inside top area
-            int PixCount = 0;
-            int TotalCount = 0;
-            for (int x = BList[0].BoundsP1.X + 50; x < BList[1].BoundsP2.X - 50; x++)
-            {
-                for (int y = BList[0].BoundsP2.Y + 50; y < BList[1].BoundsP1.Y - 50; y++)
-                {
-                    UInt16 V = Denoised.Buf[y * Denoised.Width + x];
-                    if (V > 0)
-                        PixCount++;
-                    TotalCount++;
-                }
-            }
-            if ((PixCount / ((float)TotalCount)) > 0.02f)
-            {
-                AddDefect(BList[0], PalletDefect.DefectType.possible_debris, "Debris detected between H1 and H2");
-                SetDefectMarker(BList[0].BoundsP1.X + 50, BList[0].BoundsP2.Y + 50, BList[1].BoundsP2.X - 50, BList[1].BoundsP1.Y - 50);
-            }
-
-            PixCount = 0;
-            TotalCount = 0;
-            for (int x = BList[1].BoundsP1.X + 50; x < BList[2].BoundsP2.X - 50; x++)
-            {
-                for (int y = BList[1].BoundsP2.Y + 50; y < BList[2].BoundsP1.Y - 50; y++)
-                {
-                    UInt16 V = Denoised.Buf[y * Denoised.Width + x];
-                    if (V > 0)
-                        PixCount++;
-                    TotalCount++;
-                }
-            }
-            if ((PixCount / ((float)TotalCount)) > 0.02f)
-            {
-                AddDefect(BList[1], PalletDefect.DefectType.possible_debris, "Debris detected between H2 and H3");
-                SetDefectMarker(BList[1].BoundsP1.X + 50, BList[1].BoundsP2.Y + 50, BList[2].BoundsP2.X - 50, BList[2].BoundsP1.Y - 50);
-            }
-        }
+        
 
         private CaptureBuffer DeNoiseEasyRanger(CaptureBuffer SourceCB, PositionOfPallet position)
         {
@@ -1334,8 +1293,8 @@ namespace PalletCheck
                     //Convert the byte array to bitmap
                     ByteArray2bitmap(bytesIntensity[0], W[0], Y[0], bitmap);
                     // Define area of interest and cropp
-                     int startC = 0; int endC = W[0]; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
-                   // int startC = 49; int endC = 2400; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
+                    //int startC = 0; int endC = W[0]; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
+                    int startC = 49; int endC = 2400; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
                     Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
                     Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 2560, 688);
@@ -4535,6 +4494,46 @@ namespace PalletCheck
             float dy = b.Y - a.Y;
             float distance = (float)Math.Sqrt(dx * dx + dy * dy);
             return Math.Abs((b.X - a.X) * (a.Y - p.Y) - (a.X - p.X) * (b.Y - a.Y)) / distance;
+        }
+
+        private void CheckForInteriorDebris()
+        {
+            // Check inside top area
+            int PixCount = 0;
+            int TotalCount = 0;
+            for (int x = BList[0].BoundsP1.X + 50; x < BList[1].BoundsP2.X - 50; x++)
+            {
+                for (int y = BList[0].BoundsP2.Y + 50; y < BList[1].BoundsP1.Y - 50; y++)
+                {
+                    UInt16 V = Denoised.Buf[y * Denoised.Width + x];
+                    if (V > 0)
+                        PixCount++;
+                    TotalCount++;
+                }
+            }
+            if ((PixCount / ((float)TotalCount)) > 0.02f)
+            {
+                AddDefect(BList[0], PalletDefect.DefectType.possible_debris, "Debris detected between H1 and H2");
+                SetDefectMarker(BList[0].BoundsP1.X + 50, BList[0].BoundsP2.Y + 50, BList[1].BoundsP2.X - 50, BList[1].BoundsP1.Y - 50);
+            }
+
+            PixCount = 0;
+            TotalCount = 0;
+            for (int x = BList[1].BoundsP1.X + 50; x < BList[2].BoundsP2.X - 50; x++)
+            {
+                for (int y = BList[1].BoundsP2.Y + 50; y < BList[2].BoundsP1.Y - 50; y++)
+                {
+                    UInt16 V = Denoised.Buf[y * Denoised.Width + x];
+                    if (V > 0)
+                        PixCount++;
+                    TotalCount++;
+                }
+            }
+            if ((PixCount / ((float)TotalCount)) > 0.02f)
+            {
+                AddDefect(BList[1], PalletDefect.DefectType.possible_debris, "Debris detected between H2 and H3");
+                SetDefectMarker(BList[1].BoundsP1.X + 50, BList[1].BoundsP2.Y + 50, BList[2].BoundsP2.X - 50, BList[2].BoundsP1.Y - 50);
+            }
         }
     }
 }

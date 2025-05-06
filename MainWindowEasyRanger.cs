@@ -146,7 +146,7 @@ namespace PalletCheck
                             {
                                 if (pos1 == i)
                                 {
-                                    P.AddDefect(P.BList[i], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                    P.AddDefect(P.BList[i], PalletDefect.DefectType.side_nails_protruding, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
                                     viewer.DrawCircleFeedback(centroids[0], centroids[1], 40, 40, red);
                                     isFail = true;
                                 }
@@ -186,7 +186,8 @@ namespace PalletCheck
                      
                         env.SetText("MyText", textArray , xArray, yArray, sizeArray);
 
-                        if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
+                        // Excessive Angl Inspection commented out cause it's not a requirement
+                        /*if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
                         {
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.excessive_angle, "Twisted Blocks Angle: " + Math.Abs(RotateResult[i]).ToString() +  "° > " + AngleThresholdDegree.ToString() +"°");
                             viewer.DrawText("MyText" , red);
@@ -196,7 +197,7 @@ namespace PalletCheck
                         else
                         {
                             viewer.DrawText("MyText", green);
-                        }
+                        }*/
                   
                         lock (LockObjectCombine)
                         {
@@ -241,7 +242,7 @@ namespace PalletCheck
 
                         else
                         {
-                            P.AddDefect(null, PalletDefect.DefectType.missing_wood, "Missing Wood");
+                            P.AddDefect(null, PalletDefect.DefectType.middle_board_missing_wood, "Middle Board Missing Wood");
                             viewer.DrawRoi("MB_ROI", -1, red, 100);
                         }
                     }
@@ -385,7 +386,7 @@ namespace PalletCheck
                                 {
                                     if (pos1 == j)
                                     {
-                                        P.AddDefect(P.BList[j], PalletDefect.DefectType.raised_nail, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
+                                        P.AddDefect(P.BList[j], PalletDefect.DefectType.side_nails_protruding, "Side Nail: " + (int)Object1 + "mm protruding out sides of pallet > " + NailHeight + "mm");
                                         viewer.DrawCircleFeedback(Cx1, Cy1, 40, 40, red);
                                         isFail = true;
                                     }
@@ -426,7 +427,8 @@ namespace PalletCheck
 
                         env.SetText("MyText", textArray, xArray, yArray, sizeArray);
 
-                        if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
+                        // Excessive Angl Inspection commented out cause it's not a requirement
+                        /*if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
                         {
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.excessive_angle, "Twisted Blocks Angle: " + Math.Abs(RotateResult[i]).ToString() + "° > " + AngleThresholdDegree.ToString() + "°");
                             viewer.DrawText("MyText", red);
@@ -436,7 +438,7 @@ namespace PalletCheck
                         else
                         {
                             viewer.DrawText("MyText", green);
-                        }
+                        }*/
 
                         lock (LockObjectCombine)
                         {
