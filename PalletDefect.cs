@@ -267,5 +267,26 @@ namespace PalletCheck
             L_MB = 15       // Left Middle Board Missing Wood
         }
 
+        public enum DefectReport
+        {
+            Name = 0,
+            Result = 1,
+            BN = 2,
+            BW = 3,
+            ER = 4,
+            MB = 5,
+            MW = 6,
+            MWA = 7,
+            PD = 8,
+            RN = 9,
+            RNFC = 10,
+            SH = 11,
+            BPFP = 12,
+            FC = 13,
+            MO = 14,
+            MU = 15,
+            MBMW = 16,
+            SNP = 17
+        }
     }
 }

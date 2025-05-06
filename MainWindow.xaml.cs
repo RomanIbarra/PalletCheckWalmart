@@ -2200,38 +2200,30 @@ namespace PalletCheck
                 defectTable.Items.Clear();
 
                 // Prepare string[] to save results in CSV
-                string[] stringNameOfResult = new string[csvReportHeader.Length];
+                string[] reportHeader = Enum.GetNames(typeof(DefectReport));
+                string[] finalString = new string[Enum.GetNames(typeof(DefectReport)).Length];
 
-                for (int i = 0; i < stringNameOfResult.Length; i++)
-                {
-                    stringNameOfResult[i] = " ";
-                }
-
-                stringNameOfResult[0] = Pallet.folderName;
-                stringNameOfResult[stringNameOfResult.Length - 1] = finalResult.ToString();
-
-                string[] finalString = new string[3];
-                string defectString = null;
                 finalString[0] = Pallet.folderName;
                 finalString[1] = finalResult.ToString();
 
                 foreach (var defect in Pallet.CombinedDefects ?? new List<PalletDefect>())
                 {        
                     defectTable.Items.Add(defect);
-                    string defectCSVCode = defect.Location.ToString()[0] + "_" + defect.Code;
 
-                    if (Enum.IsDefined(typeof(DefectsCSV), defectCSVCode))
+                    if (Enum.IsDefined(typeof(DefectReport), defect.Code))
                     {
-                        //int columIndex = (int)Enum.Parse(typeof(DefectsCSV), defectCSVCode); //Gets the correct report column to write in based on location and defect type
-                        //stringNameOfResult[columIndex] = "X";
-                        defectString += defect.Comment + "; ";
+                        int columIndex = (int)Enum.Parse(typeof(DefectReport), defect.Code); //Gets the correct report column to write in based on location and defect type
+                        finalString[columIndex] += string.Format("{0}: {1};", defect.Location, defect.Comment);
                     }
                 }
                 
                 //SaveDataToFile(string.Join(",", stringNameOfResult));
-                finalString[2] = defectString;
                 string path = RecordingRootDir + "\\" + DateTime.Now.ToString("yyyyMMdd") + ".csv";
-                JackSaveLog.DataLog(path, "Name,Result,Defect", string.Join(",", finalString));
+                new System.Threading.Thread(() =>
+                {
+                    JackSaveLog.DataLog(path, string.Join(", ", reportHeader), string.Join(",", finalString));
+                });
+
 
             });
             lock (LockObjectCombine)

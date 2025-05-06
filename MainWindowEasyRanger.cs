@@ -186,7 +186,8 @@ namespace PalletCheck
                      
                         env.SetText("MyText", textArray , xArray, yArray, sizeArray);
 
-                        if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
+                        // Excessive Angl Inspection commented out cause it's not a requirement
+                        /*if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
                         {
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.excessive_angle, "Twisted Blocks Angle: " + Math.Abs(RotateResult[i]).ToString() +  "° > " + AngleThresholdDegree.ToString() +"°");
                             viewer.DrawText("MyText" , red);
@@ -196,7 +197,7 @@ namespace PalletCheck
                         else
                         {
                             viewer.DrawText("MyText", green);
-                        }
+                        }*/
                   
                         lock (LockObjectCombine)
                         {
@@ -426,7 +427,8 @@ namespace PalletCheck
 
                         env.SetText("MyText", textArray, xArray, yArray, sizeArray);
 
-                        if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
+                        // Excessive Angl Inspection commented out cause it's not a requirement
+                        /*if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
                         {
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.excessive_angle, "Twisted Blocks Angle: " + Math.Abs(RotateResult[i]).ToString() + "° > " + AngleThresholdDegree.ToString() + "°");
                             viewer.DrawText("MyText", red);
@@ -436,7 +438,7 @@ namespace PalletCheck
                         else
                         {
                             viewer.DrawText("MyText", green);
-                        }
+                        }*/
 
                         lock (LockObjectCombine)
                         {
