@@ -471,4 +471,22 @@
   <data name="EndCropY" xml:space="preserve">
     <value>EndCropY</value>
   </data>
+  <data name="SplitDL_StartX" xml:space="preserve">
+    <value>SplitDL_StartX</value>
+  </data>
+  <data name="SplitDL_EndX" xml:space="preserve">
+    <value>SplitDL_EndX</value>
+  </data>
+  <data name="SplitDL_ScaleY_Leading" xml:space="preserve">
+    <value>SplitDL_ScaleY_Leading</value>
+  </data>
+  <data name="SplitDL_ScaleY_Trailing" xml:space="preserve">
+    <value>SplitDL_ScaleY_Trailing</value>
+  </data>
+  <data name="RaisedNailDL_StartX" xml:space="preserve">
+    <value>RaisedNailDL_StartX</value>
+  </data>
+  <data name="RaisedNailDL_EndX" xml:space="preserve">
+    <value>RaisedNailDL_EndX</value>
+  </data>
 </root>
