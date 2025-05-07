@@ -368,7 +368,7 @@ namespace PalletCheck
             // Check for debris causing unusually wide boards
             if (position == PositionOfPallet.Top)
             {
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < BList.Count; i++)
                 {
                     string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i + 1);
                     ExpWidH = MainWindow.GetParamStorage(position).GetPixY(paramName);                 
@@ -1092,7 +1092,7 @@ namespace PalletCheck
                     MainWindow._envTop.GetRegionType("PalletRegions", ref roiTypes[i], ref widths[i], ref heights[i], ref xcs[i], ref ycs[i], ref rotations[i], i);
                 }
 
-                iCount = 7;               
+                iCount = 9;               
                 List<CaptureBuffer> captureBuffers = new List<CaptureBuffer>();
                 List<byte[]> bytesIntensity = new List<byte[]>();
                 List<int> W = new List<int>();
@@ -1511,7 +1511,7 @@ namespace PalletCheck
                 }              
             }
 
-            for (int i = 0; i < iCount+2; i++)
+            for (int i = 0; i < iCount; i++)
             {
                 Board B = BList[i]; // Get the current board from the list
 
@@ -1699,7 +1699,7 @@ namespace PalletCheck
                     // Jack Note: Mark the board as defective for being too narrow and set defect marker
                     AddDefect(B, PalletDefect.DefectType.board_too_narrow, "Min width was less than expected width " + B.MinWidthTooNarrow + "(in)");
                     SetDefectMarker(B);
-                }*/
+                }
                 // Jack Note: Check if the board has a missing chunk of wood based on the minimum width and length parameters
                 bool MissingWoodChunk = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthForChunk ), (float)(B.MinLengthForChunk), true);
                 if (MissingWoodChunk)
@@ -1707,7 +1707,7 @@ namespace PalletCheck
                     //  Mark the board as defective for having a missing chunk and set defect marker
                     AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing wood too deep <" + B.MinWidthForChunk + "(in) and too long >"  + B.MinLengthForChunk+"(in)");
                     SetDefectMarker(B);
-                }
+                }*/
 
                 // New 2025 for missing wood across the length (set 90% of the total length here)///////
                 // It depend on the calibr 

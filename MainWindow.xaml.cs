@@ -455,34 +455,12 @@ namespace PalletCheck
             }
         }
 
-        private void LoadParameters(PositionOfPallet position)
+        private void LoadParameters(string paramFilePath)
         {
-            // Construct the file path based on the enum value
-            //string lastUsedParamFilePath = HistoryRootDir + $"\\LastUsedParamFile{position}.txt"; Used for load txt files
-            string lastUsedParamFilePath = HistoryRootDir + "\\LastUsedParamFile.txt";
-            string defaultParamFilePath = ConfigRootDir + "\\DefaultParams.xml";
-
-            // Check if the history file exists
-            if (File.Exists(lastUsedParamFilePath))
+            foreach (PositionOfPallet position in Enum.GetValues(typeof(PositionOfPallet)))
             {
-                string lastUsedParamFile = File.ReadAllText(lastUsedParamFilePath);
-                // If the parameter file referenced in the history exists, load it
-                if (File.Exists(lastUsedParamFile))
-                {
-                    //GetParamStorageByPosition(position).Load(lastUsedParamFile);
-                    GetParamStorageByPosition(position).LoadXMLParameters(lastUsedParamFile, position.ToString());
-                }
-                else
-                {
-                    MessageBox.Show($"Can't open the last known config file for {position}. It was supposed to be at {lastUsedParamFile}");
-                }
-            }
-            else
-            {
-                // Otherwise, load the default parameters
-                Logger.WriteLine("No Config file found. DefaultParams loaded.");
-                GetParamStorageByPosition(position).Load(defaultParamFilePath);
-            }
+                GetParamStorageByPosition(position).LoadXMLParameters(paramFilePath, position.ToString());
+            }        
         }
 
 
@@ -511,34 +489,36 @@ namespace PalletCheck
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.Title = StringsLocalization.UI_Title;
-            //this.Title = "PalletCheck Stitching Inside " + Version + " - " + SiteName;
             StatusStorage.Set("Version Number", Version);
-
             ButtonBackgroundBrush = btnStart.Background;
-
-            // Load starting parameters
-            if (File.Exists(HistoryRootDir + "\\LastUsedConfigFile.txt"))
+            
+            try
             {
-                lastUsedConfigFile = File.ReadAllText(HistoryRootDir + "\\LastUsedConfigFile.txt");
-                if (File.Exists(lastUsedConfigFile))
+                string configFilePath = ConfigRootDir + "\\Config.xml";
+                string paramFilePath = ConfigRootDir + "\\Parameters.xml";
+
+                if (File.Exists(configFilePath))
                 {
-                    ParamStorageGeneral.LoadXML(lastUsedConfigFile);;
+                    ParamStorageGeneral.LoadXML(configFilePath);
+
+                    if (File.Exists(paramFilePath))
+                    {
+                        LoadParameters(paramFilePath);
+                    }                
                 }
+
                 else
-                    MessageBox.Show("Can't open the last known config file. It was supposed to be at " + _LastUsedParamFile);
-            }
-            else
-            {
-                Logger.WriteLine("No Config file found. DefaultParams loaded.");
-                ParamStorageGeneral.Load(ConfigRootDir + "\\DefaultParams.xml");
+                {
+                    MessageBox.Show("Config file not found at " + ConfigRootDir);
+                    Logger.WriteLine("Config file not found at" + ConfigRootDir);
+                }            
             }
 
-            LoadParameters(PositionOfPallet.Top);
-            LoadParameters(PositionOfPallet.Bottom);
-            LoadParameters(PositionOfPallet.Left);
-            LoadParameters(PositionOfPallet.Right);
-            LoadParameters(PositionOfPallet.Front);
-            LoadParameters(PositionOfPallet.Back);
+            catch (Exception)
+            {
+                throw;
+            }
+            
 
             // Open PLC connection port
             int Port = ParamStorageGeneral.GetInt("TCP Server Port");
@@ -2216,7 +2196,7 @@ namespace PalletCheck
                     if (Enum.IsDefined(typeof(DefectReport), defect.Code))
                     {
                         int columIndex = (int)Enum.Parse(typeof(DefectReport), defect.Code); //Gets the correct report column to write matching the defect code and the DefectReport Enum
-                        finalString[columIndex] += string.Format("{0}: {1};", defect.Location, defect.Comment);
+                        finalString[columIndex] += string.Format("{0}: {1}; ", defect.Location, defect.Comment);
                     }
                 }
                 
