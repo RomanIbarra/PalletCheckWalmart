@@ -123,6 +123,9 @@
   <data name="H2MissingChunkMinimumWidth" xml:space="preserve">
     <value>H2MissingChunkMinimumWidth</value>
   </data>
+  <data name="H2BoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>H2BoardMinimumWidthAcrossLength</value>
+  </data>
   <data name="H1BoardMinimumWidthAcrossLength" xml:space="preserve">
     <value>H1BoardMinimumWidthAcrossLength</value>
   </data>
@@ -208,13 +211,13 @@
     <value>BoardCenterCrackExclusionZonePercentage</value>
   </data>
   <data name="V1MaxAllowedMissingWood" xml:space="preserve">
-    <value>MW_V1MaxAllowedMissingWood</value>
+    <value>V1MaxAllowedMissingWood</value>
   </data>
   <data name="V2MaxAllowedMissingWood" xml:space="preserve">
-    <value>MW_V2MaxAllowedMissingWood</value>
+    <value>V2MaxAllowedMissingWood</value>
   </data>
   <data name="V3MaxAllowedMissingWood" xml:space="preserve">
-    <value>MW_V3MaxAllowedMissingWood</value>
+    <value>V3MaxAllowedMissingWood</value>
   </data>
   <data name="H1MissingChunkMinimumLength" xml:space="preserve">
     <value>H1MissingChunkMinimumLength</value>

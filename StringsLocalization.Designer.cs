@@ -754,7 +754,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MW_V1MaxAllowedMissingWood.
+        ///   Looks up a localized string similar to V1MaxAllowedMissingWood.
         /// </summary>
         internal static string V1MaxAllowedMissingWood {
             get {
@@ -790,7 +790,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MW_V2MaxAllowedMissingWood.
+        ///   Looks up a localized string similar to V2MaxAllowedMissingWood.
         /// </summary>
         internal static string V2MaxAllowedMissingWood {
             get {
@@ -826,7 +826,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MW_V3MaxAllowedMissingWood.
+        ///   Looks up a localized string similar to V3MaxAllowedMissingWood.
         /// </summary>
         internal static string V3MaxAllowedMissingWood {
             get {
