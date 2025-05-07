@@ -363,24 +363,24 @@ namespace PalletCheck
         public  int GetPixX(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelX") / 25.4f);
-            if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelX");
+            if (Field.Contains("_in")) f /= (GetFloat(StringsLocalization.MMPerPixelX) / 25.4f);
+            if (Field.Contains("_mm")) f /= GetFloat(StringsLocalization.MMPerPixelX);
             return (int)f;
         }
 
         public  int GetPixY(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelY") / 25.4f);
-            if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelY");
+            if (Field.Contains("_in")) f /= (GetFloat(StringsLocalization.MMPerPixelY) / 25.4f);
+            if (Field.Contains("_mm")) f /= GetFloat(StringsLocalization.MMPerPixelY);
             return (int)f;
         }
 
         public float GetPixZ(string Field)
         {
             float f = GetFloat(Field);
-            if (Field.Contains("_in")) f /= (GetFloat("MMPerPixelZ") / 25.4f);
-            if (Field.Contains("_mm")) f /= GetFloat("MMPerPixelZ");
+            if (Field.Contains("_in")) f /= (GetFloat(StringsLocalization.MMPerPixelZ) / 25.4f);
+            if (Field.Contains("_mm")) f /= GetFloat(StringsLocalization.MMPerPixelZ);
             return (float)f;
         }
 

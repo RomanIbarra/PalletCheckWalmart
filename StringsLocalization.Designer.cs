@@ -106,6 +106,24 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BlockMissingMaximum.
+        /// </summary>
+        internal static string BlockMissingMaximum {
+            get {
+                return ResourceManager.GetString("BlockMissingMaximum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BlockProtrudingfromPalletMaximum.
+        /// </summary>
+        internal static string BlockProtrudingfromPalletMaximum {
+            get {
+                return ResourceManager.GetString("BlockProtrudingfromPalletMaximum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BlockWidth1.
         /// </summary>
         internal static string BlockWidth1 {
@@ -241,11 +259,11 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ForkClearancePercentage.
+        ///   Looks up a localized string similar to ForkClearancePercentageMinimum.
         /// </summary>
-        internal static string ForkClearancePercentage {
+        internal static string ForkClearancePercentageMinimum {
             get {
-                return ResourceManager.GetString("ForkClearancePercentage", resourceCulture);
+                return ResourceManager.GetString("ForkClearancePercentageMinimum", resourceCulture);
             }
         }
         
@@ -255,15 +273,6 @@ namespace PalletCheck {
         internal static string H1BoardMinimumWidthAcrossLength {
             get {
                 return ResourceManager.GetString("H1BoardMinimumWidthAcrossLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H1MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H1MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H1MaxAllowedMissingWood", resourceCulture);
             }
         }
         
@@ -286,20 +295,11 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H1NarrowBoardMinimumWidth.
+        ///   Looks up a localized string similar to H2BoardMinimumWidthAcrossLength.
         /// </summary>
-        internal static string H1NarrowBoardMinimumWidth {
+        internal static string H2BoardMinimumWidthAcrossLength {
             get {
-                return ResourceManager.GetString("H1NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H2MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H2MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H2MaxAllowedMissingWood", resourceCulture);
+                return ResourceManager.GetString("H2BoardMinimumWidthAcrossLength", resourceCulture);
             }
         }
         
@@ -322,290 +322,11 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H2NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H2NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H2NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H3MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H3MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H3MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H3MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H3MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H3MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H3MissingChunkMinimumWidth.
-        /// </summary>
-        internal static string H3MissingChunkMinimumWidth {
-            get {
-                return ResourceManager.GetString("H3MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H3NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H3NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H3NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H4MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H4MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H4MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H4MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H4MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H4MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H4MissingChunkMinimumWidth.
-        /// </summary>
-        internal static string H4MissingChunkMinimumWidth {
-            get {
-                return ResourceManager.GetString("H4MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H4NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H4NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H4NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H5MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H5MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H5MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H5MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H5MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H5MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H5MissingChunkMinimumWidthInternational.
-        /// </summary>
-        internal static string H5MissingChunkMinimumWidthInternational {
-            get {
-                return ResourceManager.GetString("H5MissingChunkMinimumWidthInternational", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H5MissingChunkMinimumWidthStandard.
-        /// </summary>
-        internal static string H5MissingChunkMinimumWidthStandard {
-            get {
-                return ResourceManager.GetString("H5MissingChunkMinimumWidthStandard", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H5NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H5NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H5NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H6MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H6MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H6MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H6MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H6MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H6MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H6MissingChunkMinimumWidth.
-        /// </summary>
-        internal static string H6MissingChunkMinimumWidth {
-            get {
-                return ResourceManager.GetString("H6MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H6NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H6NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H6NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H7MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H7MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H7MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H7MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H7MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H7MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H7MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H7MissingChunkMinimumLength1 {
-            get {
-                return ResourceManager.GetString("H7MissingChunkMinimumLength1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H7MissingChunkMinimumWidth.
-        /// </summary>
-        internal static string H7MissingChunkMinimumWidth {
-            get {
-                return ResourceManager.GetString("H7MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H7NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H7NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H7NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H8MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H8MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H8MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H8MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H8MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H8MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H8MissingChunkMinimumWidth.
-        /// </summary>
-        internal static string H8MissingChunkMinimumWidth {
-            get {
-                return ResourceManager.GetString("H8MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H8NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H8NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H8NarrowBoardMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H9BoardMinimumWidthAcrossLength.
+        ///   Looks up a localized string similar to H9BoardMinimumWidthAcrossLength{0}.
         /// </summary>
         internal static string H9BoardMinimumWidthAcrossLength {
             get {
                 return ResourceManager.GetString("H9BoardMinimumWidthAcrossLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H9MaxAllowedMissingWood.
-        /// </summary>
-        internal static string H9MaxAllowedMissingWood {
-            get {
-                return ResourceManager.GetString("H9MaxAllowedMissingWood", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H9MissingChunkMinimumLength.
-        /// </summary>
-        internal static string H9MissingChunkMinimumLength {
-            get {
-                return ResourceManager.GetString("H9MissingChunkMinimumLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H9MissingChunkMinimumWidth.
-        /// </summary>
-        internal static string H9MissingChunkMinimumWidth {
-            get {
-                return ResourceManager.GetString("H9MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H9NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string H9NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("H9NarrowBoardMinimumWidth", resourceCulture);
             }
         }
         
@@ -619,7 +340,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HBoardLength_in.
+        ///   Looks up a localized string similar to HBoardLength{0}_in.
         /// </summary>
         internal static string HBoardLength_in {
             get {
@@ -637,56 +358,56 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HNarrowBoardMinimumWidthAcrossLenght.
+        ///   Looks up a localized string similar to H{0}MaxAllowedMissingWood{1}.
         /// </summary>
-        internal static string HNarrowBoardMinimumWidthAcrossLenght {
+        internal static string HXMaxAllowedMissingWood {
             get {
-                return ResourceManager.GetString("HNarrowBoardMinimumWidthAcrossLenght", resourceCulture);
+                return ResourceManager.GetString("HXMaxAllowedMissingWood", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RN_MaxNailHeight_mm.
+        ///   Looks up a localized string similar to H{0}MissingChunkMaximumLength{1}.
         /// </summary>
-        internal static string MaxNailHeight_mm {
+        internal static string HXMissingChunkMaximumLength {
             get {
-                return ResourceManager.GetString("MaxNailHeight_mm", resourceCulture);
+                return ResourceManager.GetString("HXMissingChunkMaximumLength", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MiddleBoardMissingWoodMaxPercentage.
+        ///   Looks up a localized string similar to H{0}MissingChunkMaximumWidth{1}.
         /// </summary>
-        internal static string MiddleBoardMissingWoodMaxPercentage {
+        internal static string HXMissingChunkMaximumWidth {
             get {
-                return ResourceManager.GetString("MiddleBoardMissingWoodMaxPercentage", resourceCulture);
+                return ResourceManager.GetString("HXMissingChunkMaximumWidth", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SH_MinBoardLen.
+        ///   Looks up a localized string similar to LinearSupportBoardMissingWoodPercentageMaximum.
         /// </summary>
-        internal static string MinBoardLen {
+        internal static string LinearSupportBoardMissingWoodPercentageMaximum {
             get {
-                return ResourceManager.GetString("MinBoardLen", resourceCulture);
+                return ResourceManager.GetString("LinearSupportBoardMissingWoodPercentageMaximum", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MissingBlockMinimumRequiredAreaPercentage.
+        ///   Looks up a localized string similar to MaxExposedNailHeight_mm.
         /// </summary>
-        internal static string MissingBlockMinimumRequiredAreaPercentage {
+        internal static string MaxExposedNailHeight_mm {
             get {
-                return ResourceManager.GetString("MissingBlockMinimumRequiredAreaPercentage", resourceCulture);
+                return ResourceManager.GetString("MaxExposedNailHeight_mm", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MissingChunkHeightDeviationThreshold.
+        ///   Looks up a localized string similar to MinBoardLength.
         /// </summary>
-        internal static string MissingChunkHeightDeviationThreshold {
+        internal static string MinBoardLength {
             get {
-                return ResourceManager.GetString("MissingChunkHeightDeviationThreshold", resourceCulture);
+                return ResourceManager.GetString("MinBoardLength", resourceCulture);
             }
         }
         
@@ -772,20 +493,11 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Notes1.
+        ///   Looks up a localized string similar to NailProtrudingfromSideofPalletMaximum.
         /// </summary>
-        internal static string Notes1 {
+        internal static string NailProtrudingfromSideofPalletMaximum {
             get {
-                return ResourceManager.GetString("Notes1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Notes2.
-        /// </summary>
-        internal static string Notes2 {
-            get {
-                return ResourceManager.GetString("Notes2", resourceCulture);
+                return ResourceManager.GetString("NailProtrudingfromSideofPalletMaximum", resourceCulture);
             }
         }
         
@@ -817,16 +529,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ProtrudingNailHeight.
-        /// </summary>
-        internal static string ProtrudingNailHeight {
-            get {
-                return ResourceManager.GetString("ProtrudingNailHeight", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to RB_RaisedBoardMaximumHeight.
+        ///   Looks up a localized string similar to RaisedBoardMaximumHeight.
         /// </summary>
         internal static string RaisedBoardMaximumHeight {
             get {
@@ -835,29 +538,11 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RB_RaisedBoardWidth.
+        ///   Looks up a localized string similar to RaisedBoardMaximumWidth.
         /// </summary>
-        internal static string RaisedBoardWidth {
+        internal static string RaisedBoardMaximumWidth {
             get {
-                return ResourceManager.GetString("RaisedBoardWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to RaisedNailDL_EndX.
-        /// </summary>
-        internal static string RaisedNailDL_EndX {
-            get {
-                return ResourceManager.GetString("RaisedNailDL_EndX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to RaisedNailDL_StartX.
-        /// </summary>
-        internal static string RaisedNailDL_StartX {
-            get {
-                return ResourceManager.GetString("RaisedNailDL_StartX", resourceCulture);
+                return ResourceManager.GetString("RaisedBoardMaximumWidth", resourceCulture);
             }
         }
         
@@ -934,15 +619,6 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SplitDL_EndX.
-        /// </summary>
-        internal static string SplitDL_EndX {
-            get {
-                return ResourceManager.GetString("SplitDL_EndX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to SplitDL_ScaleY_Leading.
         /// </summary>
         internal static string SplitDL_ScaleY_Leading {
@@ -957,15 +633,6 @@ namespace PalletCheck {
         internal static string SplitDL_ScaleY_Trailing {
             get {
                 return ResourceManager.GetString("SplitDL_ScaleY_Trailing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SplitDL_StartX.
-        /// </summary>
-        internal static string SplitDL_StartX {
-            get {
-                return ResourceManager.GetString("SplitDL_StartX", resourceCulture);
             }
         }
         
@@ -1042,6 +709,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to V1BoardMinimumWidthAcrossLength.
+        /// </summary>
+        internal static string V1BoardMinimumWidthAcrossLength {
+            get {
+                return ResourceManager.GetString("V1BoardMinimumWidthAcrossLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MW_V1MaxAllowedMissingWood.
         /// </summary>
         internal static string V1MaxAllowedMissingWood {
@@ -1051,29 +727,29 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V1MissingChunkMinimumLength.
+        ///   Looks up a localized string similar to V1MissingChunkMaximumLength.
         /// </summary>
-        internal static string V1MissingChunkMinimumLength {
+        internal static string V1MissingChunkMaximumLength {
             get {
-                return ResourceManager.GetString("V1MissingChunkMinimumLength", resourceCulture);
+                return ResourceManager.GetString("V1MissingChunkMaximumLength", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V1MissingChunkMinimumWidth.
+        ///   Looks up a localized string similar to V1MissingChunkMaximumWidth.
         /// </summary>
-        internal static string V1MissingChunkMinimumWidth {
+        internal static string V1MissingChunkMaximumWidth {
             get {
-                return ResourceManager.GetString("V1MissingChunkMinimumWidth", resourceCulture);
+                return ResourceManager.GetString("V1MissingChunkMaximumWidth", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V1NarrowBoardMinimumWidth.
+        ///   Looks up a localized string similar to V2BoardMinimumWidthAcrossLength.
         /// </summary>
-        internal static string V1NarrowBoardMinimumWidth {
+        internal static string V2BoardMinimumWidthAcrossLength {
             get {
-                return ResourceManager.GetString("V1NarrowBoardMinimumWidth", resourceCulture);
+                return ResourceManager.GetString("V2BoardMinimumWidthAcrossLength", resourceCulture);
             }
         }
         
@@ -1087,29 +763,29 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V2MissingChunkMinimumLength.
+        ///   Looks up a localized string similar to V2MissingChunkMaximumLength.
         /// </summary>
-        internal static string V2MissingChunkMinimumLength {
+        internal static string V2MissingChunkMaximumLength {
             get {
-                return ResourceManager.GetString("V2MissingChunkMinimumLength", resourceCulture);
+                return ResourceManager.GetString("V2MissingChunkMaximumLength", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to V2MissingChunkMinimumWidth.
         /// </summary>
-        internal static string V2MissingChunkMinimumWidth {
+        internal static string V2MissingChunkMaximumWidth {
             get {
-                return ResourceManager.GetString("V2MissingChunkMinimumWidth", resourceCulture);
+                return ResourceManager.GetString("V2MissingChunkMaximumWidth", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V2NarrowBoardMinimumWidth.
+        ///   Looks up a localized string similar to V3BoardMinimumWidthAcrossLength.
         /// </summary>
-        internal static string V2NarrowBoardMinimumWidth {
+        internal static string V3BoardMinimumWidthAcrossLength {
             get {
-                return ResourceManager.GetString("V2NarrowBoardMinimumWidth", resourceCulture);
+                return ResourceManager.GetString("V3BoardMinimumWidthAcrossLength", resourceCulture);
             }
         }
         
@@ -1123,29 +799,20 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V3MissingChunkMinimumLength.
+        ///   Looks up a localized string similar to V3MissingChunkMaximumLength.
         /// </summary>
-        internal static string V3MissingChunkMinimumLength {
+        internal static string V3MissingChunkMaximumLength {
             get {
-                return ResourceManager.GetString("V3MissingChunkMinimumLength", resourceCulture);
+                return ResourceManager.GetString("V3MissingChunkMaximumLength", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to V3MissingChunkMinimumWidth.
+        ///   Looks up a localized string similar to V3MissingChunkMaximumWidth.
         /// </summary>
-        internal static string V3MissingChunkMinimumWidth {
+        internal static string V3MissingChunkMaximumWidth {
             get {
-                return ResourceManager.GetString("V3MissingChunkMinimumWidth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to V3NarrowBoardMinimumWidth.
-        /// </summary>
-        internal static string V3NarrowBoardMinimumWidth {
-            get {
-                return ResourceManager.GetString("V3NarrowBoardMinimumWidth", resourceCulture);
+                return ResourceManager.GetString("V3MissingChunkMaximumWidth", resourceCulture);
             }
         }
         

@@ -117,98 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="H2MaxAllowedMissingWood" xml:space="preserve">
-    <value>H2MaxAllowedMissingWood</value>
-  </data>
   <data name="H2MissingChunkMinimumLength" xml:space="preserve">
     <value>H2MissingChunkMinimumLength</value>
   </data>
   <data name="H2MissingChunkMinimumWidth" xml:space="preserve">
     <value>H2MissingChunkMinimumWidth</value>
   </data>
-  <data name="H2NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H2NarrowBoardMinimumWidth</value>
+  <data name="H2BoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>H2BoardMinimumWidthAcrossLength</value>
   </data>
-  <data name="H3MaxAllowedMissingWood" xml:space="preserve">
-    <value>H3MaxAllowedMissingWood</value>
-  </data>
-  <data name="H3MissingChunkMinimumLength" xml:space="preserve">
-    <value>H3MissingChunkMinimumLength</value>
-  </data>
-  <data name="H3MissingChunkMinimumWidth" xml:space="preserve">
-    <value>H3MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H3NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H3NarrowBoardMinimumWidth</value>
-  </data>
-  <data name="H4MaxAllowedMissingWood" xml:space="preserve">
-    <value>H4MaxAllowedMissingWood</value>
-  </data>
-  <data name="H4MissingChunkMinimumLength" xml:space="preserve">
-    <value>H4MissingChunkMinimumLength</value>
-  </data>
-  <data name="H4MissingChunkMinimumWidth" xml:space="preserve">
-    <value>H4MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H4NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H4NarrowBoardMinimumWidth</value>
-  </data>
-  <data name="H5MaxAllowedMissingWood" xml:space="preserve">
-    <value>H5MaxAllowedMissingWood</value>
-  </data>
-  <data name="H5MissingChunkMinimumLength" xml:space="preserve">
-    <value>H5MissingChunkMinimumLength</value>
-  </data>
-  <data name="H5MissingChunkMinimumWidthStandard" xml:space="preserve">
-    <value>H5MissingChunkMinimumWidthStandard</value>
-  </data>
-  <data name="H5NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H5NarrowBoardMinimumWidth</value>
-  </data>
-  <data name="H6MaxAllowedMissingWood" xml:space="preserve">
-    <value>H6MaxAllowedMissingWood</value>
-  </data>
-  <data name="H6MissingChunkMinimumLength" xml:space="preserve">
-    <value>H6MissingChunkMinimumLength</value>
-  </data>
-  <data name="H6MissingChunkMinimumWidth" xml:space="preserve">
-    <value>H6MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H6NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H6NarrowBoardMinimumWidth</value>
+  <data name="H1BoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>H1BoardMinimumWidthAcrossLength{0}</value>
   </data>
   <data name="H1BoardMinimumWidthAcrossLength" xml:space="preserve">
     <value>H1BoardMinimumWidthAcrossLength</value>
   </data>
-  <data name="H9MaxAllowedMissingWood" xml:space="preserve">
-    <value>H9MaxAllowedMissingWood</value>
-  </data>
-  <data name="H9MissingChunkMinimumLength" xml:space="preserve">
-    <value>H9MissingChunkMinimumLength</value>
-  </data>
-  <data name="H9MissingChunkMinimumWidth" xml:space="preserve">
-    <value>H9MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H1NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H1NarrowBoardMinimumWidth</value>
-  </data>
-  <data name="MaxNailHeight_mm" xml:space="preserve">
-    <value>RN_MaxNailHeight_mm</value>
+  <data name="MaxExposedNailHeight_mm" xml:space="preserve">
+    <value>MaxExposedNailHeight_mm</value>
   </data>
   <data name="UI_Title" xml:space="preserve">
     <value>Pallet Check POC</value>
   </data>
-  <data name="H9NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H9NarrowBoardMinimumWidth</value>
-  </data>
   <data name="RaisedBoardMaximumHeight" xml:space="preserve">
-    <value>RB_RaisedBoardMaximumHeight</value>
+    <value>RaisedBoardMaximumHeight</value>
   </data>
-  <data name="RaisedBoardWidth" xml:space="preserve">
-    <value>RB_RaisedBoardWidth</value>
+  <data name="RaisedBoardMaximumWidth" xml:space="preserve">
+    <value>RaisedBoardMaximumWidth</value>
   </data>
-  <data name="MinBoardLen" xml:space="preserve">
-    <value>SH_MinBoardLen</value>
+  <data name="MinBoardLength" xml:space="preserve">
+    <value>MinBoardLength</value>
   </data>
   <data name="RawCaptureROILeft_px" xml:space="preserve">
     <value>RawCaptureROILeft_px</value>
@@ -271,7 +208,7 @@
     <value>TopH{0}BoardWidth_in</value>
   </data>
   <data name="HBoardLength_in" xml:space="preserve">
-    <value>HBoardLength_in</value>
+    <value>HBoardLength{0}_in</value>
   </data>
   <data name="Rotate90" xml:space="preserve">
     <value>Rotate90</value>
@@ -285,38 +222,38 @@
   <data name="BoardCenterCrackExclusionZonePercentage" xml:space="preserve">
     <value>BoardCenterCrackExclusionZonePercentage</value>
   </data>
-  <data name="V1NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>V1NarrowBoardMinimumWidth</value>
+  <data name="V1BoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>V1BoardMinimumWidthAcrossLength</value>
   </data>
-  <data name="V1MissingChunkMinimumLength" xml:space="preserve">
-    <value>V1MissingChunkMinimumLength</value>
+  <data name="V1MissingChunkMaximumLength" xml:space="preserve">
+    <value>V1MissingChunkMaximumLength</value>
   </data>
-  <data name="V1MissingChunkMinimumWidth" xml:space="preserve">
-    <value>V1MissingChunkMinimumWidth</value>
+  <data name="V1MissingChunkMaximumWidth" xml:space="preserve">
+    <value>V1MissingChunkMaximumWidth</value>
   </data>
   <data name="V1MaxAllowedMissingWood" xml:space="preserve">
     <value>MW_V1MaxAllowedMissingWood</value>
   </data>
-  <data name="V2NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>V2NarrowBoardMinimumWidth</value>
+  <data name="V2BoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>V2BoardMinimumWidthAcrossLength</value>
   </data>
-  <data name="V2MissingChunkMinimumWidth" xml:space="preserve">
+  <data name="V2MissingChunkMaximumWidth" xml:space="preserve">
     <value>V2MissingChunkMinimumWidth</value>
   </data>
-  <data name="V2MissingChunkMinimumLength" xml:space="preserve">
-    <value>V2MissingChunkMinimumLength</value>
+  <data name="V2MissingChunkMaximumLength" xml:space="preserve">
+    <value>V2MissingChunkMaximumLength</value>
   </data>
   <data name="V2MaxAllowedMissingWood" xml:space="preserve">
     <value>MW_V2MaxAllowedMissingWood</value>
   </data>
-  <data name="V3NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>V3NarrowBoardMinimumWidth</value>
+  <data name="V3BoardMinimumWidthAcrossLength" xml:space="preserve">
+    <value>V3BoardMinimumWidthAcrossLength</value>
   </data>
-  <data name="V3MissingChunkMinimumLength" xml:space="preserve">
-    <value>V3MissingChunkMinimumLength</value>
+  <data name="V3MissingChunkMaximumLength" xml:space="preserve">
+    <value>V3MissingChunkMaximumLength</value>
   </data>
-  <data name="V3MissingChunkMinimumWidth" xml:space="preserve">
-    <value>V3MissingChunkMinimumWidth</value>
+  <data name="V3MissingChunkMaximumWidth" xml:space="preserve">
+    <value>V3MissingChunkMaximumWidth</value>
   </data>
   <data name="V3MaxAllowedMissingWood" xml:space="preserve">
     <value>MW_V3MaxAllowedMissingWood</value>
@@ -326,9 +263,6 @@
   </data>
   <data name="H1MissingChunkMinimumWidth" xml:space="preserve">
     <value>H1MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H1MaxAllowedMissingWood" xml:space="preserve">
-    <value>H1MaxAllowedMissingWood</value>
   </data>
   <data name="HBoardWidth_in" xml:space="preserve">
     <value>HBoardWidth_in</value>
@@ -369,23 +303,14 @@
   <data name="AngleThresholdDegree" xml:space="preserve">
     <value>AngleThresholdDegree</value>
   </data>
-  <data name="MissingChunkHeightDeviationThreshold" xml:space="preserve">
-    <value>MissingChunkHeightDeviationThreshold</value>
+  <data name="BlockMissingMaximum" xml:space="preserve">
+    <value>BlockMissingMaximum</value>
   </data>
-  <data name="MissingBlockMinimumRequiredAreaPercentage" xml:space="preserve">
-    <value>MissingBlockMinimumRequiredAreaPercentage</value>
+  <data name="NailProtrudingfromSideofPalletMaximum" xml:space="preserve">
+    <value>NailProtrudingfromSideofPalletMaximum</value>
   </data>
-  <data name="ProtrudingNailHeight" xml:space="preserve">
-    <value>ProtrudingNailHeight</value>
-  </data>
-  <data name="ForkClearancePercentage" xml:space="preserve">
-    <value>ForkClearancePercentage</value>
-  </data>
-  <data name="Notes1" xml:space="preserve">
-    <value>Notes1</value>
-  </data>
-  <data name="Notes2" xml:space="preserve">
-    <value>Notes2</value>
+  <data name="ForkClearancePercentageMinimum" xml:space="preserve">
+    <value>ForkClearancePercentageMinimum</value>
   </data>
   <data name="Top" xml:space="preserve">
     <value>Top</value>
@@ -417,47 +342,14 @@
   <data name="SideLength" xml:space="preserve">
     <value>SideLength</value>
   </data>
-  <data name="MiddleBoardMissingWoodMaxPercentage" xml:space="preserve">
-    <value>MiddleBoardMissingWoodMaxPercentage</value>
-  </data>
-  <data name="HNarrowBoardMinimumWidthAcrossLenght" xml:space="preserve">
-    <value>HNarrowBoardMinimumWidthAcrossLenght</value>
+  <data name="LinearSupportBoardMissingWoodPercentageMaximum" xml:space="preserve">
+    <value>LinearSupportBoardMissingWoodPercentageMaximum</value>
   </data>
   <data name="CameraEnabled" xml:space="preserve">
     <value>CameraEnabled</value>
   </data>
-  <data name="H7MissingChunkMinimumLength" xml:space="preserve">
-    <value>H7MissingChunkMinimumLength</value>
-  </data>
-  <data name="H7NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H7NarrowBoardMinimumWidth</value>
-  </data>
-  <data name="H7MissingChunkMinimumLength1" xml:space="preserve">
-    <value>H7MissingChunkMinimumLength</value>
-  </data>
-  <data name="H7MissingChunkMinimumWidth" xml:space="preserve">
-    <value>H7MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H8NarrowBoardMinimumWidth" xml:space="preserve">
-    <value>H8NarrowBoardMinimumWidth</value>
-  </data>
-  <data name="H8MissingChunkMinimumWidth" xml:space="preserve">
-    <value>H8MissingChunkMinimumWidth</value>
-  </data>
-  <data name="H8MissingChunkMinimumLength" xml:space="preserve">
-    <value>H8MissingChunkMinimumLength</value>
-  </data>
-  <data name="H7MaxAllowedMissingWood" xml:space="preserve">
-    <value>H7MaxAllowedMissingWood</value>
-  </data>
-  <data name="H8MaxAllowedMissingWood" xml:space="preserve">
-    <value>H8MaxAllowedMissingWood</value>
-  </data>
-  <data name="H5MissingChunkMinimumWidthInternational" xml:space="preserve">
-    <value>H5MissingChunkMinimumWidthInternational</value>
-  </data>
   <data name="H9BoardMinimumWidthAcrossLength" xml:space="preserve">
-    <value>H9BoardMinimumWidthAcrossLength</value>
+    <value>H9BoardMinimumWidthAcrossLength{0}</value>
   </data>
   <data name="CameraCount" xml:space="preserve">
     <value>CameraCount</value>
@@ -471,22 +363,22 @@
   <data name="EndCropY" xml:space="preserve">
     <value>EndCropY</value>
   </data>
-  <data name="SplitDL_StartX" xml:space="preserve">
-    <value>SplitDL_StartX</value>
+  <data name="HXMissingChunkMaximumWidth" xml:space="preserve">
+    <value>H{0}MissingChunkMaximumWidth{1}</value>
   </data>
-  <data name="SplitDL_EndX" xml:space="preserve">
-    <value>SplitDL_EndX</value>
+  <data name="HXMissingChunkMaximumLength" xml:space="preserve">
+    <value>H{0}MissingChunkMaximumLength{1}</value>
   </data>
-  <data name="SplitDL_ScaleY_Leading" xml:space="preserve">
-    <value>SplitDL_ScaleY_Leading</value>
+  <data name="HXMaxAllowedMissingWood" xml:space="preserve">
+    <value>H{0}MaxAllowedMissingWood{1}</value>
   </data>
   <data name="SplitDL_ScaleY_Trailing" xml:space="preserve">
     <value>SplitDL_ScaleY_Trailing</value>
   </data>
-  <data name="RaisedNailDL_StartX" xml:space="preserve">
-    <value>RaisedNailDL_StartX</value>
+  <data name="SplitDL_ScaleY_Leading" xml:space="preserve">
+    <value>SplitDL_ScaleY_Leading</value>
   </data>
-  <data name="RaisedNailDL_EndX" xml:space="preserve">
-    <value>RaisedNailDL_EndX</value>
+  <data name="BlockProtrudingfromPalletMaximum" xml:space="preserve">
+    <value>BlockProtrudingfromPalletMaximum</value>
   </data>
 </root>
