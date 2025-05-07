@@ -1218,11 +1218,11 @@ namespace PalletCheck
                    };
 
                     //Old dataset X crops
-                    int X1 = 49;         
-                    int X2 = 2400;
+                    //int X1 = 49;         
+                    //int X2 = 2400;
                     
-                    //int X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
-                    //int X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
+                    int X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
+                    int X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
                     int ScaleVal = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_ScaleY_Leading);
                     upperY2 = model.ScaleVal(upperY2, 688, ScaleVal);
                     lowerY1 = model.ScaleVal(lowerY1, 688, ScaleVal); 
@@ -1689,7 +1689,7 @@ namespace PalletCheck
 
                 CalculateMissingWood(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
-                //FindRaisedBoard(B, paramStorage);  No Requirement for Walmart
+                FindRaisedBoard(B, paramStorage);  
 
                 // CheckNarrowBoard commented out since is not required by client
                 // Jack Note: Check if the board is too narrow based on the minimum width parameter
@@ -2544,10 +2544,10 @@ namespace PalletCheck
             int CBW = B.CB.Width;
 
             // Jack Note: Calculate the test value for identifying raised boards using the specified maximum height
-            int RBTestVal = (int)(1000 + paramStorage.GetPixZ("(RB) Raised Board Maximum Height (in)"));
+            int RBTestVal = (int)(1000 + paramStorage.GetPixZ(StringsLocalization.RaisedBoardMaximumHeight));
 
             // Jack Note: Get the percentage of the board that must be raised to consider it a defect
-            float RBPercentage = paramStorage.GetFloat("(RB) Raised Board Width (%)") / 100f;
+            float RBPercentage = paramStorage.GetFloat(StringsLocalization.RaisedBoardMaximumWidth) / 100f;
 
             // Jack Note: Initialize counters for raised pixel count and total pixel count
             int RBCount = 0;
