@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using Sick.EasyRanger;
+﻿using Sick.EasyRanger;
 using Sick.EasyRanger.Base;
 using System;
 using System.IO;
@@ -8,14 +7,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using static PalletCheck.Pallet;
 using GDII = System.Drawing.Imaging;
 using System.Drawing;
 using Path = System.IO.Path;
-using System.Collections;
-using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace PalletCheck
 {
@@ -73,11 +68,11 @@ namespace PalletCheck
             BlockWidth[2] = paramStorage.GetFloat(StringsLocalization.BlockWidth3);
             double SideLength = paramStorage.GetFloat(StringsLocalization.SideLength);
             double AngleThresholdDegree = paramStorage.GetFloat(StringsLocalization.AngleThresholdDegree);
-            double MissingChunkThreshold = paramStorage.GetFloat(StringsLocalization.MissingChunkHeightDeviationThreshold);
-            double MissingBlockPercentage = paramStorage.GetFloat(StringsLocalization.MissingBlockMinimumRequiredAreaPercentage);
-            double MiddleBoardMissingWoodMaxPercentage = paramStorage.GetFloat(StringsLocalization.MiddleBoardMissingWoodMaxPercentage);
-            double NailHeight = paramStorage.GetFloat(StringsLocalization.ProtrudingNailHeight);
-            int ForkClearancePercentage = paramStorage.GetInt(StringsLocalization.ForkClearancePercentage);
+            double BlockProtrudingfromPalletMaximum = paramStorage.GetFloat(StringsLocalization.BlockProtrudingfromPalletMaximum);
+            double MissingBlockAllowedPercentage = paramStorage.GetFloat(StringsLocalization.BlockMissingMaximum);
+            double MiddleBoardMissingWoodMaxPercentage = paramStorage.GetFloat(StringsLocalization.LinearSupportBoardMissingWoodPercentageMaximum);
+            double NailHeight = paramStorage.GetFloat(StringsLocalization.NailProtrudingfromSideofPalletMaximum);
+            int ForkClearancePercentage = paramStorage.GetInt(StringsLocalization.ForkClearancePercentageMinimum);
             int RefTop = paramStorage.GetInt(StringsLocalization.Top);
             int RefBottom = paramStorage.GetInt(StringsLocalization.Bottom);
             int StartCropX = paramStorage.GetInt(StringsLocalization.StartCropX);
@@ -173,13 +168,14 @@ namespace PalletCheck
                             isFail = true;     
                         }
 
-                        if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * MissingBlockPercentage / 100 ||blockHeight[i] > MissingChunkThreshold)
+                        if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * ((100 - MissingBlockAllowedPercentage) / 100) || blockHeight[i] > BlockProtrudingfromPalletMaximum)
                         {
-                            if (blockHeight[i] < -MissingChunkThreshold)
+                            /*if (blockHeight[i] < -MissingChunkThreshold)
                             { P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round((blockHeight[i]), 2) + "mm < -" + MissingChunkThreshold + "mm"); }
                             if (blockHeight[i] > MissingChunkThreshold)
-                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }
+                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }*/
 
+                            P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + BlockProtrudingfromPalletMaximum + "mm");
                             viewer.DrawRoi("OutputRegions", i, red, 100);
                             isFail = true;
                         }
@@ -308,11 +304,11 @@ namespace PalletCheck
             BlockWidth[2] = paramStorage.GetFloat(StringsLocalization.BlockWidth3);
             double SideLength = paramStorage.GetFloat(StringsLocalization.SideLength);
             double AngleThresholdDegree = paramStorage.GetFloat(StringsLocalization.AngleThresholdDegree);
-            double MissingChunkThreshold = paramStorage.GetFloat(StringsLocalization.MissingChunkHeightDeviationThreshold);
-            double MissingBlockPercentage = paramStorage.GetFloat(StringsLocalization.MissingBlockMinimumRequiredAreaPercentage);
-            double MiddleBoardMissingWoodMaxPercentage = paramStorage.GetFloat(StringsLocalization.MiddleBoardMissingWoodMaxPercentage);
-            double NailHeight = paramStorage.GetFloat(StringsLocalization.ProtrudingNailHeight);
-            int ForkClearancePercentage = paramStorage.GetInt(StringsLocalization.ForkClearancePercentage);
+            double BlockProtrudingfromPalletMaximum = paramStorage.GetFloat(StringsLocalization.BlockProtrudingfromPalletMaximum);
+            double MissingBlockAllowedPercentage = paramStorage.GetFloat(StringsLocalization.BlockMissingMaximum);
+            double MiddleBoardMissingWoodMaxPercentage = paramStorage.GetFloat(StringsLocalization.LinearSupportBoardMissingWoodPercentageMaximum);
+            double NailHeight = paramStorage.GetFloat(StringsLocalization.NailProtrudingfromSideofPalletMaximum);
+            int ForkClearancePercentage = paramStorage.GetInt(StringsLocalization.ForkClearancePercentageMinimum);
             int RefTop = paramStorage.GetInt(StringsLocalization.Top);
             int RefBottom = paramStorage.GetInt(StringsLocalization.Bottom);
             int StartCropX = paramStorage.GetInt(StringsLocalization.StartCropX);
@@ -414,13 +410,14 @@ namespace PalletCheck
                             isFail = true;
                         }
 
-                        if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * MissingBlockPercentage / 100 || blockHeight[i] > MissingChunkThreshold)
+                        if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * ((100 - MissingBlockAllowedPercentage) / 100) || blockHeight[i] > BlockProtrudingfromPalletMaximum)
                         {
-                            if (blockHeight[i] < -MissingChunkThreshold)
+                            /*if (blockHeight[i] < -MissingChunkThreshold)
                             { P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round((blockHeight[i]), 2) + "mm < -" + MissingChunkThreshold + "mm"); }
                             if (blockHeight[i] > MissingChunkThreshold)
-                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }
+                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }*/
 
+                            P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + BlockProtrudingfromPalletMaximum + "mm");
                             viewer.DrawRoi("OutputRegions", i, red, 100);
                             isFail = true;
                         }
@@ -560,10 +557,13 @@ namespace PalletCheck
             Bitmap bitmap = new Bitmap(ReflBuf.Width, ReflBuf.Height, GDII.PixelFormat.Format8bppIndexed);
             model model = new model();
             model.ByteArray2bitmap(byteArray, bitmap.Width, bitmap.Height, bitmap);
-            string exePath = AppDomain.CurrentDomain.BaseDirectory;
-            string relativePath = position == PositionOfPallet.Right ? "VizDL/Rigth/Rigth.png" : "VizDL/Left/Left.png";
-            string saveAt = Path.Combine(exePath, relativePath);
-            ReflBuf.SaveImage(relativePath, true);
+            
+
+            string vizDLFolder = String.Format("VizDL/{0}", position);
+            string fullImagePath = String.Format("VizDL/{0}/{0}.png", position);
+
+            CheckIfDirectoryExists(vizDLFolder);          
+            ReflBuf.SaveImage(fullImagePath, true);
 
             //Process the image for inference
             float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
@@ -576,7 +576,10 @@ namespace PalletCheck
             float[] masks = results[3];
 
             //Vizualice BB Results
-            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, "VizDL/Rigth/RightResults.png", isSaveSideNailsProtrudingResults);          
+            string exePath = AppDomain.CurrentDomain.BaseDirectory;
+            string saveAt = Path.Combine(exePath, fullImagePath); 
+            string resultsPath = String.Format("VizDL/{0}/{0}Results.png", position);
+            int[] centroids = model.DrawCentroids(saveAt, boxes, scores, resultsPath, isSaveSideNailsProtrudingResults);          
 
             return centroids;
         }
@@ -772,6 +775,16 @@ namespace PalletCheck
             }
             return maxVal;
         }
+
+        private void CheckIfDirectoryExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+                Console.WriteLine($"Directory created: {path}");
+            }
+        }
+    
 
         /*
         private void LoadFile(string buttonContent, Action<string> loadAction, TextBlock palletTextName, PositionOfPallet position)

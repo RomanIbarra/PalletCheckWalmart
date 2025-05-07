@@ -1836,11 +1836,14 @@ namespace PalletCheck
             {
                 string szTime = DateTime.Now.ToString("yyyyMMdd");
                 string path = RecordingRootDir + "\\" + szTime + ".csv";
-                string strNewHeader = null;
-                for (int i = 0; i < csvReportHeader.Length; i++) { strNewHeader += csvReportHeader[i] + ","; }
+                string[] reportHeader = Enum.GetNames(typeof(DefectReport));
+                
+                //string strNewHeader = null;
+                //for (int i = 0; i < csvReportHeader.Length; i++) { strNewHeader += csvReportHeader[i] + ","; }
+
                 new System.Threading.Thread(() =>
                 {
-                    JackSaveLog.DataLog(path, strNewHeader, totalResult);
+                    JackSaveLog.DataLog(path, String.Join(",", reportHeader), totalResult);
                 })
                 { IsBackground = true }.Start();
             }
@@ -2212,19 +2215,13 @@ namespace PalletCheck
 
                     if (Enum.IsDefined(typeof(DefectReport), defect.Code))
                     {
-                        int columIndex = (int)Enum.Parse(typeof(DefectReport), defect.Code); //Gets the correct report column to write in based on location and defect type
+                        int columIndex = (int)Enum.Parse(typeof(DefectReport), defect.Code); //Gets the correct report column to write matching the defect code and the DefectReport Enum
                         finalString[columIndex] += string.Format("{0}: {1};", defect.Location, defect.Comment);
                     }
                 }
                 
-                //SaveDataToFile(string.Join(",", stringNameOfResult));
-                string path = RecordingRootDir + "\\" + DateTime.Now.ToString("yyyyMMdd") + ".csv";
-                new System.Threading.Thread(() =>
-                {
-                    JackSaveLog.DataLog(path, string.Join(", ", reportHeader), string.Join(",", finalString));
-                });
-
-
+                SaveDataToFile(string.Join(",", finalString));
+                
             });
             lock (LockObjectCombine)
             {
