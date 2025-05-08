@@ -856,12 +856,12 @@ namespace PalletCheck
                 int EndX3 = StartX3 + (int)(220 / SourceCB.xScale);
 
 
-                //int StartY = TopY + (int)(120 / SourceCB.yScale);
-                int StartY = 370;
+                int StartY = TopY + (int)(120 / SourceCB.yScale);
+                //int StartY = 370;
                 int EndY = BottomY - (int)(120 / SourceCB.yScale);
 
                 int ExpWidH = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.HBoardWidth_in);
-                int ExpLengthH = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.HBoardLength_in);
+                int ExpLengthH = (int)MainWindow.GetParamStorage(position).GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
                 int ExpWidV = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
                 int ExpLengthV = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.VBoardLength_in);
 
@@ -1352,7 +1352,7 @@ namespace PalletCheck
 
                     int numberOfWidths = 9; // Total Board
                     int[] expWidths = new int[numberOfWidths]; // for expected width
-                    int ExpHeight = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.HBoardLength_in);
+                    int ExpHeight = (int)MainWindow.GetParamStorage(position).GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
 
                     for (int i = 1; i+2 <= numberOfWidths; i++)
                     {
@@ -2120,7 +2120,7 @@ namespace PalletCheck
 
             if (isHoriz)
             {
-                float Len = paramStorage.GetPixX(StringsLocalization.HBoardLength_in);
+                float Len = paramStorage.GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
 
                 int x1 = 0;// B.Edges[0][0].X;
                 int x2 = B.Edges[0].Count;// B.Edges[0][B.Edges[0].Count - 1].X;
@@ -2349,7 +2349,7 @@ namespace PalletCheck
             if (B.Edges[0][0].X == B.Edges[1][0].X)
             {
                 // Jack Note: Retrieve the expected horizontal board length and calculate minimum acceptable length
-                int Len = (int)paramStorage.GetPixX(StringsLocalization.HBoardLength_in);
+                int Len = (int)paramStorage.GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
                 int MinLen = (int)(Len * BoardLenPerc);
 
                 // Jack Note: Calculate the measured length of the board
@@ -3578,8 +3578,11 @@ namespace PalletCheck
             List<PalletPoint> P = new List<PalletPoint>();
             int CBW = SourceCB.Width;
 
-            int ExpLen = paramStorage.GetInt("Short Board Length");
-            int ExpWid = paramStorage.GetInt("Board Width X");   // Adjusted for horizontal scanning
+            int ExpLen = paramStorage.GetPixY(StringsLocalization.VBoardLength_in);
+            int ExpWid = paramStorage.GetPixX(StringsLocalization.VBoardWidth_in);
+            
+           //int ExpLen = paramStorage.GetInt("Short Board Length");
+           //int ExpWid = paramStorage.GetInt("Board Width X");   // Adjusted for horizontal scanning
 
             Board B = new Board(Name, Location, true, ExpLen, ExpWid);
 
