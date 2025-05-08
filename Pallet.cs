@@ -1518,7 +1518,7 @@ namespace PalletCheck
                                 //DrawBlock(B.CrackBuf, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 16 );
 
                                 // TODO-UNCOMMENT
-                                MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
+                               // MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
                                 MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
                             }
                         }
@@ -1529,7 +1529,7 @@ namespace PalletCheck
                             int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
 
                             //DrawBlock(B.CrackCB, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 5500);
-                            MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, 5500);
+                            //MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, 5500);
                         }
 
                     }
