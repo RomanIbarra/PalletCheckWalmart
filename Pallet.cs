@@ -1003,81 +1003,7 @@ namespace PalletCheck
                     int resultClass = model.RunInferenceClassifier(imageDataClass, resizedImage.Height, resizedImage.Width);
                     PalletClassifier = resultClass;
                     //Console.WriteLine($"Predicción: Clase {resultClass} con de confianza");
-
-                    /*TopRNWHCO Iference-----------------------------------------------------------------------------------------------------------------------------------*/
-                    //Process the image for inference
-                  /*  defectRNWHCO = false;
-                    float[] rangeArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
-                    byte[] reflectanceArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
-                    int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
-                    int height = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
-                    float xScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.XResolution;
-                    float yScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.YResolution;
-
-                    //Convert Range to ushort 
-                    ushort[] ushortArray = new ushort[rangeArray.Length];
-                    for (int i = 0; i < rangeArray.Length; i++)
-                    {
-                        ushortArray[i] = (ushort)(rangeArray[i] + 1000);
-                    }
-                    CaptureBuffer rangeBuffer = new CaptureBuffer
-                    {
-                        Buf = ushortArray,
-
-                        Width = width,
-                        Height = height,
-                        xScale = xScale,
-                        yScale = yScale
-
-                    };
-
-                    float[] imageDataTop = model.ProcessBitmapForInference(bitmapTop, bitmapTop.Width, bitmapTop.Height);
-                    float[][] resultsTop = model.RunInferenceTop(imageDataTop, bitmapTop.Height, bitmapTop.Width);
-
-                    //Get the results
-                    float[] boxesTop = resultsTop[0];
-                    float[] labelsTop = resultsTop[1];
-                    float[] scoresTop = resultsTop[2];
-                    float[] masksTop = resultsTop[3];
-                    //Vector for post evaluation
-                    int[] centroids;
-
-                    //Vizualice BB Results
-                    if (isSaveTopRNWHCO)
-                    {  
-                        string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
-                        bitmapTop.Save(TopRNWHCO, ImageFormat.Png);
-                        centroids = model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
-                    }
-                    else {
-
-                        centroids = model.getCentroids4(boxesTop, scoresTop, 0.7);
-                    }
-
-                    if (centroids != null)
-                    {
-                        float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
-                        int defectsfound = centroids.Length / 2;
-                        if (defectsfound > 0)
-                        {
-                            int ii = 0;
-                            for (int i = 0; i < defectsfound; i++)
-                            {
-
-                                int Cx1 = centroids[ii];
-                                int Cy1 = centroids[ii + 1];
-                                ii = ii + 1;
-
-                                float Object1 = model.GetMaxRangeInSquare1(Cx1, Cy1, 10, rangeBuffer, rangeArray);
-                                if (Object1 > MNH)
-                                {
-                                    //Add defect here
-
-                                }
-
-                            }
-                        }
-                     }*/                 
+   
                 }
 
                 RoiType[] roiTypes = new RoiType[7];
@@ -1556,59 +1482,61 @@ namespace PalletCheck
             {
                 // 为每个板子创建一个Task，并启动ProcessBoard
                 var board = BList[i];
-                boardTasks.Add(Task.Run(() => ProcessBoard(board, paramStorage, i, Pos)));
+                boardTasks.Add(Task.Run(() => ProcessBoard(board, paramStorage, i, Pos, position)));
+
+                
             }
 
             // 等待所有任务完成
             Task.WaitAll(boardTasks.ToArray()); // 同步等待所有任务完成
 
 
-            //for (int i = 0; i < BList.Count; i++)
-            //{
-            //    Board B = BList[i];
+            for (int i = 0; i < BList.Count; i++)
+            {
+                Board B = BList[i];
 
-            //    CaptureBuffer CB = new CaptureBuffer(BList[i].CrackCB);
-            //    AddCaptureBuffer(B.BoardName + " Crack M", CB);
+                CaptureBuffer CB = new CaptureBuffer(BList[i].CrackCB);
+                AddCaptureBuffer(B.BoardName + " Crack M", CB);
 
-            //    // Draw the cracks
-            //    int ny = B.CrackTracker.GetLength(0);
-            //    int nx = B.CrackTracker.GetLength(1);
-            //    float MaxVal = B.CrackBlockSize * B.CrackBlockSize;
-            //    for (int y = 0; y < ny; y++)
-            //    {
-            //        for (int x = 0; x < nx; x++)
-            //        {
-            //            if (B.CrackTracker[y, x] != 0)
-            //            {
-            //                int V = B.CrackTracker[y, x];
-            //                int x1 = B.BoundsP1.X + (x * B.CrackBlockSize);
-            //                int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
+                // Draw the cracks
+                int ny = B.CrackTracker.GetLength(0);
+                int nx = B.CrackTracker.GetLength(1);
+                float MaxVal = B.CrackBlockSize * B.CrackBlockSize;
+                for (int y = 0; y < ny; y++)
+                {
+                    for (int x = 0; x < nx; x++)
+                    {
+                        if (B.CrackTracker[y, x] != 0)
+                        {
+                            int V = B.CrackTracker[y, x];
+                            int x1 = B.BoundsP1.X + (x * B.CrackBlockSize);
+                            int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
 
-            //                float pct = B.CrackTracker[y, x] / MaxVal;
-            //                //if (pct > BlockCrackMinPct)
-            //                {
-            //                    //DrawBlock(B.CrackBuf, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 16 );
+                            float pct = B.CrackTracker[y, x] / MaxVal;
+                            //if (pct > BlockCrackMinPct)
+                            {
+                                //DrawBlock(B.CrackBuf, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 16 );
 
-            //                    // TODO-UNCOMMENT
-            //                    //MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
-            //                    MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
-            //                }
-            //            }
+                                // TODO-UNCOMMENT
+                                MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
+                                MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
+                            }
+                        }
 
-            //            if (B.BoundaryBlocks[y, x] != 0)
-            //            {
-            //                int x1 = B.BoundsP1.X + (x * B.CrackBlockSize);
-            //                int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
+                        if (B.BoundaryBlocks[y, x] != 0)
+                        {
+                            int x1 = B.BoundsP1.X + (x * B.CrackBlockSize);
+                            int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
 
-            //                //DrawBlock(B.CrackCB, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 5500);
-            //                MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, 5500);
-            //            }
+                            //DrawBlock(B.CrackCB, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 5500);
+                            MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, 5500);
+                        }
 
-            //        }
-            //    }
+                    }
+                }
 
-            //    AddCaptureBuffer(B.BoardName + " Crack T", BList[i].CrackCB);
-            //}
+                AddCaptureBuffer(B.BoardName + " Crack T", BList[i].CrackCB);
+            }
         }
 
 
@@ -1663,7 +1591,7 @@ namespace PalletCheck
             boardsList[boardsList.Count - 1].MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.H9BoardMinimumWidthAcrossLength, palletClass));
         }
 
-        private void ProcessBoard(object _B,ParamStorage paramStorage, int i,bool Pos)
+        private void ProcessBoard(object _B,ParamStorage paramStorage, int i,bool Pos, PositionOfPallet position)
         {
             Board B = (Board)_B;
 
@@ -1689,7 +1617,11 @@ namespace PalletCheck
 
                 CalculateMissingWood(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
-                FindRaisedBoard(B, paramStorage);  
+                if (position == PositionOfPallet.Top) {
+                    FindRaisedBoard(B, paramStorage);
+
+                }
+               
 
                 // CheckNarrowBoard commented out since is not required by client
                 // Jack Note: Check if the board is too narrow based on the minimum width parameter
@@ -2586,7 +2518,9 @@ namespace PalletCheck
                 if (((float)RBCount / RBTotal) > RBPercentage)
                 {
                     AddDefect(B, PalletDefect.DefectType.raised_board, "Left side of board raised");
-                    SetDefectMarker(B);
+                    SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y+B.BoundsP2.Y)/2), 100);
+
+                    //SetDefectMarker(B);
                 }
 
                 // Jack Note: Reset counts for the next analysis
@@ -2620,7 +2554,7 @@ namespace PalletCheck
                 if (((float)RBCount / RBTotal) > RBPercentage)
                 {
                     AddDefect(B, PalletDefect.DefectType.raised_board, "Right side of board raised");
-                    SetDefectMarker(B);
+                    SetDefectMarker(B.BoundsP2.X, ((B.BoundsP1.Y + B.BoundsP2.Y) / 2), 100);
                 }
             }
 
@@ -3095,7 +3029,7 @@ namespace PalletCheck
             else
             {
                 MinY = B.Edges[0][0].Y;
-                for (int i = 0; i < B.Edges[0].Count; i++)
+                for (int i = 20; i < B.Edges[0].Count; i++)
                 {
                     MinX = Math.Min(MinX, B.Edges[0][i].X);
                 }
@@ -4369,3 +4303,80 @@ namespace PalletCheck
         }
     }
 }
+
+
+
+/*TopRNWHCO Iference-----------------------------------------------------------------------------------------------------------------------------------*/
+//Process the image for inference
+/*  defectRNWHCO = false;
+  float[] rangeArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
+  byte[] reflectanceArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+  int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
+  int height = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
+  float xScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.XResolution;
+  float yScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.YResolution;
+
+  //Convert Range to ushort 
+  ushort[] ushortArray = new ushort[rangeArray.Length];
+  for (int i = 0; i < rangeArray.Length; i++)
+  {
+      ushortArray[i] = (ushort)(rangeArray[i] + 1000);
+  }
+  CaptureBuffer rangeBuffer = new CaptureBuffer
+  {
+      Buf = ushortArray,
+
+      Width = width,
+      Height = height,
+      xScale = xScale,
+      yScale = yScale
+
+  };
+
+  float[] imageDataTop = model.ProcessBitmapForInference(bitmapTop, bitmapTop.Width, bitmapTop.Height);
+  float[][] resultsTop = model.RunInferenceTop(imageDataTop, bitmapTop.Height, bitmapTop.Width);
+
+  //Get the results
+  float[] boxesTop = resultsTop[0];
+  float[] labelsTop = resultsTop[1];
+  float[] scoresTop = resultsTop[2];
+  float[] masksTop = resultsTop[3];
+  //Vector for post evaluation
+  int[] centroids;
+
+  //Vizualice BB Results
+  if (isSaveTopRNWHCO)
+  {  
+      string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
+      bitmapTop.Save(TopRNWHCO, ImageFormat.Png);
+      centroids = model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
+  }
+  else {
+
+      centroids = model.getCentroids4(boxesTop, scoresTop, 0.7);
+  }
+
+  if (centroids != null)
+  {
+      float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
+      int defectsfound = centroids.Length / 2;
+      if (defectsfound > 0)
+      {
+          int ii = 0;
+          for (int i = 0; i < defectsfound; i++)
+          {
+
+              int Cx1 = centroids[ii];
+              int Cy1 = centroids[ii + 1];
+              ii = ii + 1;
+
+              float Object1 = model.GetMaxRangeInSquare1(Cx1, Cy1, 10, rangeBuffer, rangeArray);
+              if (Object1 > MNH)
+              {
+                  //Add defect here
+
+              }
+
+          }
+      }
+   }*/              
