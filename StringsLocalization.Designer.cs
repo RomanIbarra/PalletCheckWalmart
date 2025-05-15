@@ -322,7 +322,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H9BoardMinimumWidthAcrossLength{0}.
+        ///   Looks up a localized string similar to H9BoardMinimumWidthAcrossLength.
         /// </summary>
         internal static string H9BoardMinimumWidthAcrossLength {
             get {
@@ -340,7 +340,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HBoardLength{0}_in.
+        ///   Looks up a localized string similar to HBoardLength_in.
         /// </summary>
         internal static string HBoardLength_in {
             get {
@@ -358,7 +358,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H{0}MaxAllowedMissingWood{1}.
+        ///   Looks up a localized string similar to H{0}MaxAllowedMissingWood.
         /// </summary>
         internal static string HXMaxAllowedMissingWood {
             get {
@@ -367,7 +367,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H{0}MissingChunkMaximumLength{1}.
+        ///   Looks up a localized string similar to H{0}MissingChunkMaximumLength.
         /// </summary>
         internal static string HXMissingChunkMaximumLength {
             get {
@@ -376,7 +376,7 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H{0}MissingChunkMaximumWidth{1}.
+        ///   Looks up a localized string similar to H{0}MissingChunkMaximumWidth.
         /// </summary>
         internal static string HXMissingChunkMaximumWidth {
             get {

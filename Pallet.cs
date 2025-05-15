@@ -844,7 +844,7 @@ namespace PalletCheck
                 int BottomY  = FindBottomY(ProbeCB,paramStorage);
                 //int LeftY = FindTopY(ProbeCB, paramStorage);
                 //int HBL = paramStorage.GetPixY("V Board Length (in)"); //1018mm
-                //int VBoardWid = paramStorage.GetPixX("H Board Width (in)");
+                //int VBoardWid = paramStorage.GetPixX("H Board Width (in)"); 
 
                 int StartX1 = TopX - (int)(10/ SourceCB.xScale);
                 int EndX1 = StartX1 + (int)(220/ SourceCB.xScale);
@@ -929,8 +929,8 @@ namespace PalletCheck
                 float V1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V1MaxAllowedMissingWood);
                 float V2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V2MaxAllowedMissingWood);
                 float V3maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V3MaxAllowedMissingWood);
-                float H1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood,"1", null));
-                float H2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, "2", null));
+                float H1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood,"1"));
+                float H2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, "2"));
 
                 V1.MaxAllowable = V1maxallowabe;
                 V2.MaxAllowable = V2maxallowabe; 
@@ -1001,83 +1001,8 @@ namespace PalletCheck
                     //Process the image for inference
                     float[] imageDataClass = model.ProcessBitmapForInference(resizedImage, resizedImage.Width, resizedImage.Height);
                     int resultClass = model.RunInferenceClassifier(imageDataClass, resizedImage.Height, resizedImage.Width);
-                    PalletClassifier = resultClass;
-                    //Console.WriteLine($"Predicción: Clase {resultClass} con de confianza");
-
-                    /*TopRNWHCO Iference-----------------------------------------------------------------------------------------------------------------------------------*/
-                    //Process the image for inference
-                  /*  defectRNWHCO = false;
-                    float[] rangeArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
-                    byte[] reflectanceArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
-                    int width = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
-                    int height = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
-                    float xScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.XResolution;
-                    float yScale = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.YResolution;
-
-                    //Convert Range to ushort 
-                    ushort[] ushortArray = new ushort[rangeArray.Length];
-                    for (int i = 0; i < rangeArray.Length; i++)
-                    {
-                        ushortArray[i] = (ushort)(rangeArray[i] + 1000);
-                    }
-                    CaptureBuffer rangeBuffer = new CaptureBuffer
-                    {
-                        Buf = ushortArray,
-
-                        Width = width,
-                        Height = height,
-                        xScale = xScale,
-                        yScale = yScale
-
-                    };
-
-                    float[] imageDataTop = model.ProcessBitmapForInference(bitmapTop, bitmapTop.Width, bitmapTop.Height);
-                    float[][] resultsTop = model.RunInferenceTop(imageDataTop, bitmapTop.Height, bitmapTop.Width);
-
-                    //Get the results
-                    float[] boxesTop = resultsTop[0];
-                    float[] labelsTop = resultsTop[1];
-                    float[] scoresTop = resultsTop[2];
-                    float[] masksTop = resultsTop[3];
-                    //Vector for post evaluation
-                    int[] centroids;
-
-                    //Vizualice BB Results
-                    if (isSaveTopRNWHCO)
-                    {  
-                        string TopRNWHCO = "VizDL/TopRNHCO/TopRNWHCO.png";
-                        bitmapTop.Save(TopRNWHCO, ImageFormat.Png);
-                        centroids = model.DrawTopBoxes4(TopRNWHCO, boxesTop, scoresTop, "TopRNWHCO_bb.png", 0.7);
-                    }
-                    else {
-
-                        centroids = model.getCentroids4(boxesTop, scoresTop, 0.7);
-                    }
-
-                    if (centroids != null)
-                    {
-                        float MNH = (float)paramStorage.GetPixZ(StringsLocalization.MaxNailHeight_mm);
-                        int defectsfound = centroids.Length / 2;
-                        if (defectsfound > 0)
-                        {
-                            int ii = 0;
-                            for (int i = 0; i < defectsfound; i++)
-                            {
-
-                                int Cx1 = centroids[ii];
-                                int Cy1 = centroids[ii + 1];
-                                ii = ii + 1;
-
-                                float Object1 = model.GetMaxRangeInSquare1(Cx1, Cy1, 10, rangeBuffer, rangeArray);
-                                if (Object1 > MNH)
-                                {
-                                    //Add defect here
-
-                                }
-
-                            }
-                        }
-                     }*/                 
+                    PalletClassifier = resultClass; // 0 = International, 1 = Standard
+                    paramStorage = PalletClassifier == 1 ? GetParamStorage(PositionOfPallet.Top) : GetParamStorage(PositionOfPallet.TopInternational);
                 }
 
                 RoiType[] roiTypes = new RoiType[7];
@@ -1220,10 +1145,10 @@ namespace PalletCheck
                     //Old dataset X crops
                     int X1 = 49;         
                     int X2 = 2400;
-                    
-                    //int X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
-                    //int X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
-                    int ScaleVal = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_ScaleY_Leading);
+
+                    //int X1 = paramStorage.GetInt(StringsLocalization.SplitDL_StartX);
+                    //int X2 = paramStorage.GetInt(StringsLocalization.SplitDL_EndX);
+                    int ScaleVal = paramStorage.GetInt(StringsLocalization.SplitDL_ScaleY_Leading);
                     upperY2 = model.ScaleVal(upperY2, 688, ScaleVal);
                     lowerY1 = model.ScaleVal(lowerY1, 688, ScaleVal); 
 
@@ -1426,12 +1351,12 @@ namespace PalletCheck
 
                     int numberOfWidths = 9; // Total Board
                     int[] expWidths = new int[numberOfWidths]; // for expected width
-                    int ExpHeight = (int)MainWindow.GetParamStorage(position).GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
+                    int ExpHeight = (int)paramStorage.GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
 
-                    for (int i = 1; i+2 <= numberOfWidths; i++)
+                    for (int i = 0; i < numberOfWidths; i++)
                     {
-                        string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i);
-                        expWidths[i - 1] = (int)MainWindow.GetParamStorage(position).GetPixY(paramName);
+                        string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i + 1);
+                        expWidths[i] = (int)paramStorage.GetPixY(paramName);
                     }
 
                     H1.ExpectedAreaPix = expWidths[0] * ExpHeight;
@@ -1465,11 +1390,10 @@ namespace PalletCheck
                     H9.YResolution = SourceCB.yScale;
 
                     List<Board> boardsList = new List<Board>() { H1, H2 ,H3, H4, H5, H6, H7, H8, H9};
-                    string palletClass = null;
-
-                    if (MainWindow.PalletClassifier == 0) { palletClass = "International"; }
-
-                    AssignHBoardsParameters(boardsList, position, palletClass);
+                    //string palletClass = null;
+                    //if (MainWindow.PalletClassifier == 0) { palletClass = "International"; }
+                    
+                    AssignHBoardsParameters(boardsList, paramStorage);
 
                     H1.startY = startY[0];
                     H1.endY = endY[0];
@@ -1647,20 +1571,20 @@ namespace PalletCheck
             }
         }
 
-        private void AssignHBoardsParameters(List<Board> boardsList, PositionOfPallet position, string palletClass)
+        private void AssignHBoardsParameters(List<Board> boardsList, ParamStorage paramStorage)
         {
             int i = 1;
             foreach (var board in boardsList)
             {               
-                board.MinWidthForChunk = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMissingChunkMaximumWidth, i, palletClass));
-                board.MinLengthForChunk = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMissingChunkMaximumLength, i, palletClass));
-                board.MaxAllowable = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, i, palletClass));
-                board.ExpLength = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HBoardLength_in, palletClass));
+                board.MinWidthForChunk = paramStorage.GetFloat(String.Format(StringsLocalization.HXMissingChunkMaximumWidth, i));
+                board.MinLengthForChunk = paramStorage.GetFloat(String.Format(StringsLocalization.HXMissingChunkMaximumLength, i));
+                board.MaxAllowable = paramStorage.GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, i));
+                board.ExpLength = paramStorage.GetFloat(String.Format(StringsLocalization.HBoardLength_in));
                 i++;
             }
 
-            boardsList[0].MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.H1BoardMinimumWidthAcrossLength, palletClass));
-            boardsList[boardsList.Count - 1].MinWidthForChunkAcrossLength = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.H9BoardMinimumWidthAcrossLength, palletClass));
+            boardsList[0].MinWidthForChunkAcrossLength = paramStorage.GetFloat(StringsLocalization.H1BoardMinimumWidthAcrossLength);
+            boardsList[boardsList.Count - 1].MinWidthForChunkAcrossLength = paramStorage.GetFloat(StringsLocalization.H9BoardMinimumWidthAcrossLength);
         }
 
         private void ProcessBoard(object _B,ParamStorage paramStorage, int i,bool Pos)
@@ -3127,7 +3051,7 @@ namespace PalletCheck
             else
             {
                 MaxY = B.Edges[0][B.Edges[0].Count - 1].Y;
-                for (int i = 0; i < B.Edges[0].Count; i++)
+                for (int i = 0; i < B.Edges[0].Count - 1; i++)
                 {
                     MaxX = Math.Max(MaxX, B.Edges[1][i].X);
                 }

@@ -15,6 +15,11 @@ namespace PalletCheck
         public string ParamStoragePositionName;
         public Dictionary<string, Dictionary<string, string>> Categories = new Dictionary<string, Dictionary<string, string>>();
 
+        public ParamStorage(string name)
+        {
+            this.ParamStoragePositionName = name;
+        }
+
         public void SaveInHistory(string Reason)
         {
             DateTime DT = DateTime.Now;
