@@ -185,7 +185,14 @@
       <BlockWidth1>180</BlockWidth1>
       <BlockWidth2>90</BlockWidth2>
       <BlockWidth3>180</BlockWidth3>
+	  <BlockDepth1>180</BlockDepth1>
+	  <BlockDepth2>180</BlockDepth2>
+	  <BlockDepth3>180</BlockDepth3>
       <SideLength>1016</SideLength>
+	  <MMPerPixelX>0.4969</MMPerPixelX>
+	  <MMPerPixelY>0.4912</MMPerPixelY>
+	  <MMPerPixelZ>1</MMPerPixelZ>
+	  <Notes1>If MMPerPixel (Resolution) is 0 the software will take into account the resolution from EasyRanger</Notes1>
     </BlockBasic>
   </Left>
   <Right>
@@ -209,7 +216,14 @@
       <BlockWidth1>180</BlockWidth1>
       <BlockWidth2>90</BlockWidth2>
       <BlockWidth3>180</BlockWidth3>
+	  <BlockDepth1>180</BlockDepth1>
+	  <BlockDepth2>180</BlockDepth2>
+	  <BlockDepth3>180</BlockDepth3>
       <SideLength>1016</SideLength>
+	  <MMPerPixelX>0.4969</MMPerPixelX>
+	  <MMPerPixelY>0.4912</MMPerPixelY>
+	  <MMPerPixelZ>1</MMPerPixelZ>
+	  <Notes1>If MMPerPixel (Resolution) is 0 the software will take into account the resolution from EasyRanger</Notes1>
     </BlockBasic>
   </Right>
   <Front>
@@ -233,7 +247,14 @@
       <BlockWidth1>130</BlockWidth1>
       <BlockWidth2>130</BlockWidth2>
       <BlockWidth3>130</BlockWidth3>
+	  <BlockDepth1>180</BlockDepth1>
+	  <BlockDepth2>180</BlockDepth2>
+	  <BlockDepth3>180</BlockDepth3>
       <SideLength>1016</SideLength>
+	  <MMPerPixelX>0.4969</MMPerPixelX>
+	  <MMPerPixelY>0.4912</MMPerPixelY>
+	  <MMPerPixelZ>1</MMPerPixelZ>
+	  <Notes1>If MMPerPixel (Resolution) is 0 the software will take into account the resolution from EasyRanger</Notes1>
     </BlockBasic>
   </Front>
   <Back>
@@ -257,7 +278,14 @@
       <BlockWidth1>130</BlockWidth1>
       <BlockWidth2>130</BlockWidth2>
       <BlockWidth3>130</BlockWidth3>
+	  <BlockDepth1>180</BlockDepth1>
+	  <BlockDepth2>180</BlockDepth2>
+	  <BlockDepth3>180</BlockDepth3>
       <SideLength>1016</SideLength>
+	  <MMPerPixelX_Back>0.4969</MMPerPixelX_Back>
+	  <MMPerPixelY_Back>0.4912</MMPerPixelY_Back>
+	  <MMPerPixelZ_Back>1</MMPerPixelZ_Back>
+	  <Notes1>If MMPerPixel (Resolution) is 0 the software will take into account the resolution from EasyRanger</Notes1>
     </BlockBasic>
   </Back>
 </Parameters>

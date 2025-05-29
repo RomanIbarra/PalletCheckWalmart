@@ -9,6 +9,7 @@ using static PalletCheck.MainWindow;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Linq;
+using static OpenTK.Audio.OpenAL.XRamExtension;
 
 namespace PalletCheck
 {
@@ -1490,52 +1491,47 @@ namespace PalletCheck
             // 等待所有任务完成
             Task.WaitAll(boardTasks.ToArray()); // 同步等待所有任务完成
 
-
-            for (int i = 0; i < BList.Count; i++)
-            {
-                Board B = BList[i];
-
-                CaptureBuffer CB = new CaptureBuffer(BList[i].CrackCB);
-                AddCaptureBuffer(B.BoardName + " Crack M", CB);
-
-                // Draw the cracks
-                int ny = B.CrackTracker.GetLength(0);
-                int nx = B.CrackTracker.GetLength(1);
-                float MaxVal = B.CrackBlockSize * B.CrackBlockSize;
-                for (int y = 0; y < ny; y++)
+            if (isDeepLActive)
+            {/*
+                for (int i = 0; i < BList.Count; i++)
                 {
-                    for (int x = 0; x < nx; x++)
+                    Board B = BList[i];
+
+                    // Prepare display buffer to show cracks
+                    CaptureBuffer crackMidBuffer = new CaptureBuffer(B.CrackCB);
+                    AddCaptureBuffer(B.BoardName + " Crack M", crackMidBuffer);
+
+                    int height = B.CrackTracker.GetLength(0);
+                    int width = B.CrackTracker.GetLength(1);
+                    float maxVal = B.CrackBlockSize * B.CrackBlockSize;
+
+                    for (int y = 0; y < height; y++)
                     {
-                        if (B.CrackTracker[y, x] != 0)
+                        for (int x = 0; x < width; x++)
                         {
-                            int V = B.CrackTracker[y, x];
                             int x1 = B.BoundsP1.X + (x * B.CrackBlockSize);
                             int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
 
-                            float pct = B.CrackTracker[y, x] / MaxVal;
-                            //if (pct > BlockCrackMinPct)
+                            // Draw detected cracks
+                            int crackVal = B.CrackTracker[y, x];
+                            if (crackVal != 0)
                             {
-                                //DrawBlock(B.CrackBuf, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 16 );
+                                UInt16 displayVal = (UInt16)(crackVal * 100);
+                                MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, displayVal);
+                            }
 
-                                // TODO-UNCOMMENT
-                               // MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
-                                MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, (UInt16)(B.CrackTracker[y, x] * 100));
+                            // Draw boundary blocks if present
+                            if (B.BoundaryBlocks[y, x] != 0)
+                            {
+                                // Uncomment if you want to display boundary blocks
+                                 MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, 5500);
                             }
                         }
-
-                        if (B.BoundaryBlocks[y, x] != 0)
-                        {
-                            int x1 = B.BoundsP1.X + (x * B.CrackBlockSize);
-                            int y1 = B.BoundsP1.Y + (y * B.CrackBlockSize);
-
-                            //DrawBlock(B.CrackCB, x1, y1, x1 + B.CrackBlockSize, y1 + B.CrackBlockSize, 5500);
-                            //MakeBlock(B.CrackCB, x1 + 8, y1 + 8, 16, 5500);
-                        }
-
                     }
-                }
 
-                AddCaptureBuffer(B.BoardName + " Crack T", BList[i].CrackCB);
+                    AddCaptureBuffer(B.BoardName + " Crack T", B.CrackCB);
+                }*/
+
             }
         }
 
@@ -1604,55 +1600,26 @@ namespace PalletCheck
 
             try
             {
-                FindCracks(B, paramStorage);
-                if (!isDeepLActive)
-                {
-                    FindRaisedNails(B, paramStorage);
-                }
-                else
-                {
-                    //FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);
-                }
+                
 
-
-                CalculateMissingWood(B, paramStorage);
-                CheckForBreaks(B, paramStorage);
+                //Find Raised Board for top
                 if (position == PositionOfPallet.Top) {
-                    FindRaisedBoard(B, paramStorage);
+                 FindRaisedBoard(B, paramStorage);}
+                //Calculate missing wood
+                //CalculateMissingWood(B, paramStorage);
+                //Find cracks and breaks and look for break across the width
+                FindCracks(B, paramStorage);
+                CheckForBreaks(B, paramStorage);
+                //Check for missing wood across the length of the board
+                CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
+                //Check for missing wood less than 1/2 its width at one point of the board 
+                //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
+                //Check for puncture in or between boards
+                IsCrackAClosedShape(B, paramStorage);
+                //Check for RaisedNails 
+                if (!isDeepLActive) {FindRaisedNails(B, paramStorage);}
+                else{/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
 
-                }
-               
-
-                // CheckNarrowBoard commented out since is not required by client
-                // Jack Note: Check if the board is too narrow based on the minimum width parameter
-                /*bool TooNarrow = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthTooNarrow), 0.5f, true);
-                if (TooNarrow)
-                {
-                    // Jack Note: Mark the board as defective for being too narrow and set defect marker
-                    AddDefect(B, PalletDefect.DefectType.board_too_narrow, "Min width was less than expected width " + B.MinWidthTooNarrow + "(in)");
-                    SetDefectMarker(B);
-                }
-                // Jack Note: Check if the board has a missing chunk of wood based on the minimum width and length parameters
-                bool MissingWoodChunk = CheckNarrowBoard(paramStorage,B, (float)(B.MinWidthForChunk ), (float)(B.MinLengthForChunk), true);
-                if (MissingWoodChunk)
-                {
-                    //  Mark the board as defective for having a missing chunk and set defect marker
-                    AddDefect(B, PalletDefect.DefectType.missing_wood, "Missing wood too deep <" + B.MinWidthForChunk + "(in) and too long >"  + B.MinLengthForChunk+"(in)");
-                    SetDefectMarker(B);
-                }*/
-
-                // New 2025 for missing wood across the length (set 90% of the total length here)///////
-                // It depend on the calibr 
-                if (B.MinWidthForChunkAcrossLength != 0)
-                {
-                    double percentage;
-                    bool MissingWoodAcrossLength = CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength), true);
-                    if (MissingWoodAcrossLength)
-                    {                  
-                        AddDefect(B, PalletDefect.DefectType.missing_wood_width_across_length, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
-                        SetDefectMarker(B);
-                    }
-                }           
 
             }
 
@@ -1688,82 +1655,103 @@ namespace PalletCheck
             }
 
             img.Save(filename);
-           // Console.WriteLine($"Imagen de contornos guardada como {filename}");
+            // Console.WriteLine($"Imagen de contornos guardada como {filename}");
         }
-        private bool CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float WoodLengthIn, bool ExcludeEnds = false)
+        
+        private void CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float WoodLengthIn,bool acrossLength, bool ExcludeEnds = false)
         {
-            // Jack Note: Initialize variables for pixels per inch (PPI) and measured length
-            float PPIX;
-            float PPIY;
-            float MissingWoodLength = 0;
-
-            //  Retrieve PPI values from parameter storage
-            PPIY = paramStorage.GetPPIY();
-            PPIX = paramStorage.GetPPIX();
-
-            //  Get dimensions of the crack tracker array
-            int w = B.CrackTracker.GetLength(1);
-            int h = B.CrackTracker.GetLength(0);
-
-            //  Initialize the counter for bad edges
-            int nBadEdges = 0;
-
-            // Determine exclusion length based on whether ends should be excluded
-            int Exclusion = ExcludeEnds ? 60 : 0;
-
-            //  Check if the board is oriented horizontally
-            if (w > h)
+            if (FailWidIn != 0)
             {
-                Console.WriteLine("Horizontally oriented");
-                // Jack Note: Fail width is already in pixels (not converting to pixels)
-                Console.WriteLine("FailWidIn: " + FailWidIn);
-                // Jack Note: Calculate the fail width in pixels for horizontal orientation
-                int FailWid = (int)(FailWidIn * PPIY);
 
-                // Jack Note: Iterate through the edges and count bad edges
-                for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
+                // Jack Note: Initialize variables for pixels per inch (PPI) and measured length
+                float PPIX;
+                float PPIY;
+                float MissingWoodLength = 0;
+
+                //  Retrieve PPI values from parameter storage
+                PPIY = paramStorage.GetPPIY();
+                PPIX = paramStorage.GetPPIX();
+
+                //  Get dimensions of the crack tracker array
+                int w = B.CrackTracker.GetLength(1);
+                int h = B.CrackTracker.GetLength(0);
+
+                //  Initialize the counter for bad edges
+                int nBadEdges = 0;
+
+                // Determine exclusion length based on whether ends should be excluded
+                int Exclusion = ExcludeEnds ? 60 : 0;
+
+                //  Check if the board is oriented horizontally
+                if (w > h)
                 {
-                    int DY = B.Edges[1][i].Y - B.Edges[0][i].Y;
+                    Console.WriteLine("Horizontally oriented");
+                    // Jack Note: Fail width is already in pixels (not converting to pixels)
+                    Console.WriteLine("FailWidIn: " + FailWidIn);
+                    // Jack Note: Calculate the fail width in pixels for horizontal orientation
+                    int FailWid = (int)(FailWidIn * PPIY);
 
-                    // Jack Note: Increment the bad edges counter if the width is less than the fail width
-                    if (DY < FailWid)
+                    // Jack Note: Iterate through the edges and count bad edges
+                    for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
                     {
-                        nBadEdges++;
-                      
+                        int DY = B.Edges[1][i].Y - B.Edges[0][i].Y;
+
+                        // Jack Note: Increment the bad edges counter if the width is less than the fail width
+                        if (DY < FailWid)
+                        {
+                            nBadEdges++;
+
+                        }
                     }
+
+                    //  Calculate the measured length in inches for horizontal orientation
+                    MissingWoodLength = nBadEdges / PPIX;
+                    Console.WriteLine("nBadEdges: " + nBadEdges);
+                    Console.WriteLine("MeasuredLength: " + MissingWoodLength);
                 }
 
-                //  Calculate the measured length in inches for horizontal orientation
-                MissingWoodLength = nBadEdges / PPIX;
-                Console.WriteLine("nBadEdges: " + nBadEdges);
-                Console.WriteLine("MeasuredLength: " + MissingWoodLength);
-            }
-
-            else
-            {
-                //  Calculate the fail width in pixels for vertical orientation
-                int FailWid = (int)(FailWidIn * PPIX);
-
-                //  Iterate through the edges and count bad edges
-                for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
+                else
                 {
-                    int DX = B.Edges[1][i].X - B.Edges[0][i].X;
+                    //  Calculate the fail width in pixels for vertical orientation
+                    int FailWid = (int)(FailWidIn * PPIX);
 
-                    //  Increment the bad edges counter if the width is less than the fail width
-                    if (DX < FailWid)
+                    //  Iterate through the edges and count bad edges
+                    for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
                     {
-                        nBadEdges++;                      
+                        int DX = B.Edges[1][i].X - B.Edges[0][i].X;
+
+                        //  Increment the bad edges counter if the width is less than the fail width
+                        if (DX < FailWid)
+                        {
+                            nBadEdges++;
+                        }
                     }
+                    // Jack Note: Calculate the measured length in inches for vertical orientation
+                    MissingWoodLength = nBadEdges / PPIY;
                 }
-                // Jack Note: Calculate the measured length in inches for vertical orientation
-                MissingWoodLength = nBadEdges / PPIY;
+                //DrawContours(B, "contours.png");
+                
+                MissingWoodLength = MissingWoodLength + (float)(3);
+
+                if (MissingWoodLength >= WoodLengthIn)
+                {
+                    if (acrossLength)
+                    {
+                        AddDefect(B, PalletDefect.DefectType.missing_wood_width_across_length, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
+
+                    }
+                    else {
+                        AddDefect(B, PalletDefect.DefectType.missing_wood_width_at_one_point, " Board exhibits material loss exceeding 50% of its width at one or more points along its length.");
+                    }
+                   
+                    SetDefectMarker(B);
+                }                             
             }
-            //DrawContours(B, "contours.png");
-            // this offset has been used because calibration values aren\t good
-            MissingWoodLength = MissingWoodLength +  (float)(3);
-            return (MissingWoodLength >= WoodLengthIn);
-            // Console.WriteLine("MeasuredLength: " + WoodLengthIn);
         }
+
+       
+
+        
 
         // Jack Note: Count the Number of the distance between the Edge0 and Edge1 < FailWidth
         private bool CheckNarrowBoard(ParamStorage paramStorage,Board B, float FailWidIn, float MinMissingWoodLengthIn, bool ExcludeEnds = false)
@@ -2038,7 +2026,7 @@ namespace PalletCheck
                 }
             }
 
-            // Cement the crack blocks based on the params
+            // Coment the crack blocks based on the params
             /// Jack Note
             /// This code iterates through each crack block, calculates the percentage of crack pixels in each block,
             /// and determines which blocks are valid based on a preset minimum crack percentage parameter. 
@@ -2192,76 +2180,79 @@ namespace PalletCheck
                 }
             }
         }
-
+        /*Note this algorithm loolks for cracks across width(previous description wasn't correct) 
+ * Ex. crack connecting rigth and left edges if the board is vertical
+ Top and bottom edges if its horizontal */
         //=====================================================================
-        void IsCrackABrokenBoard(Board B,ParamStorage paramStorage)
+        void IsCrackABrokenBoard(Board B, ParamStorage paramStorage)
         {
-            /// Jack Note
-            /// The code checks for cracks that span the entire width or height 
-            /// of the board by looking for connections between the edges.
-            /// If a crack is found that connects one edge to the opposite edge 
-            /// and meets certain conditions, it marks the board as defective.
+            // Retrieve the block size from the parameter storage (not used in this version of the function).
             int BlockSize = paramStorage.GetInt(StringsLocalization.CrackTrackerBlockSize);
-            //float MaxDebrisPc = ParamStorage.GetFloat("Crack Block Debris Check Pct");
-            int w = B.CrackTracker.GetLength(1);
-            int h = B.CrackTracker.GetLength(0);
-            bool isHoriz = w > h;
-            int[] TouchesEdge1 = new int[100];
-            int[] TouchesEdge2 = new int[100];
 
-            // New approach...look for cracks that connect edge to edge
+            // Get the dimensions of the crack tracker matrix (height and width).
+            int w = B.CrackTracker.GetLength(1);  // Width of the board
+            int h = B.CrackTracker.GetLength(0);  // Height of the board
+
+            // Determine whether the board is wider than it is tall.
+            bool isHoriz = w > h;
+
+            // Arrays to record whether a specific crack ID touches the top/left and bottom/right edges.
+            int[] TouchesEdge1 = new int[100];  // Edge 1 (top or left)
+            int[] TouchesEdge2 = new int[100];  // Edge 2 (bottom or right)
+
+            // --- Scan for cracks that touch both edges (edge-to-edge connection) ---
             if (isHoriz)
             {
-                // HACK
+                // Board is wider than tall; check for vertical cracks (top to bottom)
                 for (int y = 0; y < h; y++)
                 {
                     for (int x = 0; x < w; x++)
                     {
-                        if (B.CrackTracker[y, x] > 0)
+                        if (B.CrackTracker[y, x] > 0) // A crack is detected
                         {
-                            int cid = B.CrackTracker[y, x];
+                            int cid = B.CrackTracker[y, x];  // Crack ID
 
-                            //if ((y == 0) || (y == 1) || (y == (B.CrackTracker.GetLength(0) - 1)) || (y == (B.CrackTracker.GetLength(0) - 2)))
-                            if ((y == 0))
-                                TouchesEdge1[cid] = y;
-                            else
-                            if ((y == (h - 1)))
-                                TouchesEdge2[cid] = y;
+                            // Check if the crack touches the top or bottom edge
+                            if (y == 0)
+                                TouchesEdge1[cid] = y;  // Touches top edge
+                            else if (y == (h - 1))
+                                TouchesEdge2[cid] = y;  // Touches bottom edge
                             else
                             {
-                                if ((B.BoundaryBlocks[y - 1, x] == 1))// && (B.BoundaryBlocks[y + 1, x] == 0) && (B.BoundaryBlocks[y + 1, x] == 0))
+                                // If adjacent to boundary blocks, mark as touching top or bottom
+                                if (B.BoundaryBlocks[y - 1, x] == 1)
                                     TouchesEdge1[cid] = y;
 
-                                if ((B.BoundaryBlocks[y + 1, x] == 1))// && (B.BoundaryBlocks[y - 1, x] == 0) && (B.BoundaryBlocks[y - 1, x] == 0))
+                                if (B.BoundaryBlocks[y + 1, x] == 1)
                                     TouchesEdge2[cid] = y;
                             }
                         }
                     }
                 }
             }
-
             else
             {
-                for (int y = 2; y < h - 2; y++)
+                // Board is taller than wide; check for horizontal cracks (left to right)
+                for (int y = 2; y < h - 2; y++)  // Avoid edges to prevent out-of-bounds
                 {
                     for (int x = 2; x < w - 2; x++)
                     {
-                        if (B.CrackTracker[y, x] > 0)
+                        if (B.CrackTracker[y, x] > 0) // A crack is detected
                         {
-                            int cid = B.CrackTracker[y, x];
+                            int cid = B.CrackTracker[y, x];  // Crack ID
 
-                            //if ((x == 0) || (x == 1) || (x == (B.CrackTracker.GetLength(1) - 1)) || (x == (B.CrackTracker.GetLength(1) - 2)))
-                            if ((x == 0))
-                                TouchesEdge1[cid] = x;
-                            else
-                            if (x == (w - 1))
-                                TouchesEdge2[cid] = x;
+                            // Check if the crack touches the left or right edge
+                            if (x == 0)
+                                TouchesEdge1[cid] = x;  // Touches left edge
+                            else if (x == (w - 1))
+                                TouchesEdge2[cid] = x;  // Touches right edge
                             else
                             {
-                                if ((B.BoundaryBlocks[y, x - 1] == 1) || (B.BoundaryBlocks[y, x - 2] == 1))// && (B.BoundaryBlocks[y, x + 1] == 0) && (B.BoundaryBlocks[y, x + 1] == 0))
+                                // If adjacent to boundary blocks, mark as touching left or right
+                                if (B.BoundaryBlocks[y, x - 1] == 1 || B.BoundaryBlocks[y, x - 2] == 1)
                                     TouchesEdge1[cid] = x;
 
-                                if ((B.BoundaryBlocks[y, x + 1] == 1) || (B.BoundaryBlocks[y, x + 2] == 1))// && (B.BoundaryBlocks[y, x - 1] == 0) && (B.BoundaryBlocks[y, x - 1] == 0))
+                                if (B.BoundaryBlocks[y, x + 1] == 1 || B.BoundaryBlocks[y, x + 2] == 1)
                                     TouchesEdge2[cid] = x;
                             }
                         }
@@ -2269,20 +2260,26 @@ namespace PalletCheck
                 }
             }
 
+            // --- Analyze collected data to determine if a crack spans the board ---
             for (int i = 0; i < TouchesEdge1.Length; i++)
             {
+                // Check if a crack touches both opposite edges
                 if ((TouchesEdge1[i] != 0) && (TouchesEdge2[i] != 0))
                 {
-                    if (Math.Abs(TouchesEdge1[i] - TouchesEdge2[i]) > 5)  // Jack change the value from 5 to 25
+                    // If the distance between edges is large enough, mark as a defect
+                    if (Math.Abs(TouchesEdge1[i] - TouchesEdge2[i]) > 5)  // Increased from 5 to 25 but test
                     {
-                        AddDefect(B, PalletDefect.DefectType.broken_across_width, String.Format("Crack touches both edges."));
+                        // Add a defect for a crack spanning the board's width
+                        AddDefect(B, PalletDefect.DefectType.broken_across_width, String.Format("Crack broken across width."));
+
+                        // Optionally mark the defect visually or in data
                         SetDefectMarker(B);
-                        return;
+                        return;  // No need to check further
                     }
                 }
             }
 
-            return;    
+            return;  // No spanning crack detected
         }
 
 
@@ -2336,9 +2333,8 @@ namespace PalletCheck
             // Jack Note: Check if there are enough edges detected to proceed
             if (B.Edges[0].Count < 5)
             {
-                // Jack Note: Not enough edges, mark the board as missing and set defect marker
-                AddDefect(B, PalletDefect.DefectType.missing_board, "Segmented board far too short");
-                SetDefectMarker(B);
+              //  AddDefect(B, PalletDefect.DefectType.missing_board, "Segmented board far too short");
+              //  SetDefectMarker(B);
                 return;
             }
 
@@ -2355,6 +2351,7 @@ namespace PalletCheck
                 // Jack Note: Calculate the measured length of the board
                 int MeasLen = B.Edges[0][B.Edges[0].Count - 1].X - B.Edges[0][0].X;
 
+                // HUB Note: Following condition isn't needed, we're not 
                 // Jack Note: Check if the measured length is less than the minimum acceptable length
 
                 if (MeasLen < MinLen)
@@ -2388,7 +2385,91 @@ namespace PalletCheck
             }
 
         }
+        void IsCrackAClosedShape(Board B, ParamStorage paramStorage)
+        {
+            int w = B.CrackTracker.GetLength(1);
+            int h = B.CrackTracker.GetLength(0);
+            bool fail= false;
 
+            Dictionary<int, List<System.Windows.Point>> crackPoints = new Dictionary<int, List<System.Windows.Point>>();
+
+            // Recopilar todos los puntos por ID de grieta
+            for (int y = 1; y < h - 1; y++)
+            {
+                for (int x = 1; x < w - 1; x++)
+                {
+                    int cid = B.CrackTracker[y, x];
+                    if (cid > 0)
+                    {
+                        if (!crackPoints.ContainsKey(cid))
+                            crackPoints[cid] = new List<System.Windows.Point>();
+                        crackPoints[cid].Add(new System.Windows.Point(x, y));
+                    }
+                }
+            }
+
+            foreach (var entry in crackPoints)
+            {
+                int cid = entry.Key;
+                List<System.Windows.Point> points = entry.Value;
+
+                if (points.Count < 5)
+                    continue;  // Demasiado pequeña para ser considerada un círculo
+
+                // Calcular bounding box para verificar si es compacta
+                int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+                foreach (var p in points)
+                {
+                    if (p.X < minX) minX = (int)p.X;
+                    if (p.X > maxX) maxX = (int)p.X;
+                    if (p.Y < minY) minY = (int)p.Y;
+                    if (p.Y > maxY) maxY = (int)p.Y;
+                }
+
+                int width = maxX - minX;
+                int height = maxY - minY;
+                float aspectRatio = width / (float)height;
+
+                // Si la forma es bastante compacta (aspect ratio cercano a 1), podría ser circular
+                if (aspectRatio > 0.75 && aspectRatio < 1.25)
+                {
+                    // Calcular el perímetro estimado
+                    double perimeter = 0;
+                    for (int i = 1; i < points.Count; i++)
+                    {
+                        perimeter += Distance(points[i - 1], points[i]);
+                    }
+                    perimeter += Distance(points[points.Count - 1], points[0]); // Cierre del contorno
+
+                    // Área estimada
+                    double area = points.Count;
+
+                    // Circularidad = 4π * area / (perímetro²)
+                    double circularity = 4 * Math.PI * area / (perimeter * perimeter);
+                    double areaThreshold = paramStorage.GetFloat(StringsLocalization.PunctureMaxAreamm2);
+                    double areaTresholdmm2 = areaThreshold; 
+                    double areamm2 = area * B.XResolution * B.YResolution;
+
+                    //if ((circularity > 0.5 || areamm2 > areaTresholdmm2) && fail == false)
+                    if ((areamm2>areaTresholdmm2)&&fail==false)
+                    { //perfect circle hhas 5, then 0.5 is very permisive
+
+                        //AddDefect(B, PalletDefect.DefectType.puncture, $"Circular crack/hole detected. Circularity:{circularity:F2}");
+                        AddDefect(B, PalletDefect.DefectType.puncture, $"Puncture (crack/hole) detected. Area:{area:F2}");
+                        fail = true;
+                        SetDefectMarker(B);
+                        return;
+                    }
+                }
+            }
+        }
+        // Utilidad para distancia euclidiana
+        private double Distance(System.Windows.Point a, System.Windows.Point b)
+        {
+            double dx = a.X - b.X;
+            double dy = a.Y - b.Y;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
         //=====================================================================
         private void CalculateMissingWood(Board B,ParamStorage paramStorage)
         {
@@ -2488,10 +2569,11 @@ namespace PalletCheck
             // Jack Note: Determine if the board is placed horizontally based on its dimensions
             bool isHoriz = (W1 > W2);
 
-            // Jack Note: Process the board if it is horizontal
+            // Process the board if it is horizontal
             if (isHoriz)
             {
-                // Jack Note: Analyze the left 200 pixels of the board for raised areas
+                //  Analyze the left 200 pixels of the board for raised areas
+
                 for (int x = 0; x < 200; x++)
                 {
                     for (int y = 0; y < W2; y++)
@@ -2499,7 +2581,7 @@ namespace PalletCheck
                         int tx = B.BoundsP1.X + x;
                         int ty = B.BoundsP1.Y + y;
 
-                        // Jack Note: Retrieve the value from the capture buffer at the current position
+                        //Retrieve the value from the capture buffer at the current position
                         UInt16 Val = B.CB.Buf[ty * CBW + tx];
 
                         // Jack Note: Increment the raised count if the value exceeds the threshold

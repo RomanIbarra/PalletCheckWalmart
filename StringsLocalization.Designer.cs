@@ -79,6 +79,33 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BlockDepth1.
+        /// </summary>
+        internal static string BlockDepth1 {
+            get {
+                return ResourceManager.GetString("BlockDepth1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BlockDepth2.
+        /// </summary>
+        internal static string BlockDepth2 {
+            get {
+                return ResourceManager.GetString("BlockDepth2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BlockDepth3.
+        /// </summary>
+        internal static string BlockDepth3 {
+            get {
+                return ResourceManager.GetString("BlockDepth3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BlockHeight1.
         /// </summary>
         internal static string BlockHeight1 {
@@ -525,6 +552,15 @@ namespace PalletCheck {
         internal static string OffsetZ2 {
             get {
                 return ResourceManager.GetString("OffsetZ2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PunctureMaxAreamm2.
+        /// </summary>
+        internal static string PunctureMaxAreamm2 {
+            get {
+                return ResourceManager.GetString("PunctureMaxAreamm2", resourceCulture);
             }
         }
         

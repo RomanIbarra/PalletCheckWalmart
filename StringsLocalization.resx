@@ -318,9 +318,6 @@
   <data name="SplitDL_ScaleY_Trailing" xml:space="preserve">
     <value>SplitDL_ScaleY_Trailing</value>
   </data>
-  <data name="H2BoardMinimumWidthAcrossLength" xml:space="preserve">
-    <value>H2BoardMinimumWidthAcrossLength</value>
-  </data>
   <data name="MaxExposedNailHeight_mm" xml:space="preserve">
     <value>MaxExposedNailHeight_mm</value>
   </data>
@@ -392,5 +389,17 @@
   </data>
   <data name="RaisedNailDL_EndX" xml:space="preserve">
     <value>RaisedNailDL_EndX</value>
+  </data>
+  <data name="BlockDepth1" xml:space="preserve">
+    <value>BlockDepth1</value>
+  </data>
+  <data name="BlockDepth2" xml:space="preserve">
+    <value>BlockDepth2</value>
+  </data>
+  <data name="BlockDepth3" xml:space="preserve">
+    <value>BlockDepth3</value>
+  </data>
+  <data name="PunctureMaxAreamm2" xml:space="preserve">
+    <value>PunctureMaxAreamm2</value>
   </data>
 </root>
