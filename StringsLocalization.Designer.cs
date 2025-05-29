@@ -79,6 +79,33 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BlockDepth1.
+        /// </summary>
+        internal static string BlockDepth1 {
+            get {
+                return ResourceManager.GetString("BlockDepth1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BlockDepth2.
+        /// </summary>
+        internal static string BlockDepth2 {
+            get {
+                return ResourceManager.GetString("BlockDepth2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BlockDepth3.
+        /// </summary>
+        internal static string BlockDepth3 {
+            get {
+                return ResourceManager.GetString("BlockDepth3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BlockHeight1.
         /// </summary>
         internal static string BlockHeight1 {
@@ -529,6 +556,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PunctureMaxAreamm2.
+        /// </summary>
+        internal static string PunctureMaxAreamm2 {
+            get {
+                return ResourceManager.GetString("PunctureMaxAreamm2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to RaisedBoardMaximumHeight.
         /// </summary>
         internal static string RaisedBoardMaximumHeight {
@@ -543,6 +579,24 @@ namespace PalletCheck {
         internal static string RaisedBoardMaximumWidth {
             get {
                 return ResourceManager.GetString("RaisedBoardMaximumWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RaisedNailDL_EndX.
+        /// </summary>
+        internal static string RaisedNailDL_EndX {
+            get {
+                return ResourceManager.GetString("RaisedNailDL_EndX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RaisedNailDL_StartX.
+        /// </summary>
+        internal static string RaisedNailDL_StartX {
+            get {
+                return ResourceManager.GetString("RaisedNailDL_StartX", resourceCulture);
             }
         }
         
@@ -619,6 +673,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SplitDL_EndX.
+        /// </summary>
+        internal static string SplitDL_EndX {
+            get {
+                return ResourceManager.GetString("SplitDL_EndX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SplitDL_ScaleY_Leading.
         /// </summary>
         internal static string SplitDL_ScaleY_Leading {
@@ -633,6 +696,15 @@ namespace PalletCheck {
         internal static string SplitDL_ScaleY_Trailing {
             get {
                 return ResourceManager.GetString("SplitDL_ScaleY_Trailing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SplitDL_StartX.
+        /// </summary>
+        internal static string SplitDL_StartX {
+            get {
+                return ResourceManager.GetString("SplitDL_StartX", resourceCulture);
             }
         }
         
