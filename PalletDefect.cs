@@ -157,7 +157,6 @@ namespace PalletCheck
                 case "BPFP": return "Blocks Protruding From Pallet";    
                 case "SNP": return "Maximum Nails Protruding from Side";          
                 case "MBMW": return "Maximum Linear Support Board Missing Wood in %";
-                case "FC": return "Fork Clearance";
                 case "MWAOP": return "Missing Wood Width at One Point";    //Added by HUB
                 case "UHB": return "Unsecured Horizontal Block";         //Added by HUB
                 case "PU": return "Puncture";                                 //Added by HUB
