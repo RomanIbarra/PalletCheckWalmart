@@ -94,6 +94,8 @@ namespace PalletCheck
                 double[] missingChunks = env.GetDouble("OutputMissChunk");
                 double[] RotateResult = env.GetDouble("OutputAngle");
                 double[] blockHeight = env.GetDouble("OutputHeights");
+                double[] sortedHeights = env.GetDouble("OutputSortedHeights");
+                int[] sortedHeightsLen = env.GetInteger("OutputSortedHeightsLen");
                 double XResolutin = env.GetDouble("M_XResolution", 0);
                 double YResolutin = env.GetDouble("M_YResolution", 0);
                 int[] LeftClearancePct = env.GetInteger("ClearanceLeftPctInt");
@@ -103,6 +105,11 @@ namespace PalletCheck
                 int[] middleBoardHasBlobs = env.GetInteger("MiddleBoardHasBlobs");
                 bool isFail = false;
                 System.Windows.Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
+
+                //Take only peak values for block protruding
+                blockHeight[0] = sortedHeights[0];
+                blockHeight[1] = sortedHeights[sortedHeightsLen[0]];
+                blockHeight[2] = sortedHeights[sortedHeightsLen[0] + sortedHeightsLen[1]];
 
                 //To extract Dataset 
                 float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
@@ -168,13 +175,8 @@ namespace PalletCheck
                             isFail = true;     
                         }
 
-                        if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * ((100 - MissingBlockAllowedPercentage) / 100) || blockHeight[i] > BlockProtrudingfromPalletMaximum)
-                        {
-                            /*if (blockHeight[i] < -MissingChunkThreshold)
-                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round((blockHeight[i]), 2) + "mm < -" + MissingChunkThreshold + "mm"); }
-                            if (blockHeight[i] > MissingChunkThreshold)
-                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }*/
-
+                        if (blockHeight[i] > BlockProtrudingfromPalletMaximum)
+                        {                        
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + BlockProtrudingfromPalletMaximum + "mm");
                             viewer.DrawRoi("OutputRegions", i, red, 100);
                             isFail = true;
@@ -182,7 +184,15 @@ namespace PalletCheck
                      
                         env.SetText("MyText", textArray , xArray, yArray, sizeArray);
 
-                        // Excessive Angl Inspection commented out cause it's not a requirement
+                        //Previous evaluation of Missing chunks on blocks (not required) and block protruding (average measure)
+                        /*if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * ((100 - MissingBlockAllowedPercentage) / 100) || blockHeight[i] > BlockProtrudingfromPalletMaximum)
+                        {
+                            /*if (blockHeight[i] < -MissingChunkThreshold)
+                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round((blockHeight[i]), 2) + "mm < -" + MissingChunkThreshold + "mm"); }
+                            if (blockHeight[i] > MissingChunkThreshold)
+                        }*/
+
+                        // Excessive Angle Inspection commented out cause it's not a requirement
                         /*if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
                         {
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.excessive_angle, "Twisted Blocks Angle: " + Math.Abs(RotateResult[i]).ToString() +  "° > " + AngleThresholdDegree.ToString() +"°");
@@ -194,7 +204,7 @@ namespace PalletCheck
                         {
                             viewer.DrawText("MyText", green);
                         }*/
-                  
+
                         lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
@@ -330,6 +340,8 @@ namespace PalletCheck
                 double[] missingChunks = env.GetDouble("OutputMissChunk");
                 double[] RotateResult = env.GetDouble("OutputAngle");
                 double[] blockHeight = env.GetDouble("OutputHeights");
+                double[] sortedHeights = env.GetDouble("OutputSortedHeights");
+                int[] sortedHeightsLen = env.GetInteger("OutputSortedHeightsLen");
                 double XResolutin = env.GetDouble("M_XResolution", 0);
                 double YResolutin = env.GetDouble("M_YResolution", 0);
                 int[] LeftClearancePct = env.GetInteger("ClearanceLeftPctInt");
@@ -339,6 +351,11 @@ namespace PalletCheck
                 int[] middleBoardHasBlobs = env.GetInteger("MiddleBoardHasBlobs");
                 bool isFail = false;
                 System.Windows.Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
+
+                //Take only peak values for block protruding
+                blockHeight[0] = sortedHeights[0];
+                blockHeight[1] = sortedHeights[sortedHeightsLen[0]];
+                blockHeight[2] = sortedHeights[sortedHeightsLen[0] + sortedHeightsLen[1]];
 
                 //To extract Dataset 
                 float[] floatArray = env.GetImageBuffer("FilteredImage")._range;
@@ -410,32 +427,14 @@ namespace PalletCheck
                             isFail = true;
                         }
 
-                        if (missingChunks[i] < (BlockWidth[i] / XResolutin) * (BlockHeight[i] / YResolutin) * ((100 - MissingBlockAllowedPercentage) / 100) || blockHeight[i] > BlockProtrudingfromPalletMaximum)
+                        if (blockHeight[i] > BlockProtrudingfromPalletMaximum)
                         {
-                            /*if (blockHeight[i] < -MissingChunkThreshold)
-                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_chunks, "Missing Chunks: Average Height " + Math.Round((blockHeight[i]), 2) + "mm < -" + MissingChunkThreshold + "mm"); }
-                            if (blockHeight[i] > MissingChunkThreshold)
-                            { P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + MissingChunkThreshold + "mm"); }*/
-
                             P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + BlockProtrudingfromPalletMaximum + "mm");
                             viewer.DrawRoi("OutputRegions", i, red, 100);
                             isFail = true;
                         }
 
                         env.SetText("MyText", textArray, xArray, yArray, sizeArray);
-
-                        // Excessive Angl Inspection commented out cause it's not a requirement
-                        /*if (Math.Abs(RotateResult[i]) > AngleThresholdDegree)
-                        {
-                            P.AddDefect(P.BList[i], PalletDefect.DefectType.excessive_angle, "Twisted Blocks Angle: " + Math.Abs(RotateResult[i]).ToString() + "° > " + AngleThresholdDegree.ToString() + "°");
-                            viewer.DrawText("MyText", red);
-                            isFail = true;
-                        }
-
-                        else
-                        {
-                            viewer.DrawText("MyText", green);
-                        }*/
 
                         lock (LockObjectCombine)
                         {

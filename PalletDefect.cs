@@ -193,55 +193,6 @@ namespace PalletCheck
             return list;
         }
 
-        public enum DefectsCSV
-        {
-            T_MWA = 1,      // Top Missing Wood Across Lenght
-            T_RN = 2,       // Top Raised Nail              
-            T_BW = 3,       // Top Broken Across Width
-            T_MW = 4,       // Top Missing Wood
-            T_BN = 5,       // Top Board too Narrow
-            T_PD = 6,       // Top Possbile Debris
-            T_SH = 7,       // Top Board too Short
-            T_MB = 8,       // Top Missing Board
-            T_ER = 9,       // Top Segmentation Error
-            T_RNFC = 10,    // Top Raised Nail Fastener Cut off
-            B_RN = 11,      // Bottom Raised Nail
-            B_BW = 12,      // Bottom Borken Across Width 
-            B_MW = 13,      // Bottom Missing Wood
-            B_BN = 14,      // Bottom Board too Narrow
-            B_PD = 15,      // Bottom Possible Debris
-            B_SH = 16,      // Bottom Board too Short
-            B_MB = 17,      // Bottom Missing Board
-            B_ER = 18,      // Bottom Segmentation Error
-            B_RNFC = 19,    // Bottom Raised Nail Fastener Cut off
-            L_SNP = 20,     // Left Side Nail Protruding
-            L_MO = 21,      // Left Missing Block
-            L_MU = 22,      // Left Missing Chunk
-            L_EA = 23,      // Left Excesive Angle (Rotated Block)
-            L_MW = 24,      // Left Missing Wood
-            L_BPFP = 25,    // Left Block Protruding from Pallet
-            L_FC = 26,      // Left Fork Clearance
-            R_SNP = 27,     // Right Side Nail Protruding
-            R_MO = 28,      // Right Missing Block
-            R_MU = 29,      // Right Missing Chunk
-            R_EA = 30,      // Right Excesive Angle (Rotated Block)
-            R_MW = 31,      // Right Missing Wood
-            R_BPFP = 32,    // Right Block Protruding from Pallet
-            R_FC = 33,      // Right Fork Clearance
-            F_SNP = 34,     // Front Side Nail Protruding
-            F_EA = 35,      // Front Excessive Angle (Rotated Block)
-            F_BPFP = 36,    // Front Block Protruding  from Pallet
-            F_MO = 37,      // Front Missing Block
-            F_MU = 38,      // Front Missing Chunks
-            F_FC = 39,      // Front Fork Clearance
-            B_SNP = 40,     // Back Side Nail Protruding
-            B_EA = 41,      // Back Excessive Angle (Rotated Block)
-            B_BPFP = 42,    // Back Block Protruding  from Pallet
-            B_MO = 43,      // Back Missing Block
-            B_MU = 44,      // Back Missing Chunks
-            B_FC = 45,      // Back Fork Clearance
-        }
-
         public enum DefectsCSV_Phase1A
         {
             T_MWA = 1,      // Top Missing Wood Across Lenght
