@@ -38,7 +38,7 @@ namespace PalletCheck.Controls
         int COUNT = 0;
         Point PanPoint;
         Point PanXPoint;
-        ParamStorage paramStorageCapture = new ParamStorage();
+        ParamStorage paramStorageCapture = new ParamStorage("");
 
         bool RedrawBuffer;
 

@@ -196,7 +196,7 @@
     <value>TopH{0}BoardWidth_in</value>
   </data>
   <data name="HBoardLength_in" xml:space="preserve">
-    <value>HBoardLength{0}_in</value>
+    <value>HBoardLength_in</value>
   </data>
   <data name="Rotate90" xml:space="preserve">
     <value>Rotate90</value>
@@ -298,7 +298,7 @@
     <value>CameraEnabled</value>
   </data>
   <data name="H9BoardMinimumWidthAcrossLength" xml:space="preserve">
-    <value>H9BoardMinimumWidthAcrossLength{0}</value>
+    <value>H9BoardMinimumWidthAcrossLength</value>
   </data>
   <data name="CameraCount" xml:space="preserve">
     <value>CameraCount</value>
@@ -367,13 +367,13 @@
     <value>LinearSupportBoardMissingWoodPercentageMaximum</value>
   </data>
   <data name="HXMissingChunkMaximumWidth" xml:space="preserve">
-    <value>H{0}MissingChunkMaximumWidth{1}</value>
+    <value>H{0}MissingChunkMaximumWidth</value>
   </data>
   <data name="HXMissingChunkMaximumLength" xml:space="preserve">
-    <value>H{0}MissingChunkMaximumLength{1}</value>
+    <value>H{0}MissingChunkMaximumLength</value>
   </data>
   <data name="HXMaxAllowedMissingWood" xml:space="preserve">
-    <value>H{0}MaxAllowedMissingWood{1}</value>
+    <value>H{0}MaxAllowedMissingWood</value>
   </data>
   <data name="BlockProtrudingfromPalletMaximum" xml:space="preserve">
     <value>BlockProtrudingfromPalletMaximum</value>

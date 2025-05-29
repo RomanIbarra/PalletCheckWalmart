@@ -36,7 +36,8 @@ namespace PalletCheck
         Left = 2,
         Right=3,
         Front = 4,
-        Back = 5
+        Back = 5,
+        TopInternational = 6
     }
 
     public enum InspectionResult
@@ -53,13 +54,14 @@ namespace PalletCheck
         public bool RecordModeEnabled { get; private set; }
         public string RecordDir = "";
         public static MainWindow Instance { get; private set; }
-        public static ParamStorage ParamStorageGeneral { get; set; } = new ParamStorage();
-        public static ParamStorage ParamStorageTop { get; set; } = new ParamStorage();
-        public static ParamStorage ParamStorageBottom { get; set; } = new ParamStorage();
-        public static ParamStorage ParamStorageLeft { get; set; } = new ParamStorage();
-        public static ParamStorage ParamStorageRight { get; set; } = new ParamStorage();
-        public static ParamStorage ParamStorageFront { get; set; } = new ParamStorage();
-        public static ParamStorage ParamStorageBack { get; set; } = new ParamStorage();
+        public static ParamStorage ParamStorageGeneral { get; set; } = new ParamStorage("StorageGeneral");
+        public static ParamStorage ParamStorageTop { get; set; } = new ParamStorage("Top");
+        public static ParamStorage ParamStorageTopInternational { get; set; } = new ParamStorage("TopInternational");
+        public static ParamStorage ParamStorageBottom { get; set; } = new ParamStorage("Bottom");
+        public static ParamStorage ParamStorageLeft { get; set; } = new ParamStorage("Left");
+        public static ParamStorage ParamStorageRight { get; set; } = new ParamStorage("Right");
+        public static ParamStorage ParamStorageFront { get; set; } = new ParamStorage("Front");
+        public static ParamStorage ParamStorageBack { get; set; } = new ParamStorage("Back");
 
         string _FilenameDateTime { get; set; }
         string _DirectoryDateHour { get; set; }
@@ -70,7 +72,7 @@ namespace PalletCheck
         /*Dataset Extraction*/
         public static bool enableDatasetExtraction = false;
         public static int cntr=0;
-        public static int SelectPositionForExtraction = 0; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
+        public static int SelectPositionForExtraction = 1; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
 
         /*Is resize is needed for inference or for sabing images use:  EX. Bitmap resizedImage = model.ResizeBitmap(bitmapClassifier, 512, 512);*/
 
@@ -117,6 +119,8 @@ namespace PalletCheck
                     return ParamStorageFront;
                 case PositionOfPallet.Back:
                     return ParamStorageBack;
+                case PositionOfPallet.TopInternational:
+                    return ParamStorageTopInternational;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), "Unknown position");
             }
@@ -481,6 +485,8 @@ namespace PalletCheck
                     return ParamStorageFront;
                 case PositionOfPallet.Back:
                     return ParamStorageBack;
+                case PositionOfPallet.TopInternational:
+                    return ParamStorageTopInternational;
                 default:
                     throw new ArgumentException("Invalid position", nameof(position));
             }
@@ -1816,8 +1822,12 @@ namespace PalletCheck
             {
                 string szTime = DateTime.Now.ToString("yyyyMMdd");
                 string path = RecordingRootDir + "\\" + szTime + ".csv";
-                string[] reportHeader = Enum.GetNames(typeof(DefectReport));
-                
+                string[] reportHeader = Enum.GetNames(typeof(DefectReport))
+                            .Select(PalletDefect.CodeToName)
+                            .ToArray();
+                reportHeader[0] = "Name";
+                reportHeader[1] = "Result";
+
                 //string strNewHeader = null;
                 //for (int i = 0; i < csvReportHeader.Length; i++) { strNewHeader += csvReportHeader[i] + ","; }
 
@@ -2058,27 +2068,23 @@ namespace PalletCheck
             switch (clickedButton.Name)
             {
                 case "btnSetting_Top":
-                    selectedParamStorage = ParamStorageTop;
+                    selectedParamStorage = PalletClassifier == 0 ? ParamStorageTopInternational : ParamStorageTop;
                     position = "Top";
-                    LastUsedParamName = "LastUsedParamFileTop.txt";
                     break;
 
                 case "btnSetting_Bottom":
                     selectedParamStorage = ParamStorageBottom;
                     position = "Bottom";
-                    LastUsedParamName = "LastUsedParamFileBottom.txt";
                     break;
 
                 case "btnSetting_Left":
                     selectedParamStorage = ParamStorageLeft;
                     position = "Left";
-                    LastUsedParamName = "LastUsedParamFileLeft.txt";
                     break;
 
                 case "btnSetting_Right":
                     selectedParamStorage = ParamStorageRight;
                     position = "Right";
-                    LastUsedParamName = "LastUsedParamFileRight.txt";
                     break;
 
                 case "btnSetting_Front":

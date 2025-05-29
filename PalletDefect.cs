@@ -25,7 +25,6 @@ namespace PalletCheck
             missing_chunks, //Added by Jack
             excessive_angle, //Added by Jack
             clearance,
-            raised_nail_fastener_cutoff,     //added by HUB
             missing_wood_width_across_length,//added by HUB
             missing_wood_width_at_one_point, //added by HUB
             blocks_protuded_from_pallet,     //added by HUB
@@ -114,19 +113,17 @@ namespace PalletCheck
                 case DefectType.raised_nail: return "RN";
                 case DefectType.missing_wood: return "MW";
                 case DefectType.broken_across_width: return "BW";
-                //case DefectType.too_many_cracks: return "CK";
                 case DefectType.board_too_narrow: return "BN";
                 case DefectType.raised_board: return "RB";
                 case DefectType.possible_debris: return "PD";
                 case DefectType.board_too_short: return "SH";
                 case DefectType.missing_board: return "MB";
                 case DefectType.board_segmentation_error: return "ER";
-                case DefectType.missing_blocks:return "MO";  //Added by Jack
+                case DefectType.missing_blocks:return "MO";
                 case DefectType.missing_chunks:return "MU";
                 case DefectType.excessive_angle:return "EA";
                 case DefectType.clearance: return "FC";
-                case DefectType.missing_wood_width_across_length: return "MWA";       //Added by HUB 
-                case DefectType.raised_nail_fastener_cutoff: return "RNFC";          //Added by HUB
+                case DefectType.missing_wood_width_across_length: return "MWA";       //Added by HUB               
                 case DefectType.blocks_protuded_from_pallet: return "BPFP";         //Added by HUB 
                 case DefectType.side_nails_protruding: return "SNP";               //Added by HUB 
                 case DefectType.middle_board_missing_wood: return "MWMW";               //Added by HUB 
@@ -144,7 +141,7 @@ namespace PalletCheck
             {
                 case "ND": return "None";
                 case "RN": return "Raised Nail";
-                case "MW": return "Missing Wood";
+                case "MW": return "Maximum Missing Wood in %";
                 case "BW": return "Broken Across Width";
                 case "BN": return "Board Too Narrow";
                 case "RB": return "Raised Board";
@@ -152,16 +149,16 @@ namespace PalletCheck
                 case "SH": return "Board Too Short";
                 case "MB": return "Missing Board";
                 case "ER": return "Segmentation Error";
-                case "MO": return "Missing Blocks";
-                case "MU": return "Missing Chunks";
+                case "MO": return "Maximum Missing Blocks in %";
+                case "MU": return "Maximum Missing Chunks";
                 case "EA": return "Excessive Angle";
+                case "FC": return "Minimum Fork Clearance in %";
+                case "MWA": return "Minimum Width Across Length";          
+                case "BPFP": return "Blocks Protruding From Pallet";    
+                case "SNP": return "Maximum Nails Protruding from Side";          
+                case "MBMW": return "Maximum Linear Support Board Missing Wood in %";
                 case "FC": return "Fork Clearance";
-                case "MWA": return "Missing Wood Width Across Length";         //Added by HUB 
-                case "RNFC": return "Raised Nail Fastener Cutoff";            //Added by HUB 
-                case "BPFP": return "Blocks Protruding From Pallet";         //Added by HUB 
-                case "SNP":  return "Side Nails Protruding";                //Added by HUB 
-                case "MWMW": return "Middle Board Missing Wood";           //Added by HUB 
-                case "MWAOP": return "Missing Wood With at One Point";    //Added by HUB
+                case "MWAOP": return "Missing Wood Width at One Point";    //Added by HUB
                 case "UHB": return "Unsecured Horizontal Block";         //Added by HUB
                 case "PU": return "Puncture";                                 //Added by HUB
                 default: return "?";
@@ -176,18 +173,16 @@ namespace PalletCheck
                 case DefectType.raised_nail: return "Raised Nail";
                 case DefectType.missing_wood: return "Missing Wood";
                 case DefectType.broken_across_width: return "Broken Across Width";
-                //case DefectType.too_many_cracks: return "Too Many Cracks";
                 case DefectType.board_too_narrow: return "Board Too Narrow";
                 case DefectType.raised_board: return "Raised Board";
                 case DefectType.possible_debris: return "Possible Debris";
                 case DefectType.board_too_short: return "Board Too Short";
                 case DefectType.missing_board: return "Missing Board";
                 case DefectType.board_segmentation_error: return "Segmentation Error";
-                case DefectType.missing_blocks: return "Missing Blocks";  //Jack Added
-                case DefectType.missing_chunks: return "Missing Chunks";  //Jack Added
-                case DefectType.excessive_angle: return "Excessive Angle"; //Jack Added
+                case DefectType.missing_blocks: return "Missing Blocks";
+                case DefectType.missing_chunks: return "Missing Chunks";
+                case DefectType.excessive_angle: return "Excessive Angle";
                 case DefectType.missing_wood_width_across_length: return "Missing Wood Width Across Length";  //Added by HUB 
-                case DefectType.raised_nail_fastener_cutoff: return "Raised Nail Fastener Cutoff";           //Added by HUB
                 case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
                 case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB
                 case DefectType.clearance: return "Fork Clearance";                                        //added by HUB
@@ -209,64 +204,6 @@ namespace PalletCheck
         {
             string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU" };//Last 4 added by HUB
             return list;
-        }
-
-        public enum DefectsCSV
-        {
-            T_MWA = 1,      // Top Missing Wood Across Lenght
-            T_RN = 2,       // Top Raised Nail              
-            T_BW = 3,       // Top Broken Across Width
-            T_MW = 4,       // Top Missing Wood
-            T_BN = 5,       // Top Board too Narrow
-            T_PD = 6,       // Top Possbile Debris
-            T_SH = 7,       // Top Board too Short
-            T_MB = 8,       // Top Missing Board
-            T_ER = 9,       // Top Segmentation Error
-            T_RNFC = 10,    // Top Raised Nail Fastener Cut off
-            B_RN = 11,      // Bottom Raised Nail
-            B_BW = 12,      // Bottom Borken Across Width 
-            B_MW = 13,      // Bottom Missing Wood
-            B_BN = 14,      // Bottom Board too Narrow
-            B_PD = 15,      // Bottom Possible Debris
-            B_SH = 16,      // Bottom Board too Short
-            B_MB = 17,      // Bottom Missing Board
-            B_ER = 18,      // Bottom Segmentation Error
-            B_RNFC = 19,    // Bottom Raised Nail Fastener Cut off
-            L_SNP = 20,     // Left Side Nail Protruding
-            L_MO = 21,      // Left Missing Block
-            L_MU = 22,      // Left Missing Chunk
-            L_EA = 23,      // Left Excesive Angle (Rotated Block)
-            L_MW = 24,      // Left Missing Wood
-            L_BPFP = 25,    // Left Block Protruding from Pallet
-            L_FC = 26,      // Left Fork Clearance
-            R_SNP = 27,     // Right Side Nail Protruding
-            R_MO = 28,      // Right Missing Block
-            R_MU = 29,      // Right Missing Chunk
-            R_EA = 30,      // Right Excesive Angle (Rotated Block)
-            R_MW = 31,      // Right Missing Wood
-            R_BPFP = 32,    // Right Block Protruding from Pallet
-            R_FC = 33,      // Right Fork Clearance
-            F_SNP = 34,     // Front Side Nail Protruding
-            F_EA = 35,      // Front Excessive Angle (Rotated Block)
-            F_BPFP = 36,    // Front Block Protruding  from Pallet
-            F_MO = 37,      // Front Missing Block
-            F_MU = 38,      // Front Missing Chunks
-            F_FC = 39,      // Front Fork Clearance
-            B_SNP = 40,     // Back Side Nail Protruding
-            B_EA = 41,      // Back Excessive Angle (Rotated Block)
-            B_BPFP = 42,    // Back Block Protruding  from Pallet
-            B_MO = 43,      // Back Missing Block
-            B_MU = 44,      // Back Missing Chunks
-            B_FC = 45,      // Back Fork Clearance
-            B_MP = 46,      // Bottom Missing Wood Width at One Point
-            L_UB = 47,     // Left Unsecured Horizontal Block
-            R_UB = 48,     // Right Unsecured Horizontal Block
-            F_UB = 49,     // Front Unsecured Horizontal Block
-            B_UB = 50,      // Back Unsecured Horizontal Block
-            T_MWAOP = 51, // Top Missing Wood Width at One Point
-            B_MWAOP = 52, // Bottom Missing Wood Width at One Point
-            T_PU = 53,     // Top Puncture
-            B_PU = 54,     // Bottom Puncture
         }
 
         public enum DefectsCSV_Phase1A
@@ -298,28 +235,21 @@ namespace PalletCheck
 
         }
 
-        public enum DefectReport
+        public enum DefectReport //Still need to add new defects
         {
             Name = 0,
             Result = 1,
-            BN = 2,
-            BW = 3,
-            ER = 4,
-            MB = 5,
-            MW = 6,
-            MWA = 7,
-            PD = 8,
-            RN = 9,
-            RNFC = 10,
-            SH = 11,
-            BPFP = 12,
-            FC = 13,
-            MO = 14,
-            MU = 15,
-            MBMW = 16,
-            SNP = 17
-
-
+            BW = 2,
+            MW = 3,
+            MU = 4,
+            MWA = 5,    
+            RN = 6,
+            SNP = 7,
+            BPFP = 8,
+            MO = 9,
+            FC = 10,        
+            MBMW = 11,
+            PD = 12
         }
     }
 }
