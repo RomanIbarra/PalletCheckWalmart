@@ -11,6 +11,11 @@ using static PalletCheck.Pallet;
 using GDII = System.Drawing.Imaging;
 using System.Drawing;
 using Path = System.IO.Path;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using Sick.StreamUI.FrameSave.Ply;
+using System.Xml.Linq;
+using Sick.EasyRanger.Controls.Converter;
 
 namespace PalletCheck
 {
@@ -155,7 +160,50 @@ namespace PalletCheck
                             }
                         }
                     }
-                                  
+                    /*  Variables for Unsecured Horizontal Block  */
+
+
+                    //double[] BlobCentroidsB1 = env.GetDouble("CentroidsB1");
+                    System.Windows.Point[] BlobCentroidsB1Point = env.GetPoint2D("CentroidsB1");
+                    System.Windows.Point[] BlobCentroidsB2Point = env.GetPoint2D("CentroidsB2");
+                    System.Windows.Point[] BlobCentroidsB3Point = env.GetPoint2D("CentroidsB3");
+                    /*double[] BlobCentroidsB2 = env.GetDouble("CentroidsB2");
+                    double[] BlobCentroidsB3 = env.GetDouble("CentroidsB3");
+                    BlobCentroidsB1.GetLength(0);
+                    */
+
+                    /*  Variables needed for missing volume  feature */
+                    int[] ExpectedDepth = new int[3];//mm2
+                    float[] ExpectedSurface = new float[3];
+                    float[] ExpectedVolume = new float[3];
+
+                    ExpectedSurface[0] = paramStorage.GetInt(StringsLocalization.BlockWidth1) * paramStorage.GetInt(StringsLocalization.BlockHeight1);
+                    ExpectedSurface[1] = paramStorage.GetInt(StringsLocalization.BlockWidth2) * paramStorage.GetInt(StringsLocalization.BlockHeight2);
+                    ExpectedSurface[2] = paramStorage.GetInt(StringsLocalization.BlockWidth3) * paramStorage.GetInt(StringsLocalization.BlockHeight3);
+                    ExpectedDepth[0]   = paramStorage.GetInt(StringsLocalization.BlockDepth1);
+                    ExpectedDepth[1]   = paramStorage.GetInt(StringsLocalization.BlockDepth2);
+                    ExpectedDepth[2]   = paramStorage.GetInt(StringsLocalization.BlockDepth3);
+                    ExpectedVolume[0]  = ExpectedSurface[0]* paramStorage.GetFloat(StringsLocalization.BlockDepth1);
+                    ExpectedVolume[1]  = ExpectedSurface[1] * paramStorage.GetFloat(StringsLocalization.BlockDepth2);
+                    ExpectedVolume[2]  = ExpectedSurface[2] * paramStorage.GetFloat(StringsLocalization.BlockDepth3);
+
+                    double XResolution = env.GetDouble("M_XResolution", 0);
+                    double YResolution = env.GetDouble("M_YResolution", 0);
+                    float customXResolution = paramStorage.GetPixX(StringsLocalization.MMPerPixelX);
+                    float customYResolution = paramStorage.GetPixY(StringsLocalization.MMPerPixelY);
+                    float Xres = 0;
+                    float Yres = 0;
+                    if (customXResolution == 0) { Xres = (float)env.GetDouble("M_XResolution", 0); }
+                         else { Xres = customXResolution; }
+                    if (customYResolution == 0) { Yres = (float)env.GetDouble("M_YResolution", 0); }
+                         else { Yres = customYResolution; }
+
+                    
+
+                    
+
+
+
                     for (int i = 0; i < 3; i++)
                     {
                         string[] textArray = new string[] {Math.Abs (RotateResult[i]).ToString() + "°" };
@@ -165,7 +213,87 @@ namespace PalletCheck
 
                         if (missingBlocks[i] == 1)
                         {
-                            viewer.DrawRoi("OutputRegions", i, green, 50);
+
+
+                            /*  Missing volume feature:
+                             *  Description: this segment of code evaluates the volume of each existent block and compares 
+                             *  it against (expected volume * percentage parameter), if missing volume is greater than the 
+                             *  expected volume, it will mark the defect
+                             *  
+                             
+                             
+                             */
+                            double ExpectedSurfacemm2 = ExpectedSurface[i];
+                            double ExpectedVolumemm3 = ExpectedVolume[i];
+                            int Depthmm = ExpectedDepth[i];
+                            double MissingROIVolumemm3 = env.GetDouble("Volume", i);
+                            ulong ROISurfacepp2;
+                            env.GetRoiArea("OutputRegions", i, out ROISurfacepp2);
+                            double ROISurfacemm2= ROISurfacepp2*Xres*Yres;
+                            double ComplementarySurface= ExpectedSurfacemm2 - ROISurfacemm2;
+                            double TotalMissingVolume =((MissingROIVolumemm3 + (ComplementarySurface * Depthmm*-1)))*-1;
+                            double minimumExpectedVolume=((100- MissingBlockAllowedPercentage)/100)* ExpectedVolumemm3;
+
+                            if ((TotalMissingVolume) > minimumExpectedVolume)
+                            {
+                                P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_blocks, "Missing block volume: " + Math.Round((TotalMissingVolume), 2) + "mm³ > " + Math.Round(minimumExpectedVolume, 2) + "mm³(minimum expected volume)");
+                                viewer.DrawRoi("OutputRegions", i, red, 128);
+                                isFail = true;
+
+                            }
+                            else {
+
+                                
+
+
+
+
+                                viewer.DrawRoi("OutputRegions", i, green, 50);
+                                if (i == 0)
+                                {
+
+                                    
+                                    if (BlobCentroidsB1Point.Length > 1)
+                                    {
+                                        if (Math.Abs(BlobCentroidsB1Point[0].Y - BlobCentroidsB1Point[1].Y) > 40)
+                                        {
+                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.unsecured_horizontal_block, "Unsecured Horizontal Block");
+                                            viewer.DrawRoi("OutputRegions", i, red, 128);
+                                            isFail = true;
+                                        }
+                                    }
+                                }
+                                if (i == 1)
+                                {
+                                    if (BlobCentroidsB2Point.Length > 1)
+                                    {
+                                        if (Math.Abs(BlobCentroidsB2Point[0].Y - BlobCentroidsB2Point[1].Y) > 40)
+                                        {
+                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.unsecured_horizontal_block, "Unsecured Horizontal Block");
+                                            viewer.DrawRoi("OutputRegions", i, red, 128);
+                                            isFail = true;
+                                        }
+                                    }
+                                }
+                                if (i == 2)
+                                {
+                                    if (BlobCentroidsB3Point.Length > 1)
+                                    {
+                                        if (Math.Abs(BlobCentroidsB3Point[0].Y - BlobCentroidsB3Point[1].Y) > 40)
+                                        {
+                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.unsecured_horizontal_block, "Unsecured Horizontal Block");
+                                            viewer.DrawRoi("OutputRegions", i, red, 128);
+                                            isFail = true;
+                                        }
+                                    }
+                                }
+
+
+
+
+
+
+                            }
                         }
 
                         else
