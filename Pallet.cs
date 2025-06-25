@@ -1602,16 +1602,19 @@ namespace PalletCheck
 
                 //Find Raised Board for top
                 if (position == PositionOfPallet.Top) {
-                 FindRaisedBoard(B, paramStorage);}
+                 FindRaisedBoard(B, paramStorage);
+                    //Check for missing wood less than 1/2 its width at one point of the board 
+                    CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth / 2), (float)(B.ExpLength * 0.1), false, true);
+
+                }
                 //Calculate missing wood
-                //CalculateMissingWood(B, paramStorage);
+                CalculateMissingWood(B, paramStorage);
                 //Find cracks and breaks and look for break across the width
                 FindCracks(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
                 //Check for missing wood across the length of the board
                 CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
-                //Check for missing wood less than 1/2 its width at one point of the board 
-                //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
+
                 //Check for puncture in or between boards
                 IsCrackAClosedShape(B, paramStorage);
                 //Check for RaisedNails 
@@ -2408,6 +2411,7 @@ namespace PalletCheck
 
             foreach (var entry in crackPoints)
             {
+
                 int cid = entry.Key;
                 List<System.Windows.Point> points = entry.Value;
 
@@ -4312,7 +4316,34 @@ namespace PalletCheck
                 SetDefectMarker(BList[1].BoundsP1.X + 50, BList[1].BoundsP2.Y + 50, BList[2].BoundsP2.X - 50, BList[2].BoundsP1.Y - 50);
             }
         }
+        void SaveCrackContoursImage(Dictionary<int, List<System.Windows.Point>> crackPoints, int width, int height, string outputPath)
+        {
+            using (Bitmap bitmap = new Bitmap(width, height))
+            {
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    g.Clear(Color.Black); // Fondo negro
 
+                    Random rnd = new Random();
+                    foreach (var entry in crackPoints)
+                    {
+                        Color color = Color.FromArgb(rnd.Next(100, 255), rnd.Next(100, 255), rnd.Next(100, 255));
+
+                        foreach (var point in entry.Value)
+                        {
+                            int x = (int)point.X;
+                            int y = (int)point.Y;
+
+                            // Dibuja un píxel de color en la ubicación de la grieta
+                            bitmap.SetPixel(x, y, color);
+                        }
+                    }
+                }
+
+                // Guardar como PNG
+                bitmap.Save(outputPath, ImageFormat.Png);
+            }
+        }
         private CaptureBuffer DeNoise(CaptureBuffer SourceCB, ParamStorage paramStorage)
         {
             UInt16[] Source = SourceCB.Buf;
