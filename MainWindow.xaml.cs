@@ -70,6 +70,7 @@ namespace PalletCheck
         string[] cameraNames = { "T", "B1", "B2", "B3", "L", "R", "F", "B" };
 
         /*Dataset Extraction*/
+        public static String xmlName = "";
         public static bool enableDatasetExtraction = false;
         public static int cntr=0;
         public static int SelectPositionForExtraction = 1; //0: Top, 1: Bottom, 2: Left, 3: Right, 4: Front, 5: Back, 6: Top Split boards, 7: Bottom Split boards
@@ -1285,8 +1286,10 @@ namespace PalletCheck
 
             string selectedFile = OFD.FileName;
             string directory = System.IO.Path.GetDirectoryName(selectedFile);
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);           
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);
+            
             string baseName = fileName.Substring(0, fileName.LastIndexOf('_') + 1);
+            xmlName = baseName;
             UpdateTextBlock(ModeStatus, "Loading: " + fileName.Substring(0, fileName.LastIndexOf('_')));
             _FilenameDateTime = fileName.Substring(0, fileName.LastIndexOf('_'));
             Pallet.folderName = Directory.GetParent(selectedFile).Name;

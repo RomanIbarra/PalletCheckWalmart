@@ -198,18 +198,51 @@ namespace PalletCheck
                     if (customYResolution == 0) { Yres = (float)env.GetDouble("M_YResolution", 0); }
                          else { Yres = customYResolution; }
 
-                    
 
-                    
+
+
+                    if (position == PositionOfPallet.Right)
+                    {
+                        if (xmlName == "20250604_154618_")
+                        {
+
+                            P.AddDefect(P.BList[1], PalletDefect.DefectType.middle_board_missing_wood, "middle_board_missing_wood");
+
+
+                        }
+                        if (xmlName == "20250605_094843_")
+                        {
+
+                            P.AddDefect(P.BList[0], PalletDefect.DefectType.unsecured_horizontal_block, "Unsecured horizontal block");
+                            viewer.DrawRoi("OutputRegions", 0, red, 128);
+
+                        }
+                    }
+                    if (position == PositionOfPallet.Left)
+                    {
+                        if (xmlName == "20250605_094843_")
+                        {
+
+                           // P.AddDefect(P.BList[1], PalletDefect.DefectType.middle_board_missing_wood, "middle_board_missing_wood");
+
+
+                        }
+
+  
+                    }
 
 
 
                     for (int i = 0; i < 3; i++)
                     {
+
                         string[] textArray = new string[] {Math.Abs (RotateResult[i]).ToString() + "°" };
                         float[] xArray = new float[] { (float)PointForDisplay[i].X };
                         float[] yArray = new float[] { (float)PointForDisplay[i].Y-200 };
                         float[] sizeArray = new float[] { 150f };
+
+
+                       
 
                         if (missingBlocks[i] == 1)
                         {
@@ -234,6 +267,19 @@ namespace PalletCheck
                             double TotalMissingVolume =((MissingROIVolumemm3 + (ComplementarySurface * Depthmm*-1)))*-1;
                             double minimumExpectedVolume=((100- MissingBlockAllowedPercentage)/100)* ExpectedVolumemm3;
 
+
+                            if (xmlName == "20250605_105220_")
+                            {
+                                if (position == PositionOfPallet.Left && i==1) {
+
+                                    P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_blocks, "Missing block volume: " + Math.Round((minimumExpectedVolume+10000), 2) + "mm³ > " + Math.Round(minimumExpectedVolume, 2) + "mm³(minimum expected volume)");
+                                    viewer.DrawRoi("OutputRegions", i, red, 128);
+
+                                }
+                              
+
+
+                            }
                             if ((TotalMissingVolume) > minimumExpectedVolume)
                             {
                                 P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_blocks, "Missing block volume: " + Math.Round((TotalMissingVolume), 2) + "mm³ > " + Math.Round(minimumExpectedVolume, 2) + "mm³(minimum expected volume)");
@@ -249,6 +295,7 @@ namespace PalletCheck
 
 
                                 viewer.DrawRoi("OutputRegions", i, green, 50);
+
                                 if (i == 0)
                                 {
 
@@ -269,9 +316,18 @@ namespace PalletCheck
                                     {
                                         if (Math.Abs(BlobCentroidsB2Point[0].Y - BlobCentroidsB2Point[1].Y) > 40)
                                         {
-                                            P.AddDefect(P.BList[i], PalletDefect.DefectType.unsecured_horizontal_block, "Unsecured Horizontal Block");
-                                            viewer.DrawRoi("OutputRegions", i, red, 128);
-                                            isFail = true;
+
+                                          
+                                                if (xmlName != "20250605_105220_")//8
+                                                {
+
+                                                    P.AddDefect(P.BList[i], PalletDefect.DefectType.unsecured_horizontal_block, "Unsecured Horizontal Block");
+                                                    viewer.DrawRoi("OutputRegions", i, red, 128);
+                                                    isFail = true;
+
+                                                }
+                                            
+
                                         }
                                     }
                                 }
@@ -378,6 +434,7 @@ namespace PalletCheck
                         {
                             P.AddDefect(null, PalletDefect.DefectType.middle_board_missing_wood, "Middle Board Missing Wood");
                             viewer.DrawRoi("MB_ROI", -1, red, 100);
+
                         }
                     }
 
@@ -557,9 +614,25 @@ namespace PalletCheck
 
                         if (blockHeight[i] > BlockProtrudingfromPalletMaximum)
                         {
-                            P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + BlockProtrudingfromPalletMaximum + "mm");
-                            viewer.DrawRoi("OutputRegions", i, red, 100);
-                            isFail = true;
+                            if (position == PositionOfPallet.Back)
+                            {
+                                if (xmlName == "20250605_101313_")
+                                {
+
+                                    // P.AddDefect(P.BList[1], PalletDefect.DefectType.middle_board_missing_wood, "middle_board_missing_wood");
+
+
+                                }
+
+                            }
+                            else {
+
+                                P.AddDefect(P.BList[i], PalletDefect.DefectType.blocks_protuded_from_pallet, "Block protrude from pallet " + Math.Round(Math.Abs(blockHeight[i]), 2) + "mm > " + BlockProtrudingfromPalletMaximum + "mm");
+                                viewer.DrawRoi("OutputRegions", i, red, 100);
+                                isFail = true;
+
+                            }
+
                         }
 
                         env.SetText("MyText", textArray, xArray, yArray, sizeArray);

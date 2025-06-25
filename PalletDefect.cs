@@ -31,7 +31,9 @@ namespace PalletCheck
             side_nails_protruding,           //added by HUB 
             middle_board_missing_wood,       //added by HUB
             unsecured_horizontal_block,      //added by HUB
-            puncture                        //Added by HUB
+            puncture,
+            buttedJoint//Added by HUB
+
         }
 
         public enum DefectLocation
@@ -130,6 +132,7 @@ namespace PalletCheck
                 case DefectType.missing_wood_width_at_one_point: return "MWAOP";         //Added by HUB
                 case DefectType.unsecured_horizontal_block: return "UHB";                //Added by HUB
                 case DefectType.puncture: return "PU";                                   //Added by HUB
+                case DefectType.buttedJoint: return "BJ";                                   //Added by HUB
 
                 default: return "?";
             }
@@ -160,6 +163,7 @@ namespace PalletCheck
                 case "MWAOP": return "Missing Wood Width at One Point";    //Added by HUB
                 case "UHB": return "Unsecured Horizontal Block";         //Added by HUB
                 case "PU": return "Puncture";                                 //Added by HUB
+                case "BJ": return "Butted Joint";                                 //Added by HUB
                 default: return "?";
             }
         }
@@ -189,19 +193,20 @@ namespace PalletCheck
                 case DefectType.missing_wood_width_at_one_point: return "Missing Wood With at One Point"; //Added by HUB
                 case DefectType.unsecured_horizontal_block: return "Unsecured Horizontal Block";         //Added by HUB
                 case DefectType.puncture: return "Puncture";                                               //Added by HUB
+                case DefectType.buttedJoint: return "Butted Joint";                                               //Added by HUB
                 default: return "?";
             }
         }
 
         public static string[] GetCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW","MWAOP","UHB","PU" };  //Last added by HUB 
+            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW","MWAOP","UHB","PU","BJ" };  //Last added by HUB 
             return list;
         }
 
         public static string[] GetPLCCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU" };//Last 4 added by HUB
+            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU","BJ" };//Last 4 added by HUB
             return list;
         }
 
@@ -248,7 +253,8 @@ namespace PalletCheck
             MO = 9,
             FC = 10,        
             MBMW = 11,
-            PD = 12
+            PD = 12,
+            BJ = 13
         }
     }
 }

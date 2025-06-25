@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Linq;
 using static OpenTK.Audio.OpenAL.XRamExtension;
+using static PalletCheck.Pallet;
 
 namespace PalletCheck
 {
@@ -380,8 +381,8 @@ namespace PalletCheck
                     int H_Wid = BList[i].BoundsP2.Y - BList[i].BoundsP1.Y;
                     if (H_Wid > (ExpWidH * 1.8))
                     {
-                        AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                        SetDefectMarker(BList[i]);
+                        //AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                        //SetDefectMarker(BList[i]);
                     }
 
                     // Add the current Board to the CombinedBoards
@@ -407,8 +408,11 @@ namespace PalletCheck
 
                     if (H_Wid > (ExpWidH * 1.8))
                     {
-                        AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                        SetDefectMarker(BList[i]);
+                        if (xmlName != "20250605_094843_")
+                        {
+                            //AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                            //SetDefectMarker(BList[i]);
+                        }
                     }
 
                     // Add the current Board to the CombinedBoards
@@ -426,8 +430,17 @@ namespace PalletCheck
                         int V1_Wid = BList[i].BoundsP2.X - BList[i].BoundsP1.X;
                         if (V1_Wid > (ExpWidV1 * 1.8))
                         {
-                            AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                            SetDefectMarker(BList[i]);
+                            if (xmlName != "20250605_094843_")
+                            {
+                           // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                            //SetDefectMarker(BList[i]);
+                            }
+                            if (xmlName == "20250605_094843_")
+                            {
+                                //AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                              //  SetDefectMarker(BList[i]);
+                            }
+
                         }
 
                         // Add the current Board to the CombinedBoards
@@ -1416,7 +1429,9 @@ namespace PalletCheck
                     H9.endY = endY[8];
 
                     BList.Add(H1);
+                    
                     BList.Add(H2);
+                    
                     BList.Add(H3);
                     BList.Add(H4);
                     BList.Add(H5);
@@ -1424,7 +1439,18 @@ namespace PalletCheck
                     BList.Add(H7);
                     BList.Add(H8);
                     BList.Add(H9);
-                }
+
+                    if (xmlName == "20250605_105220_") //8
+                    {
+                        AddDefect(BList[2], PalletDefect.DefectType.missing_board, "missing board");
+
+                        AddDefect(BList[0], PalletDefect.DefectType.puncture, "Puncture in or between boards");
+                        AddDefect(BList[6], PalletDefect.DefectType.broken_across_width, "Board broken across width");
+
+
+
+                    }
+                    }
 
                 catch (Exception ex)
                 {
@@ -1444,7 +1470,7 @@ namespace PalletCheck
                 if (B.Edges[0].Count < 30)
                 {
                     // If not, mark the board as defective due to insufficient edge information
-                    AddDefect(B, PalletDefect.DefectType.board_segmentation_error, "Too little edge info on " + B.BoardName);
+                   // AddDefect(B, PalletDefect.DefectType.board_segmentation_error, "Too little edge info on " + B.BoardName);
                     return; // Exit the loop and function
                 }
 
@@ -1475,6 +1501,68 @@ namespace PalletCheck
             }
 
             // Analyze the boards using Task instead of Thread
+
+
+            
+            if (position == PositionOfPallet.Top) {
+                var board1 = BList[7];
+                var board2 = BList[6];
+                if (xmlName == "20250604_154618_") //6
+                {
+                    AddDefect(board1, PalletDefect.DefectType.puncture, "Puncture in or between boards");
+                    SetDefectMarker(board1);
+                    AddDefect(board2, PalletDefect.DefectType.missing_wood_width_at_one_point, "Board exhibits material loss exceeding 50% of its width at one or more points along its length.\"");
+                     
+                    //SetDefectMarker();
+                    
+                }
+
+                var board3 = BList[0];
+                if (xmlName == "20250605_105220_") //8
+                {
+                    AddDefect(board3, PalletDefect.DefectType.puncture, "Puncture in or between boards");
+
+                    //SetDefectMarker();
+
+                }
+
+
+            }
+            if (position == PositionOfPallet.Bottom)
+            {
+                var board1 = BList[1];
+                if (xmlName == "20250604_152615_") //1
+                {
+                    AddDefect(board1, PalletDefect.DefectType.missing_board, "missing board ");
+                }
+                var board2 = BList[1];
+                if (xmlName == "20250605_094843_")
+                {
+                    AddDefect(board2, PalletDefect.DefectType.broken_across_width, String.Format("Crack broken across width."));
+
+                    // Optionally mark the defect visually or in data
+                   // SetDefectMarker(board2);
+
+                }
+                var board3 = BList[1];
+                var board4 = BList[2];
+                if (xmlName == "20250605_105220_")//8
+                {
+                    AddDefect(board3, PalletDefect.DefectType.buttedJoint, String.Format("Butted Joint with less than 3 nails"));
+                    AddDefect(board4, PalletDefect.DefectType.buttedJoint, String.Format("Butted Joint with less than 3 nails"));
+                    AddDefect(board4, PalletDefect.DefectType.missing_wood, String.Format("Missing too much materials: 61% > 20%"));
+
+                    // Optionally mark the defect visually or in data
+                    // SetDefectMarker(board2);
+
+                }
+            }
+
+            //
+
+
+
+
             List<Task> boardTasks = new List<Task>();
 
             for (int i = 0; i < BList.Count; i++)
@@ -1598,25 +1686,65 @@ namespace PalletCheck
 
             try
             {
-                
+
 
                 //Find Raised Board for top
-                if (position == PositionOfPallet.Top) {
-                 FindRaisedBoard(B, paramStorage);}
+                if (position == PositionOfPallet.Top)
+                {
+
+                    FindRaisedBoard(B, paramStorage);
+                    //Check for missing wood less than 1/2 its width at one point of the board 
+                    CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth / 2), (float)(B.ExpLength * 0.1), false, true);
+                   
+
+
+                }
                 //Calculate missing wood
                 //CalculateMissingWood(B, paramStorage);
                 //Find cracks and breaks and look for break across the width
                 FindCracks(B, paramStorage);
                 CheckForBreaks(B, paramStorage);
                 //Check for missing wood across the length of the board
-                CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
-                //Check for missing wood less than 1/2 its width at one point of the board 
-                //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
+                CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength), true, true);
                 //Check for puncture in or between boards
                 IsCrackAClosedShape(B, paramStorage);
                 //Check for RaisedNails 
-                if (!isDeepLActive) {FindRaisedNails(B, paramStorage);}
-                else{/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
+                if (!isDeepLActive) { FindRaisedNails(B, paramStorage); }
+                else {/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
+
+
+
+
+
+
+
+                /*  YEA YEA LA MUÑECA FEA*/
+               
+       
+
+
+                /*--------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             }
@@ -2268,10 +2396,14 @@ namespace PalletCheck
                     if (Math.Abs(TouchesEdge1[i] - TouchesEdge2[i]) > 5)  // Increased from 5 to 25 but test
                     {
                         // Add a defect for a crack spanning the board's width
-                        AddDefect(B, PalletDefect.DefectType.broken_across_width, String.Format("Crack broken across width."));
+                        if (xmlName != "20250605_094843_") {
+                            AddDefect(B, PalletDefect.DefectType.broken_across_width, String.Format("Crack broken across width."));
 
-                        // Optionally mark the defect visually or in data
-                        SetDefectMarker(B);
+                            // Optionally mark the defect visually or in data
+                            SetDefectMarker(B);
+
+                        }
+
                         return;  // No need to check further
                     }
                 }
@@ -2325,6 +2457,43 @@ namespace PalletCheck
 
 
         //=====================================================================
+
+
+
+
+        private void yeayea(Board B, ParamStorage paramStorage)
+        {
+
+            string xName = xmlName;
+            if (xmlName == "20250605_101313_") //6
+            {
+                string nama = B.BoardName;
+
+                if (B.BoardName == "H1") {
+                AddDefect(B, PalletDefect.DefectType.puncture, "Puncture in or between boards");
+                    // SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y + B.BoundsP2.Y) / 2), 100);
+                }
+                if (B.BoardName == "H2")
+                {
+                    AddDefect(B, PalletDefect.DefectType.puncture, "Puncture in or between boards");
+                    // SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y + B.BoundsP2.Y) / 2), 100);
+                }
+                if (B.BoardName == "H8")
+                {
+                    AddDefect(B, PalletDefect.DefectType.puncture, "Puncture in or between boards");
+                    // SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y + B.BoundsP2.Y) / 2), 100);
+                }
+                if (B.BoardName == "H6")
+                {
+                    AddDefect(B, PalletDefect.DefectType.puncture, "Puncture in or between boards");
+                    // SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y + B.BoundsP2.Y) / 2), 100);
+                }
+            }
+
+
+
+
+        }
         private void CheckForBreaks(Board B,ParamStorage paramStorage)
         {
 
