@@ -837,6 +837,7 @@ namespace PalletCheck
                         float yScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.YResolution;
                         cntr = cntr + 1;
                         DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Bottom, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
+                        RetrieveButtedJointImages();
                     }
                 }
 
@@ -3770,6 +3771,7 @@ namespace PalletCheck
                     }
                 }
 
+                
                 // Jack Note: Calculate and handle slivers on the bottom side
                 avgX0 = 0;
                 avgX1 = 0;
@@ -4002,6 +4004,46 @@ namespace PalletCheck
             }
 
             return -1;
+        }
+
+        public void RetrieveButtedJointImages()
+        {
+            byte[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer("buttedJoint1")._intensity;
+            byte[] byteArrayJoint2 = MainWindow._envBottom.GetImageBuffer("buttedJoint2")._intensity;
+            byte[] byteArrayJoint3 = MainWindow._envBottom.GetImageBuffer("buttedJoint3")._intensity;
+            byte[] byteArrayJoint4 = MainWindow._envBottom.GetImageBuffer("buttedJoint4")._intensity;
+            byte[] byteArrayJoint5 = MainWindow._envBottom.GetImageBuffer("buttedJoint5")._intensity;
+            byte[] byteArrayJoint6 = MainWindow._envBottom.GetImageBuffer("buttedJoint6")._intensity;
+            int width = MainWindow._envBottom.GetImageBuffer("buttedJoint1").Info.Width;
+            int height = MainWindow._envBottom.GetImageBuffer("buttedJoint1").Info.Height;
+
+            Bitmap bitmapJoint1 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            Bitmap bitmapJoint2 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            Bitmap bitmapJoint3 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            Bitmap bitmapJoint4 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            Bitmap bitmapJoint5 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            Bitmap bitmapJoint6 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+
+            ByteArray2bitmap(byteArrayJoint1, width, height, bitmapJoint1);
+            ByteArray2bitmap(byteArrayJoint2, width, height, bitmapJoint2);
+            ByteArray2bitmap(byteArrayJoint3, width, height, bitmapJoint3);
+            ByteArray2bitmap(byteArrayJoint4, width, height, bitmapJoint4);
+            ByteArray2bitmap(byteArrayJoint5, width, height, bitmapJoint5);
+            ByteArray2bitmap(byteArrayJoint6, width, height, bitmapJoint6);
+
+            Bitmap resizedJoint1 = model.ResizeBitmap(bitmapJoint1, 512, 512);
+            Bitmap resizedJoint2 = model.ResizeBitmap(bitmapJoint2, 512, 512);
+            Bitmap resizedJoint3 = model.ResizeBitmap(bitmapJoint3, 512, 512);
+            Bitmap resizedJoint4 = model.ResizeBitmap(bitmapJoint4, 512, 512);
+            Bitmap resizedJoint5 = model.ResizeBitmap(bitmapJoint5, 512, 512);
+            Bitmap resizedJoint6 = model.ResizeBitmap(bitmapJoint6, 512, 512);
+
+            resizedJoint1.Save("VizDL/BottomButtedJoint/ButtedJoint1.png", ImageFormat.Png);
+            resizedJoint2.Save("VizDL/BottomButtedJoint/ButtedJoint2.png", ImageFormat.Png);
+            resizedJoint3.Save("VizDL/BottomButtedJoint/ButtedJoint3.png", ImageFormat.Png);
+            resizedJoint4.Save("VizDL/BottomButtedJoint/ButtedJoint4.png", ImageFormat.Png);
+            resizedJoint5.Save("VizDL/BottomButtedJoint/ButtedJoint5.png", ImageFormat.Png);
+            resizedJoint6.Save("VizDL/BottomButtedJoint/ButtedJoint6.png", ImageFormat.Png);
         }
         Board EzRBoard(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartCol, int EndCol, int Step, int StartRow, int EndRow, ParamStorage paramStorage)
         {

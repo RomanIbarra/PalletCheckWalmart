@@ -126,7 +126,7 @@ namespace PalletCheck
                 case DefectType.missing_wood_width_across_length: return "MWA";       //Added by HUB               
                 case DefectType.blocks_protuded_from_pallet: return "BPFP";         //Added by HUB 
                 case DefectType.side_nails_protruding: return "SNP";               //Added by HUB 
-                case DefectType.middle_board_missing_wood: return "MWMW";               //Added by HUB 
+                case DefectType.middle_board_missing_wood: return "MBMW";               //Added by HUB 
                 case DefectType.missing_wood_width_at_one_point: return "MWAOP";         //Added by HUB
                 case DefectType.unsecured_horizontal_block: return "UHB";                //Added by HUB
                 case DefectType.puncture: return "PU";                                   //Added by HUB
@@ -185,7 +185,7 @@ namespace PalletCheck
                 case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
                 case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB
                 case DefectType.clearance: return "Fork Clearance";                                        //added by HUB
-                case DefectType.middle_board_missing_wood: return "Middle Board Missing Wood";             //Added by HUB 
+                case DefectType.middle_board_missing_wood: return "Linear Support Missing Wood";             //Added by HUB 
                 case DefectType.missing_wood_width_at_one_point: return "Missing Wood With at One Point"; //Added by HUB
                 case DefectType.unsecured_horizontal_block: return "Unsecured Horizontal Block";         //Added by HUB
                 case DefectType.puncture: return "Puncture";                                               //Added by HUB
