@@ -382,8 +382,8 @@ namespace PalletCheck
                     int H_Wid = BList[i].BoundsP2.Y - BList[i].BoundsP1.Y;
                     if (H_Wid > (ExpWidH * 1.8))
                     {
-                        AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                        SetDefectMarker(BList[i]);
+                       // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                       // SetDefectMarker(BList[i]);
                     }
 
                     // Add the current Board to the CombinedBoards
@@ -409,8 +409,8 @@ namespace PalletCheck
 
                     if (H_Wid > (ExpWidH * 1.8))
                     {
-                        AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                        SetDefectMarker(BList[i]);
+                       // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                       // SetDefectMarker(BList[i]);
                     }
 
                     // Add the current Board to the CombinedBoards
@@ -428,8 +428,8 @@ namespace PalletCheck
                         int V1_Wid = BList[i].BoundsP2.X - BList[i].BoundsP1.X;
                         if (V1_Wid > (ExpWidV1 * 1.8))
                         {
-                            AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                            SetDefectMarker(BList[i]);
+                           // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                           // SetDefectMarker(BList[i]);
                         }
 
                         // Add the current Board to the CombinedBoards
@@ -3391,9 +3391,83 @@ namespace PalletCheck
 
             // Jack Note: It is very simple, Just calculate the percentage of the Missing Pixels
         }
+        private void FindRaisedBoard(Board B, ParamStorage paramStorage)
+        {
+            int CBW = B.CB.Width;
+
+            int RBTestVal = (int)(1000 + paramStorage.GetPixZ(StringsLocalization.RaisedBoardMaximumHeight));
+            float RBPercentage = paramStorage.GetFloat(StringsLocalization.RaisedBoardMaximumWidth) / 100f;
+
+            int RBCount = 0;
+            int RBTotal = 0;
+
+            // Obtener ROI desde los edges
+            int minX = B.Edges.SelectMany(e => e).Min(p => p.X);
+            int maxX = B.Edges.SelectMany(e => e).Max(p => p.X);
+            int minY = B.Edges.SelectMany(e => e).Min(p => p.Y);
+            int maxY = B.Edges.SelectMany(e => e).Max(p => p.Y);
+
+            int W1 = maxX - minX;
+            int W2 = maxY - minY;
+
+            bool isHoriz = (W1 > W2);
+
+            if (isHoriz)
+            {
+                // Lado izquierdo
+                for (int x = 0; x < 200; x++)
+                {
+                    for (int y = 0; y < W2; y++)
+                    {
+                        int tx = minX + x;
+                        int ty = minY + y;
+
+                        UInt16 Val = B.CB.Buf[ty * CBW + tx];
+                        if (Val > RBTestVal) RBCount++;
+                        RBTotal++;
+                    }
+                }
+
+                Logger.WriteLine(string.Format("FindRaisedBoard L {0} {1} {2} {3:F3} {4:F3}",
+                    B.BoardName, RBCount, RBTotal, (float)RBCount / RBTotal, RBPercentage));
+
+                if (((float)RBCount / RBTotal) > RBPercentage)
+                {
+                    AddDefect(B, PalletDefect.DefectType.raised_board, "Left side of board raised");
+                    SetDefectMarker(minX + 100, (minY + maxY) / 2, 100);  // centro del margen izquierdo
+                }
+
+                // Reiniciar
+                RBCount = 0;
+                RBTotal = 0;
+
+                // Lado derecho
+                for (int x = W1 - 200; x < W1; x++)
+                {
+                    for (int y = 0; y < W2; y++)
+                    {
+                        int tx = minX + x;
+                        int ty = minY + y;
+
+                        UInt16 Val = B.CB.Buf[ty * CBW + tx];
+                        if (Val > RBTestVal) RBCount++;
+                        RBTotal++;
+                    }
+                }
+
+                Logger.WriteLine(string.Format("FindRaisedBoard R {0} {1} {2} {3:F3} {4:F3}",
+                    B.BoardName, RBCount, RBTotal, (float)RBCount / RBTotal, RBPercentage));
+
+                if (((float)RBCount / RBTotal) > RBPercentage)
+                {
+                    AddDefect(B, PalletDefect.DefectType.raised_board, "Right side of board raised");
+                    SetDefectMarker(maxX - 100, (minY + maxY) / 2, 100);  // centro del margen derecho
+                }
+            }
+        }
 
         //=====================================================================
-        private void FindRaisedBoard(Board B, ParamStorage paramStorage)
+        private void FindRaisedBoard1(Board B, ParamStorage paramStorage)
         {
             //  Define width (W1) and height (W2) of the board based on boundaries
             int W1 = B.BoundsP2.X - B.BoundsP1.X;
