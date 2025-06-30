@@ -399,7 +399,11 @@
   <data name="BlockDepth3" xml:space="preserve">
     <value>BlockDepth3</value>
   </data>
-  <data name="PunctureMaxAreamm2" xml:space="preserve">
-    <value>PunctureMaxAreamm2</value>
+  <data name="PunctureMaxAreaIn2" xml:space="preserve">
+    <value>PunctureMaxAreaIn2</value>
+    <comment>PunctureMaxAreaIn2</comment>
+  </data>
+  <data name="MarginForPuncturePx" xml:space="preserve">
+    <value>MarginForPuncturePx</value>
   </data>
 </root>

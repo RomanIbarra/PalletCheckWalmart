@@ -77,7 +77,7 @@ namespace PalletCheck
         /*Is resize is needed for inference or for sabing images use:  EX. Bitmap resizedImage = model.ResizeBitmap(bitmapClassifier, 512, 512);*/
 
         /*Save results Top Split images*/
-        public static bool isSaveTopSplitResults = false;
+        public static bool isSaveTopSplitResults = true;
         /*Save results Sides nails protruding outside of pallet*/
         public static bool isSaveSideNailsProtrudingResults = false;
         /*Save results for pallet classifier*/

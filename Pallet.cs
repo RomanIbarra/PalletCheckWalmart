@@ -10,6 +10,8 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Linq;
 using static OpenTK.Audio.OpenAL.XRamExtension;
+using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography;
 
 namespace PalletCheck
 {
@@ -1601,20 +1603,61 @@ namespace PalletCheck
             {
                 
 
-                //Find Raised Board for top
+                
                 if (position == PositionOfPallet.Top) {
-                 FindRaisedBoard(B, paramStorage);}
+                    //Find Raised Board for top
+                    FindRaisedBoard(B, paramStorage);
+                    //Finds contourns
+                    FindCracks(B, paramStorage);
+                    //Draws contours for analisys
+                    SaveCrackDetectionImage(B, B.BoardName+"Top_Cracks.png");
+                    //Finds cracks and breaks and look for break across the width   
+                    CheckForBreaks(B, paramStorage);
+                    //Looks for punctures in the board   //IsCrackAClosedShape(B, paramStorage);
+
+                    //Thin the cracks
+                    // ThinCracksInBuffer(B, erosionIterations: 6);
+
+                    SmoothBinaryCracks(B);
+                    SkeletonizeBufferZhangSuen(B);
+                    SaveCrackDetectionImage(B, B.BoardName + "Schelet.png");
+                    
+                    List<List<System.Drawing.Point>> closedHoles;
+                    bool hasHoles = HasClosedHole(B, out closedHoles,paramStorage);
+                    
+
+                    if (hasHoles)
+                    {
+                        SaveClosedHolesImage(B, B.BoardName+"_Puncture.png", closedHoles,paramStorage);
+                       
+                    }
+
+                }
+
+
+                if (position == PositionOfPallet.Bottom) {
+                    //Find Raised Board for top
+                    FindRaisedBoard(B, paramStorage);
+                    //Finds contourns
+                    FindCracks(B, paramStorage);
+                    //Draws contours for analisys
+                   // SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");           
+                    //Finds cracks and breaks and look for break across the width   
+                    CheckForBreaks(B, paramStorage);
+
+
+
+
+
+                }
                 //Calculate missing wood
-                //CalculateMissingWood(B, paramStorage);
-                //Find cracks and breaks and look for break across the width
-                FindCracks(B, paramStorage);
-                CheckForBreaks(B, paramStorage);
+                CalculateMissingWood(B, paramStorage);                
                 //Check for missing wood across the length of the board
                 CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
                 //Check for missing wood less than 1/2 its width at one point of the board 
                 //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
                 //Check for puncture in or between boards
-                IsCrackAClosedShape(B, paramStorage);
+                
                 //Check for RaisedNails 
                 if (!isDeepLActive) {FindRaisedNails(B, paramStorage);}
                 else{/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
@@ -1631,10 +1674,10 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        private void DrawContours(Board B, string filename)
+        private void DrawContours(Board B, string filename, ParamStorage paramStorage)
         {
-            int imgWidth = 2500; // Ajusta al tamaño real de la tabla
-            int imgHeight = 2700;
+            int imgWidth = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px);
+            int imgHeight = paramStorage.GetInt(StringsLocalization.RawCaptureROIBottom_px);
 
             Bitmap img = new Bitmap(imgWidth, imgHeight);
             using (Graphics g = Graphics.FromImage(img))
@@ -1648,7 +1691,6 @@ namespace PalletCheck
                     int y0 = B.Edges[0][i].Y;
                     int x1 = B.Edges[1][i].X;
                     int y1 = B.Edges[1][i].Y;
-
                     g.DrawLine(pen, x0, y0, x1, y1);
                 }
             }
@@ -1656,7 +1698,108 @@ namespace PalletCheck
             img.Save(filename);
             // Console.WriteLine($"Imagen de contornos guardada como {filename}");
         }
-        
+        private void SaveCrackDetectionImage(Board B, string filename)
+        {
+            if(B.CrackCB!=null ) { 
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+
+            Bitmap img = new Bitmap(width, height);
+
+            // Encuentra el valor máximo para normalizar el buffer
+            UInt16 maxVal = 0;
+            for (int i = 0; i < width * height; i++)
+            {
+                if (B.CrackCB.Buf[i] > maxVal)
+                    maxVal = B.CrackCB.Buf[i];
+            }
+            if (maxVal == 0) maxVal = 1; // evitar división por cero
+
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                g.Clear(Color.White);
+
+                // Pintar píxeles con grietas (intensidad normalizada)
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        UInt16 val = B.CrackCB.Buf[y * width + x];
+                        if (val > 0)
+                        {
+                            // Normalizar a 0-255 para intensidad
+                            int intensity = (int)(255 * val / maxVal);
+                            // Color rojo con intensidad según valor
+                            Color c = Color.FromArgb(intensity, 0, 0);
+                            img.SetPixel(x, y, c);
+                        }
+                    }
+                }
+
+                // Opcional: dibujar bordes de bloques detectados en CrackTracker
+                int blockSize = B.CrackBlockSize;
+                int ny = B.CrackTracker.GetLength(0);
+                int nx = B.CrackTracker.GetLength(1);
+                Pen blockPen = new Pen(Color.Blue, 1);
+
+                for (int by = 0; by < ny; by++)
+                {
+                    for (int bx = 0; bx < nx; bx++)
+                    {
+                        if (B.CrackTracker[by, bx] == 1)
+                        {
+                            int rx = bx * blockSize;
+                            int ry = by * blockSize;
+                            g.DrawRectangle(blockPen, rx, ry, blockSize, blockSize);
+                        }
+                    }
+                }
+            }
+
+            img.Save(filename);
+            }
+        }
+        private void DrawContours1(Board B, string filename)
+        {
+            int imgWidth = 4000; // Ajusta al tamaño real de la tabla
+            int imgHeight = 2700;
+
+            Bitmap img = new Bitmap(imgWidth, imgHeight);
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                g.Clear(Color.White);
+
+                // Lista de colores para alternar
+                Color[] colors = new Color[]
+                {
+            Color.Red,
+            Color.Blue,
+            Color.Green,
+            Color.Orange,
+            Color.Purple,
+            Color.Brown,
+            Color.Teal,
+            Color.Magenta
+                };
+
+                for (int i = 0; i < B.Edges[0].Count; i++)
+                {
+                    int x0 = B.Edges[0][i].X;
+                    int y0 = B.Edges[0][i].Y;
+                    int x1 = B.Edges[1][i].X;
+                    int y1 = B.Edges[1][i].Y;
+
+                    // Crear un nuevo Pen con el color correspondiente
+                    using (Pen pen = new Pen(colors[i % colors.Length], 2))
+                    {
+                        g.DrawLine(pen, x0, y0, x1, y1);
+                    }
+                }
+            }
+
+            img.Save(filename);
+            // Console.WriteLine($"Imagen de contornos guardada como {filename}");
+        }
         private void CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float WoodLengthIn,bool acrossLength, bool ExcludeEnds = false)
         {
             if (FailWidIn != 0)
@@ -1728,7 +1871,7 @@ namespace PalletCheck
                     // Jack Note: Calculate the measured length in inches for vertical orientation
                     MissingWoodLength = nBadEdges / PPIY;
                 }
-                //DrawContours(B, "contours.png");
+                
                 
                 MissingWoodLength = MissingWoodLength + (float)(3);
 
@@ -1915,7 +2058,7 @@ namespace PalletCheck
             //+----------------------------------+
             //                                    P2
 
-            NullifyNonROIAreas(B, paramStorage);
+           NullifyNonROIAreas(B, paramStorage);
             // Remove speckle
             // Jack Note: Filter
             DeNoiseInPlace(B.CrackCB,paramStorage);
@@ -2025,11 +2168,7 @@ namespace PalletCheck
                 }
             }
 
-            // Coment the crack blocks based on the params
-            /// Jack Note
-            /// This code iterates through each crack block, calculates the percentage of crack pixels in each block,
-            /// and determines which blocks are valid based on a preset minimum crack percentage parameter. 
-            /// Valid crack blocks are marked as 1, and invalid crack blocks are marked as 0.
+
             float BlockCrackMinPct = paramStorage.GetFloat(StringsLocalization.CrackTrackerMinPct);
             float MaxVal = B.CrackBlockSize * B.CrackBlockSize;
             for (int y = 0; y < ny; y++)
@@ -2143,38 +2282,48 @@ namespace PalletCheck
             else
             {
                 float Len = paramStorage.GetPixY(StringsLocalization.VBoardLength_in);
+                int CBW1 = B.CrackCB.Width;
 
-                int y1 = 0;// B.Edges[0][0].X;
-                int y2 = B.Edges[0].Count;// B.Edges[0][B.Edges[0].Count - 1].X;
+                // Limites verticales reales
+                int y1 = B.BoundsP1.Y;
+                int y2 = B.BoundsP2.Y;
                 int yc = (y1 + y2) / 2;
 
-                int edge1 = (int)(y1 + (Len * EdgeWidV));
-                int edge2 = (int)(yc - ((Len * CenWid) / 2));
-                int edge3 = (int)(yc + ((Len * CenWid) / 2));
-                int edge4 = (int)(y2 - (Len * EdgeWidV));
+                // Calcula posiciones absolutas de zonas
+                int edge1 = (int)(y1 + (Len * EdgeWidV));                     // Fin del borde superior
+                int edge2 = (int)(yc - ((Len * CenWid) / 2));                 // Inicio zona central
+                int edge3 = (int)(yc + ((Len * CenWid) / 2));                 // Fin zona central
+                int edge4 = (int)(y2 - (Len * EdgeWidV));                     // Inicio borde inferior
 
+                edge1 = Math.Min(edge1, y2);
+                edge2 = Math.Max(edge2, y1);
+                edge3 = Math.Min(edge3, y2);
+                edge4 = Math.Max(edge4, y1);
+
+                // Enmascarar borde superior
                 for (int y = y1; y < edge1; y++)
                 {
-                    //for (int x = B.Edges[0][y].X; x <= B.Edges[1][y].X; x++)
-                    for (int x = B.BoundsP1.X; x < B.BoundsP2.X; x++)
+                    for (int x = B.BoundsP1.X; x <= B.BoundsP2.X; x++)
                     {
-                        B.CrackCB.Buf[(B.BoundsP1.Y + y) * CBW + x] = 0;
+                        B.CrackCB.Buf[y * CBW1 + x] = 0;
                     }
                 }
+
+                // Enmascarar zona central
                 for (int y = edge2; y <= edge3; y++)
                 {
-                    //for (int x = B.Edges[0][y].X; x <= B.Edges[1][y].X; x++)
-                    for (int x = B.BoundsP1.X; x < B.BoundsP2.X; x++)
+                    for (int x = B.BoundsP1.X; x <= B.BoundsP2.X; x++)
                     {
-                        B.CrackCB.Buf[B.Edges[0][y].Y * CBW + x] = 0;
+                        B.CrackCB.Buf[y * CBW1 + x] = 0;
                     }
                 }
-                for (int y = edge4; y < y2; y++)
+
+                // Enmascarar borde inferior
+                for (int y = edge4; y <= y2; y++)
                 {
-                    //for (int x = B.Edges[0][y].X; x <= B.Edges[1][y].X; x++)
-                    for (int x = B.BoundsP1.X; x < B.BoundsP2.X; x++)
+                    for (int x = B.BoundsP1.X; x <= B.BoundsP2.X; x++)
                     {
-                        B.CrackCB.Buf[B.Edges[0][y].Y * CBW + x] = 0;
+                        B.CrackCB.Buf[y * CBW1 + x] = 0;
                     }
                 }
             }
@@ -2325,6 +2474,18 @@ namespace PalletCheck
         }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         //=====================================================================
         private void CheckForBreaks(Board B,ParamStorage paramStorage)
         {
@@ -2332,30 +2493,32 @@ namespace PalletCheck
             // Jack Note: Check if there are enough edges detected to proceed
             if (B.Edges[0].Count < 5)
             {
-              //  AddDefect(B, PalletDefect.DefectType.missing_board, "Segmented board far too short");
-              //  SetDefectMarker(B);
+                //If board is missing it will crash, fix it, then comment the next line
+                //  AddDefect(B, PalletDefect.DefectType.missing_board, "missing board");
+                //  AddDefect(B, PalletDefect.DefectType.missing_board, "Segmented board far too short");
+                //  SetDefectMarker(B);
                 return;
             }
 
-            // Jack Note: Retrieve the minimum board length percentage from parameter storage
+            //  Retrieve the minimum board length percentage from parameter storage
             float BoardLenPerc = paramStorage.GetFloat(StringsLocalization.MinBoardLength) / 100.0f;
             float BoardLenPerc100 = (int)(BoardLenPerc * 100);
-            // Jack Note: Check if the board is oriented horizontally
+            //  Check if the board is oriented horizontally
             if (B.Edges[0][0].X == B.Edges[1][0].X)
             {
-                // Jack Note: Retrieve the expected horizontal board length and calculate minimum acceptable length
+                //  Retrieve the expected horizontal board length and calculate minimum acceptable length
                 int Len = (int)paramStorage.GetPixX(String.Format(StringsLocalization.HBoardLength_in, ""));
                 int MinLen = (int)(Len * BoardLenPerc);
 
-                // Jack Note: Calculate the measured length of the board
+                //  Calculate the measured length of the board
                 int MeasLen = B.Edges[0][B.Edges[0].Count - 1].X - B.Edges[0][0].X;
 
                 // HUB Note: Following condition isn't needed, we're not 
-                // Jack Note: Check if the measured length is less than the minimum acceptable length
+                //  Check if the measured length is less than the minimum acceptable length
 
                 if (MeasLen < MinLen)
                 {
-                    // Jack Note: Mark the board as too short and set defect marker
+                    //  Mark the board as too short and set defect marker
                     AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.XResolution)).ToString() +
                         "(mm) shorter than " + ((int)(MinLen * B.XResolution)).ToString() + "(mm) (" + BoardLenPerc100.ToString() + "% of the Lenth)");
                     SetDefectMarker(B);
@@ -2364,18 +2527,18 @@ namespace PalletCheck
             }
             else
             {
-                // Jack Note: Board is vertically oriented
-                // Jack Note: Retrieve the expected vertical board length and calculate minimum acceptable length
+                //  Board is vertically oriented
+                //  Retrieve the expected vertical board length and calculate minimum acceptable length
                 int Len = (int)paramStorage.GetPixY(StringsLocalization.VBoardLength_in);
                 int MinLen = (int)(Len * BoardLenPerc);
 
-                // Jack Note: Calculate the measured length of the board
+                //  Calculate the measured length of the board
                 int MeasLen = B.Edges[0][B.Edges[0].Count - 1].Y - B.Edges[0][0].Y;
 
-                // Jack Note: Check if the measured length is less than the minimum acceptable length
+                //  Check if the measured length is less than the minimum acceptable length
                 if (MeasLen < MinLen)
                 {
-                    // Jack Note: Mark the board as too short and set defect marker
+                    //  Mark the board as too short and set defect marker
                     AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.YResolution)).ToString() + 
                         "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Length)");
                     SetDefectMarker(B);
@@ -2384,6 +2547,690 @@ namespace PalletCheck
             }
 
         }
+        public static double PixelsToSquareInches(int pixelCount, double mmPerPixelX, double mmPerPixelY)
+        {
+            // 1 pulgada = 25.4 mm
+            const double mmPerInch = 25.4;
+
+            // Área de un solo píxel en mm²
+            double pixelAreaMM2 = mmPerPixelX * mmPerPixelY;
+
+            // Área total en mm²
+            double totalAreaMM2 = pixelCount * pixelAreaMM2;
+
+            // Convertir mm² a in²
+            double totalAreaIn2 = totalAreaMM2 / (mmPerInch * mmPerInch);
+
+            return totalAreaIn2;
+        }
+        private void SmoothBinaryCracks(Board B)
+        {
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            UInt16[] buf = B.CrackCB.Buf;
+
+            byte[,] temp = new byte[height, width];
+
+            // Copiar a binario simple
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    temp[y, x] = (buf[y * width + x] > 0) ? (byte)1 : (byte)0;
+
+            byte[,] result = new byte[height, width];
+            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
+            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+            // Apertura: erosión + dilatación para limpiar extremos
+            for (int iter = 0; iter < 1; iter++)
+            {
+                // Erosión
+                byte[,] eroded = (byte[,])temp.Clone();
+                for (int y = 1; y < height - 1; y++)
+                {
+                    for (int x = 1; x < width - 1; x++)
+                    {
+                        if (temp[y, x] == 1)
+                        {
+                            bool shouldErase = false;
+                            for (int k = 0; k < 8; k++)
+                                if (temp[y + dy[k], x + dx[k]] == 0)
+                                {
+                                    shouldErase = true;
+                                    break;
+                                }
+                            if (shouldErase) eroded[y, x] = 0;
+                        }
+                    }
+                }
+
+                // Dilatación
+                byte[,] dilated = (byte[,])eroded.Clone();
+                for (int y = 1; y < height - 1; y++)
+                {
+                    for (int x = 1; x < width - 1; x++)
+                    {
+                        if (eroded[y, x] == 0)
+                        {
+                            bool shouldAdd = false;
+                            for (int k = 0; k < 8; k++)
+                                if (eroded[y + dy[k], x + dx[k]] == 1)
+                                {
+                                    shouldAdd = true;
+                                    break;
+                                }
+                            if (shouldAdd) dilated[y, x] = 1;
+                        }
+                    }
+                }
+
+                temp = dilated;
+            }
+
+            // Actualizar buf para thinning posterior
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    B.CrackCB.Buf[y * width + x] = (temp[y, x] == 1) ? (UInt16)255 : (UInt16)0;
+        }
+
+        public void SkeletonizeBufferZhangSuen(Board B)
+        {
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            UInt16[] originalBuf = B.CrackCB.Buf;
+
+            // Paso 1: Convertimos a imagen binaria [0,1]
+            byte[,] bin = new byte[height, width];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    bin[y, x] = (originalBuf[y * width + x] > 0) ? (byte)1 : (byte)0;
+                }
+            }
+
+            bool changed;
+            do
+            {
+                changed = false;
+                List<System.Drawing.Point> toRemove = new List<System.Drawing.Point>();
+
+                // Primera subiteración
+                for (int y = 1; y < height - 1; y++)
+                {
+                    for (int x = 1; x < width - 1; x++)
+                    {
+                        if (bin[y, x] != 1) continue;
+
+                        // Vecindad de 8 alrededor del píxel
+                        byte p2 = bin[y - 1, x];     // N
+                        byte p3 = bin[y - 1, x + 1]; // NE
+                        byte p4 = bin[y, x + 1];     // E
+                        byte p5 = bin[y + 1, x + 1]; // SE
+                        byte p6 = bin[y + 1, x];     // S
+                        byte p7 = bin[y + 1, x - 1]; // SW
+                        byte p8 = bin[y, x - 1];     // W
+                        byte p9 = bin[y - 1, x - 1]; // NW
+
+                        int bp1 = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+                        if (bp1 < 2 || bp1 > 6) continue;
+
+                        int transitions =
+                            (p2 == 0 && p3 == 1 ? 1 : 0) +
+                            (p3 == 0 && p4 == 1 ? 1 : 0) +
+                            (p4 == 0 && p5 == 1 ? 1 : 0) +
+                            (p5 == 0 && p6 == 1 ? 1 : 0) +
+                            (p6 == 0 && p7 == 1 ? 1 : 0) +
+                            (p7 == 0 && p8 == 1 ? 1 : 0) +
+                            (p8 == 0 && p9 == 1 ? 1 : 0) +
+                            (p9 == 0 && p2 == 1 ? 1 : 0);
+
+                        if (transitions != 1) continue;
+                        if (p2 * p4 * p6 != 0) continue;
+                        if (p4 * p6 * p8 != 0) continue;
+
+                        toRemove.Add(new System.Drawing.Point(x, y));
+                        changed = true;
+                    }
+                }
+
+                foreach (var pt in toRemove)
+                {
+                    bin[pt.Y, pt.X] = 0;
+                }
+
+                toRemove.Clear();
+
+                // Segunda subiteración
+                for (int y = 1; y < height - 1; y++)
+                {
+                    for (int x = 1; x < width - 1; x++)
+                    {
+                        if (bin[y, x] != 1) continue;
+
+                        byte p2 = bin[y - 1, x];
+                        byte p3 = bin[y - 1, x + 1];
+                        byte p4 = bin[y, x + 1];
+                        byte p5 = bin[y + 1, x + 1];
+                        byte p6 = bin[y + 1, x];
+                        byte p7 = bin[y + 1, x - 1];
+                        byte p8 = bin[y, x - 1];
+                        byte p9 = bin[y - 1, x - 1];
+
+                        int bp1 = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+                        if (bp1 < 2 || bp1 > 6) continue;
+
+                        int transitions =
+                            (p2 == 0 && p3 == 1 ? 1 : 0) +
+                            (p3 == 0 && p4 == 1 ? 1 : 0) +
+                            (p4 == 0 && p5 == 1 ? 1 : 0) +
+                            (p5 == 0 && p6 == 1 ? 1 : 0) +
+                            (p6 == 0 && p7 == 1 ? 1 : 0) +
+                            (p7 == 0 && p8 == 1 ? 1 : 0) +
+                            (p8 == 0 && p9 == 1 ? 1 : 0) +
+                            (p9 == 0 && p2 == 1 ? 1 : 0);
+
+                        if (transitions != 1) continue;
+                        if (p2 * p4 * p8 != 0) continue;
+                        if (p2 * p6 * p8 != 0) continue;
+
+                        toRemove.Add(new System.Drawing.Point(x, y));
+                        changed = true;
+                    }
+                }
+
+                foreach (var pt in toRemove)
+                {
+                    bin[pt.Y, pt.X] = 0;
+                }
+
+            } while (changed);
+
+            // Guardamos el resultado en el buffer original
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    B.CrackCB.Buf[y * width + x] = (bin[y, x] == 1) ? (UInt16)255 : (UInt16)0;
+                }
+            }
+        }
+
+
+        private bool HasClosedHole(Board B, out List<List<System.Drawing.Point>> holes, ParamStorage paramStorage)
+        {
+            holes = new List<List<System.Drawing.Point>>();
+
+            int margin = paramStorage.GetInt(StringsLocalization.MarginForPuncturePx);
+
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            UInt16[] buf = B.CrackCB.Buf;
+            bool[,] visited = new bool[height, width];
+
+            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
+            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+       
+            int minX = B.Edges.SelectMany(e => e).Min(p => p.X) + margin;
+            int maxX = B.Edges.SelectMany(e => e).Max(p => p.X) - margin;
+            int minY = B.Edges.SelectMany(e => e).Min(p => p.Y) + margin;
+            int maxY = B.Edges.SelectMany(e => e).Max(p => p.Y) - margin;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (buf[y * width + x] > 0 && !visited[y, x])
+                    {
+                        List<System.Drawing.Point> contour = new List<System.Drawing.Point>();
+                        Queue<System.Drawing.Point> q = new Queue<System.Drawing.Point>();
+                        bool isClosed = true;
+
+                        q.Enqueue(new System.Drawing.Point(x, y));
+                        visited[y, x] = true;
+
+                        // Si el punto inicial toca el borde del ROI, no es cerrado
+                        if (x <= minX || x >= maxX || y <= minY || y >= maxY)
+                        {
+                            isClosed = false;
+                        }
+
+                        while (q.Count > 0)
+                        {
+                            System.Drawing.Point p = q.Dequeue();
+                            int cx = p.X;
+                            int cy = p.Y;
+                            contour.Add(p);
+
+                            // Si el punto actual toca el borde del ROI, no es cerrado
+                            if (cx <= minX || cx >= maxX || cy <= minY || cy >= maxY)
+                            {
+                                isClosed = false;
+                            }
+
+                            for (int k = 0; k < 8; k++)
+                            {
+                                int nx = cx + dx[k];
+                                int ny = cy + dy[k];
+
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height)
+                                {
+                                    if (!visited[ny, nx] && buf[ny * width + nx] > 0)
+                                    {
+                                        visited[ny, nx] = true;
+                                        q.Enqueue(new System.Drawing.Point(nx, ny));
+                                    }
+                                }
+                            }
+                        }
+
+                        // Solo se agrega si está cerrado y no es ruido pequeño
+                        if (isClosed && contour.Count > 10)
+                        {
+
+
+                            int localMinX = contour.Min(p => p.X);
+                            int localMaxX = contour.Max(p => p.X);
+                            int localMinY = contour.Min(p => p.Y);
+                            int localMaxY = contour.Max(p => p.Y);
+                            int xSpan = localMaxX - localMinX;
+                            int ySpan = localMaxY - localMinY;
+
+
+                            if (xSpan > 200)
+                            {
+                                Console.WriteLine($"Contorno descartado por exceder 500 px en eje X: {xSpan}px");
+                                continue;
+                            }
+
+                            else {
+                                holes.Add(contour);
+
+
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+            return holes.Count > 0;
+        }
+        private void ThinCracksInBuffer(Board B, int erosionIterations = 1)
+        {
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            UInt16[] originalBuf = B.CrackCB.Buf;
+            UInt16[] thinnedBuf = new UInt16[width * height];
+
+            // Copia binaria inicial: 1 si hay crack, 0 si no
+            for (int i = 0; i < width * height; i++)
+                thinnedBuf[i] = (originalBuf[i] > 0) ? (UInt16)1 : (UInt16)0;
+
+            int[] dx = { -1, 0, 1, 0 };
+            int[] dy = { 0, -1, 0, 1 };
+
+            // Erosión iterativa simple para adelgazar líneas
+            for (int iter = 0; iter < erosionIterations; iter++)
+            {
+                UInt16[] tempBuf = (UInt16[])thinnedBuf.Clone();
+
+                for (int y = 1; y < height - 1; y++)
+                {
+                    for (int x = 1; x < width - 1; x++)
+                    {
+                        if (thinnedBuf[y * width + x] == 1)
+                        {
+                            bool hasZeroNeighbor = false;
+                            for (int k = 0; k < 4; k++)
+                            {
+                                int nx = x + dx[k];
+                                int ny = y + dy[k];
+                                if (thinnedBuf[ny * width + nx] == 0)
+                                {
+                                    hasZeroNeighbor = true;
+                                    break;
+                                }
+                            }
+
+                            if (hasZeroNeighbor)
+                                tempBuf[y * width + x] = 0; // Erosiona borde
+                        }
+                    }
+                }
+
+                thinnedBuf = tempBuf;
+            }
+
+            // Reasignar el resultado a CrackCB.Buf con escala original
+            for (int i = 0; i < width * height; i++)
+                B.CrackCB.Buf[i] = (thinnedBuf[i] == 1) ? (UInt16)255 : (UInt16)0; // o 1 si usas valores binarios
+        }
+ 
+
+        public static void DetectAndSaveClosedContours(Bitmap inputImg, string outputFilename)
+        {
+            int width = inputImg.Width;
+            int height = inputImg.Height;
+
+            bool[,] visited = new bool[height, width];
+            List<List<System.Drawing.Point>> closedContours = new List<List<System.Drawing.Point>>();
+
+            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
+            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+            for (int y = 1; y < height - 1; y++)
+            {
+                for (int x = 1; x < width - 1; x++)
+                {
+                    Color c = inputImg.GetPixel(x, y);
+                    if (!visited[y, x] && (c.R < 100 && c.G < 100 && c.B < 100)) // es un pixel oscuro (contorno)
+                    {
+                        List<System.Drawing.Point> contour = new List<System.Drawing.Point>();
+                        Queue<System.Drawing.Point> queue = new Queue<System.Drawing.Point>();
+                        queue.Enqueue(new System.Drawing.Point(x, y));
+                        visited[y, x] = true;
+
+                        while (queue.Count > 0)
+                        {
+                            System.Drawing.Point p = queue.Dequeue();
+                            contour.Add(p);
+
+                            for (int k = 0; k < 8; k++)
+                            {
+                                int nx = p.X + dx[k];
+                                int ny = p.Y + dy[k];
+
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height && !visited[ny, nx])
+                                {
+                                    Color nc = inputImg.GetPixel(nx, ny);
+                                    if (nc.R < 100 && nc.G < 100 && nc.B < 100)
+                                    {
+                                        visited[ny, nx] = true;
+                                        queue.Enqueue(new System.Drawing.Point(nx, ny));
+                                    }
+                                }
+                            }
+                        }
+
+                        // Verifica si el contorno es cerrado (inicio y fin cerca)
+                        if (contour.Count > 10)
+                        {
+                            System.Drawing.Point first = contour[0];
+                            System.Drawing.Point last = contour[contour.Count - 1];
+                            double dist = Math.Sqrt(Math.Pow(first.X - last.X, 2) + Math.Pow(first.Y - last.Y, 2));
+
+                            if (dist < 5) // cerrados si la distancia es < 5 píxeles
+                                closedContours.Add(contour);
+                        }
+                    }
+                }
+            }
+
+            // Crear imagen para dibujar los contornos cerrados
+            Bitmap outputImg = new Bitmap(width, height);
+            using (Graphics g = Graphics.FromImage(outputImg))
+            {
+                g.Clear(Color.White);
+                Pen pen = new Pen(Color.Red, 1);
+
+                foreach (var contour in closedContours)
+                {
+                    if (contour.Count > 1)
+                    {
+                        for (int i = 0; i < contour.Count - 1; i++)
+                        {
+                            g.DrawLine(pen, contour[i], contour[i + 1]);
+                        }
+                        // Cierra el contorno explícitamente
+                        g.DrawLine(pen, contour[contour.Count - 1], contour[0]);
+                    }
+                }
+            }
+
+            outputImg.Save(outputFilename);
+        }
+
+        // Función 2: Guardar imagen con contornos de hoyos
+        private void SaveClosedHolesImage(Board B, string filename, List<List<System.Drawing.Point>> holes, ParamStorage paramStorage)
+        {
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            double MMPerPixelX = paramStorage.GetFloat(StringsLocalization.MMPerPixelX);
+            double MMPerPixelY = paramStorage.GetFloat(StringsLocalization.MMPerPixelY);
+            double areaThreshold = paramStorage.GetFloat(StringsLocalization.PunctureMaxAreaIn2);
+            Bitmap img = new Bitmap(width, height);
+
+            // 1. Dibujar los contornos en rojo sobre fondo blanco
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                g.Clear(Color.White);
+                Pen redPen = new Pen(Color.Red, 1);
+
+                foreach (List<System.Drawing.Point> contour in holes)
+                {
+                    for (int i = 0; i < contour.Count - 1; i++)
+                    {
+                        g.DrawLine(redPen, contour[i], contour[i + 1]);
+                    }
+                    g.DrawLine(redPen, contour[contour.Count - 1], contour[0]); // Cerrar
+                }
+            }
+
+            // 2. Convertir a imagen binaria (rojo => 1, otro => 0)
+            byte[,] binary = new byte[height, width];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Color color = img.GetPixel(x, y);
+                    if (color.R > 200 && color.G < 100 && color.B < 100)
+                        binary[y, x] = 1;
+                }
+            }
+
+            // 3. Etiquetar componentes conectados y calcular área y centroide
+            bool[,] visited = new bool[height, width];
+            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
+            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+            int objectId = 1;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (binary[y, x] == 1 && !visited[y, x])
+                    {
+                        int area = 0;
+                        int sumX = 0;
+                        int sumY = 0;
+
+                        Queue<System.Drawing.Point> q = new Queue<System.Drawing.Point>();
+                        q.Enqueue(new System.Drawing.Point(x, y));
+                        visited[y, x] = true;
+
+                        while (q.Count > 0)
+                        {
+                            System.Drawing.Point p = q.Dequeue();
+                            area++;
+                            sumX += p.X;
+                            sumY += p.Y;
+
+                            for (int k = 0; k < 8; k++)
+                            {
+                                int nx = p.X + dx[k];
+                                int ny = p.Y + dy[k];
+
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height)
+                                {
+                                    if (binary[ny, nx] == 1 && !visited[ny, nx])
+                                    {
+                                        visited[ny, nx] = true;
+                                        q.Enqueue(new System.Drawing.Point(nx, ny));
+                                    }
+                                }
+                            }
+                        }
+
+                        double cx = sumX / (double)area;
+                        double cy = sumY / (double)area;
+                        Console.WriteLine($"Board = {B.BoardName} Objeto #{objectId++}: Área = {area} px, Centroide = ({cx:F1}, {cy:F1})");
+                        double areaInInches = PixelsToSquareInches(area, MMPerPixelX, MMPerPixelY);
+                        Console.WriteLine($"Área en pulgadas cuadradas: {areaInInches:F4} in²");
+                        if (areaInInches > areaThreshold)
+                        {
+                            AddDefect(B, PalletDefect.DefectType.puncture,
+                                $"Puncture detected with area {areaInInches:F4} in², exceeds threshold of {areaThreshold} in².");
+                        }
+
+                    }
+                }
+            }
+
+            // 4. Guardar imagen
+            img.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+        }
+
+
+
+        private void SaveLargestClosedCrack(Board B, string filename)
+        {
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            UInt16[] buf = B.CrackCB.Buf;
+
+            bool[,] visited = new bool[height, width];
+            List<System.Drawing.Point> largestContour = new List<System.Drawing.Point>();
+            int maxArea = 0;
+
+            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
+            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (buf[y * width + x] > 0 && !visited[y, x])
+                    {
+                        List<System.Drawing.Point> currentContour = new List<System.Drawing.Point>();
+                        int area = 0;
+                        bool isClosed = true;
+                        Queue<System.Drawing.Point> q = new Queue<System.Drawing.Point>();
+                        q.Enqueue(new System.Drawing.Point(x, y));
+                        visited[y, x] = true;
+
+                        while (q.Count > 0)
+                        {
+                            System.Drawing.Point p = q.Dequeue();
+                            int cx = p.X;
+                            int cy = p.Y;
+                            area++;
+                            currentContour.Add(p);
+
+                            for (int k = 0; k < 8; k++)
+                            {
+                                int nx = cx + dx[k];
+                                int ny = cy + dy[k];
+
+                                if (nx < 0 || nx >= width || ny < 0 || ny >= height)
+                                {
+                                    isClosed = false;
+                                    continue;
+                                }
+
+                                if (!visited[ny, nx] && buf[ny * width + nx] > 0)
+                                {
+                                    visited[ny, nx] = true;
+                                    q.Enqueue(new System.Drawing.Point(nx, ny));
+                                }
+                            }
+                        }
+
+                        if (isClosed && area > maxArea)
+                        {
+                            maxArea = area;
+                            largestContour = currentContour;
+                        }
+                    }
+                }
+            }
+
+            if (largestContour.Count > 0)
+            {
+                Bitmap img = new Bitmap(width, height);
+                using (Graphics g = Graphics.FromImage(img))
+                {
+                    g.Clear(Color.White);
+                    foreach (System.Drawing.Point  pt in largestContour)
+                    {
+                        img.SetPixel(pt.X, pt.Y, Color.Red);
+                    }
+                }
+
+                img.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        private List<int> GetClosedCrackAreas(Board B)
+        {
+            int width = B.CrackCB.Width;
+            int height = B.CrackCB.Height;
+            UInt16[] buf = B.CrackCB.Buf;
+
+            bool[,] visited = new bool[height, width];
+            List<int> areas = new List<int>();
+
+            int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 }; // 8-connectivity
+            int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (buf[y * width + x] > 0 && !visited[y, x])
+                    {
+                        int area = 0;
+                        bool isClosed = true;
+                        Queue<System.Drawing.Point> q = new Queue<System.Drawing.Point>();
+                        q.Enqueue(new System.Drawing.Point(x, y));
+                        visited[y, x] = true;
+
+                        while (q.Count > 0)
+                        {
+                            System.Drawing.Point p = q.Dequeue();
+                            int cx = p.X;
+                            int cy = p.Y;
+                            area++;
+
+                            for (int k = 0; k < 8; k++)
+                            {
+                                int nx = cx + dx[k];
+                                int ny = cy + dy[k];
+
+                                if (nx < 0 || nx >= width || ny < 0 || ny >= height)
+                                {
+                                    isClosed = false; // Toca borde, no es cerrado
+                                    continue;
+                                }
+
+                                if (!visited[ny, nx] && buf[ny * width + nx] > 0)
+                                {
+                                    visited[ny, nx] = true;
+                                    q.Enqueue(new System.Drawing.Point(nx, ny));
+                                }
+                            }
+                        }
+
+                        if (isClosed && area > 5) // Ignorar ruido pequeño
+                            areas.Add(area);
+                    }
+                }
+            }
+
+            return areas;
+        }
+        
         void IsCrackAClosedShape(Board B, ParamStorage paramStorage)
         {
             int w = B.CrackTracker.GetLength(1);
@@ -2444,13 +3291,13 @@ namespace PalletCheck
                     double area = points.Count;
 
                     // Circularidad = 4π * area / (perímetro²)
-                    double circularity = 4 * Math.PI * area / (perimeter * perimeter);
-                    double areaThreshold = paramStorage.GetFloat(StringsLocalization.PunctureMaxAreamm2);
-                    double areaTresholdmm2 = areaThreshold; 
+                    
+                    
+                   
                     double areamm2 = area * B.XResolution * B.YResolution;
 
                     //if ((circularity > 0.5 || areamm2 > areaTresholdmm2) && fail == false)
-                    if ((areamm2>areaTresholdmm2)&&fail==false)
+                    if ((areamm2>1000))
                     { //perfect circle hhas 5, then 0.5 is very permisive
 
                         //AddDefect(B, PalletDefect.DefectType.puncture, $"Circular crack/hole detected. Circularity:{circularity:F2}");
@@ -2548,24 +3395,24 @@ namespace PalletCheck
         //=====================================================================
         private void FindRaisedBoard(Board B, ParamStorage paramStorage)
         {
-            // Jack Note: Define width (W1) and height (W2) of the board based on boundaries
+            //  Define width (W1) and height (W2) of the board based on boundaries
             int W1 = B.BoundsP2.X - B.BoundsP1.X;
             int W2 = B.BoundsP2.Y - B.BoundsP1.Y;
 
-            // Jack Note: Capture buffer width
+            //  Capture buffer width
             int CBW = B.CB.Width;
 
-            // Jack Note: Calculate the test value for identifying raised boards using the specified maximum height
+            //  Calculate the test value for identifying raised boards using the specified maximum height
             int RBTestVal = (int)(1000 + paramStorage.GetPixZ(StringsLocalization.RaisedBoardMaximumHeight));
 
-            // Jack Note: Get the percentage of the board that must be raised to consider it a defect
+            //  Get the percentage of the board that must be raised to consider it a defect
             float RBPercentage = paramStorage.GetFloat(StringsLocalization.RaisedBoardMaximumWidth) / 100f;
 
-            // Jack Note: Initialize counters for raised pixel count and total pixel count
+            //  Initialize counters for raised pixel count and total pixel count
             int RBCount = 0;
             int RBTotal = 0;
 
-            // Jack Note: Determine if the board is placed horizontally based on its dimensions
+            //  Determine if the board is placed horizontally based on its dimensions
             bool isHoriz = (W1 > W2);
 
             // Process the board if it is horizontal
@@ -2583,11 +3430,11 @@ namespace PalletCheck
                         //Retrieve the value from the capture buffer at the current position
                         UInt16 Val = B.CB.Buf[ty * CBW + tx];
 
-                        // Jack Note: Increment the raised count if the value exceeds the threshold
+                        //  Increment the raised count if the value exceeds the threshold
                         if (Val > RBTestVal)
                             RBCount++;
 
-                        // Jack Note: Always increment the total pixel count
+                        // Always increment the total pixel count
                         RBTotal++;
                     }
                 }
@@ -2802,10 +3649,6 @@ namespace PalletCheck
 
         //=====================================================================
         private void FindRaisedNailsDL(Board B, ParamStorage paramStorage, bool defecActivated, int i,bool Pos) {
-
-
-       
-
 
             /*inference---------------------------------------------------------------------------------------------------------------------------------*/
             int widthC = B.CB.Width;

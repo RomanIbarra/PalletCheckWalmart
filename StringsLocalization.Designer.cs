@@ -421,6 +421,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MarginForPuncturePx.
+        /// </summary>
+        internal static string MarginForPuncturePx {
+            get {
+                return ResourceManager.GetString("MarginForPuncturePx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MaxExposedNailHeight_mm.
         /// </summary>
         internal static string MaxExposedNailHeight_mm {
@@ -556,11 +565,11 @@ namespace PalletCheck {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PunctureMaxAreamm2.
+        ///   Looks up a localized string similar to PunctureMaxAreaIn2.
         /// </summary>
-        internal static string PunctureMaxAreamm2 {
+        internal static string PunctureMaxAreaIn2 {
             get {
-                return ResourceManager.GetString("PunctureMaxAreamm2", resourceCulture);
+                return ResourceManager.GetString("PunctureMaxAreaIn2", resourceCulture);
             }
         }
         
