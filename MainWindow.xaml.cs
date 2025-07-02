@@ -1727,7 +1727,7 @@ namespace PalletCheck
 
                             // Wait 10 seconds
                             Console.WriteLine("Waiting 10 seconds...");
-                            await Task.Delay(2000);
+                            await Task.Delay(6000);
                         }
 
                         Console.WriteLine("All subfolders processed.");
@@ -2169,8 +2169,15 @@ namespace PalletCheck
             Console.WriteLine($"Total Results: {finalResult}");
             stopwatchProcess.Stop();
             //UpdateTextBlock(LogText, $"Process time: {stopwatchProcess.Elapsed.TotalSeconds:F2} seconds", Colors.White, 30);
-            if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
-            if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
+
+
+            Dispatcher.Invoke(() =>
+            {
+                if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
+                if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
+            });
+          //  if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
+          //  if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
 
             // Save Results To CSV File
             Application.Current.Dispatcher.Invoke(() =>
