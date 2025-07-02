@@ -980,7 +980,7 @@ namespace PalletCheck
                     }
                 }
 
-                if (isDeepLActive)
+                if (!isDeepLActive)
                 {
                     /*Classifier inference---------------------------------------------------------------------------------------------------------------------------------*/
                     int widthC = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
