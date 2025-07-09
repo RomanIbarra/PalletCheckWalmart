@@ -2068,7 +2068,7 @@ namespace PalletCheck
             switch (clickedButton.Name)
             {
                 case "btnSetting_Top":
-                    selectedParamStorage = PalletClassifier == 0 ? ParamStorageTopInternational : ParamStorageTop;
+                    selectedParamStorage = ParamStorageTop;
                     position = "Top";
                     break;
 
@@ -2097,6 +2097,11 @@ namespace PalletCheck
                     position = "Back";
                     selectedParamStorage = ParamStorageBack;
                     LastUsedParamName = "";
+                    break;
+
+                case "btnSetting_TopInternational":
+                    selectedParamStorage = ParamStorageTopInternational;
+                    position = "TopInternational";
                     break;
 
                 default:
