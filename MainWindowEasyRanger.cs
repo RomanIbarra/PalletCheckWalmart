@@ -476,7 +476,6 @@ namespace PalletCheck
                 int[] RightClearancePct = env.GetInteger("ClearanceRightPctInt");
                 int NailLength = env.GetInteger("NailLength", 0);
                 int[] HasNails = env.GetInteger("OutputNails");
-                int[] middleBoardHasBlobs = env.GetInteger("MiddleBoardHasBlobs");
                 bool isFail = false;
                 System.Windows.Point[] PointForDisplay = env.GetPoint2D("OutputCenters");
 

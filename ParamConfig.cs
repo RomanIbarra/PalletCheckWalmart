@@ -103,7 +103,7 @@ namespace PalletCheck
                     if (e.RowIndex % 2 == 0)
                         DGV.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
                     else
-                        DGV.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.LightBlue;
+                        DGV.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.LightGray;
                 };
 
                 TP.Controls.Add(DGV);
@@ -178,16 +178,10 @@ namespace PalletCheck
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                MainWindow.LastUsedParamFile = sfd.FileName;
+                //MainWindow.LastUsedParamFile = sfd.FileName;
                 ParamStorageCurrent.SaveXML(sfd.FileName);
             }
         }
-
-
-        //private void ParamConfig_Load(object sender, EventArgs e)
-        //{
-
-        //}
 
         private void btnCalcBaseline_Click(object sender, EventArgs e)
         {
