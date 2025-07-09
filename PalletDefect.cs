@@ -31,7 +31,8 @@ namespace PalletCheck
             side_nails_protruding,           //added by HUB 
             middle_board_missing_wood,       //added by HUB
             unsecured_horizontal_block,      //added by HUB
-            puncture                        //Added by HUB
+            puncture,                        //Added by HUB
+            buttedJoint
         }
 
         public enum DefectLocation
@@ -130,6 +131,7 @@ namespace PalletCheck
                 case DefectType.missing_wood_width_at_one_point: return "MWAOP";         //Added by HUB
                 case DefectType.unsecured_horizontal_block: return "UHB";                //Added by HUB
                 case DefectType.puncture: return "PU";                                   //Added by HUB
+                case DefectType.buttedJoint: return "BJ";                           //Butted Joint
 
                 default: return "?";
             }
@@ -157,9 +159,10 @@ namespace PalletCheck
                 case "BPFP": return "Blocks Protruding From Pallet";    
                 case "SNP": return "Maximum Nails Protruding from Side";          
                 case "MBMW": return "Maximum Linear Support Board Missing Wood in %";
-                case "MWAOP": return "Missing Wood Width at One Point";    //Added by HUB
-                case "UHB": return "Unsecured Horizontal Block";         //Added by HUB
-                case "PU": return "Puncture";                                 //Added by HUB
+                case "MWAOP": return "Missing Wood Width at One Point";    
+                case "UHB": return "Unsecured Horizontal Block";         
+                case "PU": return "Puncture";                                 
+                case "BJ": return "ButtedJoint";
                 default: return "?";
             }
         }
@@ -185,23 +188,24 @@ namespace PalletCheck
                 case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
                 case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB
                 case DefectType.clearance: return "Fork Clearance";                                        //added by HUB
-                case DefectType.middle_board_missing_wood: return "Linear Support Missing Wood";             //Added by HUB 
-                case DefectType.missing_wood_width_at_one_point: return "Missing Wood With at One Point"; //Added by HUB
-                case DefectType.unsecured_horizontal_block: return "Unsecured Horizontal Block";         //Added by HUB
-                case DefectType.puncture: return "Puncture";                                               //Added by HUB
+                case DefectType.middle_board_missing_wood: return "Linear Support Missing Wood";              
+                case DefectType.missing_wood_width_at_one_point: return "Missing Wood With at One Point";
+                case DefectType.unsecured_horizontal_block: return "Unsecured Horizontal Block";         
+                case DefectType.puncture: return "Puncture";
+                case DefectType.buttedJoint: return "ButtedJoint";
                 default: return "?";
             }
         }
 
         public static string[] GetCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW","MWAOP","UHB","PU" };  //Last added by HUB 
+            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW","MWAOP","UHB","PU", "BJ" };  //Last added by HUB 
             return list;
         }
 
         public static string[] GetPLCCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU" };//Last 4 added by HUB
+            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU", "BJ" };//Last 4 added by HUB
             return list;
         }
 
@@ -230,7 +234,8 @@ namespace PalletCheck
             T_MWAOP = 51, // Top Missing Wood Width at One Point
             B_MWAOP = 52, // Bottom Missing Wood Width at One Point
             T_PU = 53,     // Top Puncture
-            B_PU = 54     // Bottom Puncture
+            B_PU = 54,     // Bottom Puncture
+            BJ= 55 // Butted Joint
 
         }
 
@@ -248,7 +253,8 @@ namespace PalletCheck
             MO = 9,
             FC = 10,        
             MBMW = 11,
-            PD = 12
+            PD = 12,
+            BJ = 13
         }
     }
 }

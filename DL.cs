@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Runtime.InteropServices;
 using Sick.StreamUI.UIImage;
+using Color = System.Drawing.Color;
 
 namespace PalletCheck
 {
@@ -29,15 +30,17 @@ namespace PalletCheck
         private static string modelPath = "../../../DL_Models/maskrcnn_model.onnx";        //TopSplit leading and trailing boards
         private static string modelPath2 = "../../../DL_Models/RaisedNailsDetector4.onnx"; //Side Nails protruding
         private static string modelPath3 = "../../../DL_Models/ClassifierNoNOM.onnx";      //Classifier
-        private static string modelPath4 = "../../../DL_Models/RN_Board.onnx";            //TopRNWHCO
+        private static string modelPath4 = "../../../DL_Models/RN_Board.onnx";            //TopRN
         private static string modelPath5 = "../../../DL_Models/RaisedNailsDetector5.onnx";
         private static string modelPath6 = "../../../DL_Models/RN_Board.onnx";
+        private static string modelPath7 = "../../../DL_Models/RN_Board.onnx";
         private static InferenceSession session;
         private static InferenceSession session2;
         private static InferenceSession session3;
         private static InferenceSession session4;
         private static InferenceSession session5;
         private static InferenceSession session6;
+        private static InferenceSession session7;
 
         // Inicializar el modelo solo una vez
         static model()
@@ -50,6 +53,7 @@ namespace PalletCheck
                 session4 = new InferenceSession(modelPath4);
                 session5 = new InferenceSession(modelPath5);
                 session6 = new InferenceSession(modelPath6);
+                session7 = new InferenceSession(modelPath7);
                 Console.WriteLine("Modelos ONNX cargado correctamente.");
             }
             catch (Exception e)
@@ -276,6 +280,45 @@ namespace PalletCheck
             {
                 // Ejecutar la inferencia
                 using (var results = session6.Run(inputs))
+                {
+                    if (results != null && results.Count > 0)
+                    {
+                        outputData[0] = results[0].AsTensor<float>()?.ToArray() ?? new float[0]; // Boxes
+                        outputData[1] = results[1].AsTensor<float>()?.ToArray() ?? new float[0]; // Labels
+                        outputData[2] = results[2].AsTensor<float>()?.ToArray() ?? new float[0]; // Scores
+                        outputData[3] = results[3].AsTensor<float>()?.ToArray() ?? new float[0]; // Masks
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: No se obtuvieron resultados válidos de la inferencia.");
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error durante la inferencia: " + ex.Message);
+            }
+
+            return outputData;
+        }
+        public static float[][] RunInferenceButtedJoint(float[] imageData, int heigth, int width)
+        {
+            // Crear un tensor de entrada para el modelo
+            var inputTensor = new DenseTensor<float>(imageData, new[] { 1, 3, heigth, width });
+
+            var inputs = new List<NamedOnnxValue>
+            {
+                NamedOnnxValue.CreateFromTensor("input", inputTensor) // Double check  de que el nombre del input sea el correcto
+            };
+
+            float[][] outputData = new float[4][];
+
+            try
+            {
+                // Ejecutar la inferencia
+                using (var results = session7.Run(inputs))
                 {
                     if (results != null && results.Count > 0)
                     {
@@ -615,7 +658,7 @@ namespace PalletCheck
                 }
            
 
-            return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
+            return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2, etc...
         }
         public static int[] DrawCentroids(string imagePath, float[] boxes, float[] scores, string savePath,bool saveViz)
         {
@@ -848,6 +891,27 @@ namespace PalletCheck
 
             return imageData;
         }
+        public static float[] ProcessBitmapForInference1(Bitmap bitmap, int width, int height)
+        {
+            float[] imageData = new float[3 * width * height]; // CHW
+            int indexR = 0;
+            int indexG = width * height;
+            int indexB = 2 * width * height;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Color pixel = bitmap.GetPixel(x, y);
+                    imageData[indexR++] = pixel.R / 255.0f;
+                    imageData[indexG++] = pixel.G / 255.0f;
+                    imageData[indexB++] = pixel.B / 255.0f;
+                }
+            }
+
+            return imageData;
+        }
+
         public static List<bool[,]> ConvertMasksToBinary(float[] masks, int width, int height, int numDetections)
         {
             List<bool[,]> binaryMasks = new List<bool[,]>();

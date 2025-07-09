@@ -12,6 +12,7 @@ using System.Linq;
 using static OpenTK.Audio.OpenAL.XRamExtension;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
+using System.Windows.Media.Imaging;
 
 namespace PalletCheck
 {
@@ -1085,7 +1086,14 @@ namespace PalletCheck
                     ByteArray2bitmap(bytesIntensity[0], W[0], Y[0], bitmap);
                     // Define area of interest and cropp
                     //int startC = 0; int endC = W[0]; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
-                    int startC = 49; int endC = 2400; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
+
+
+                    int xOffset = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
+                    int startC = 49+700;
+                    int endC = 2400+ 700;
+                    
+                    //int endC = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
+                    int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
                     Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
                     Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 2560, 688);
@@ -1239,7 +1247,7 @@ namespace PalletCheck
                     // Define area of interest and cropp
                     startR = (int)(ycs[6] - heights[6] / 2);
                     endR = (int)(ycs[6] + heights[6] / 2);
-                    cropRect = new Rectangle(startC, startR, endC - startC, endR - startR);
+                    cropRect = new Rectangle(startC, startR, endC, endR - startR);
                     croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapT = model.ResizeBitmap(croppedBitmap, 2560, 688);
 
@@ -1488,9 +1496,28 @@ namespace PalletCheck
 
                 
             }
+            Task.WaitAll(boardTasks.ToArray());
 
-            // 等待所有任务完成
-            Task.WaitAll(boardTasks.ToArray()); // 同步等待所有任务完成
+
+            /*
+            List<Task> boardTasks1 = new List<Task>();
+
+            for (int i = 0; i < 3; i++)
+            {
+                
+                var board = BList[i];
+                boardTasks1.Add(Task.Run(() => test1(i)));
+                
+            }
+            Task.WaitAll(boardTasks1.ToArray());
+            */
+            
+            if (position == PositionOfPallet.Bottom) {
+                var board1 = BList[0];
+                test1(1, board1);
+
+            }
+            
 
             if (isDeepLActive)
             {/*
@@ -3000,7 +3027,7 @@ namespace PalletCheck
             double MMPerPixelX = paramStorage.GetFloat(StringsLocalization.MMPerPixelX);
             double MMPerPixelY = paramStorage.GetFloat(StringsLocalization.MMPerPixelY);
             double areaThreshold = paramStorage.GetFloat(StringsLocalization.PunctureMaxAreaIn2);
-            Bitmap img = new Bitmap(width, height);
+            Bitmap img = new Bitmap(width, height); 
 
             // 1. Dibujar los contornos en rojo sobre fondo blanco
             using (Graphics g = Graphics.FromImage(img))
@@ -3798,6 +3825,17 @@ namespace PalletCheck
                     }
                 }
             }
+
+        }
+
+        private void ButtedJoint(Board B, ParamStorage paramStorage)
+        {
+
+            //Adquirir Imagen 
+            //Realizar inferencia
+            //Extraer resultados
+            //Analizar resultados 
+
 
         }
         private void FindRaisedNails(Board B,ParamStorage paramStorage)
@@ -4922,7 +4960,110 @@ namespace PalletCheck
 
             return -1;
         }
+        public void test1(int i, Board B) {
 
+
+
+            //Get the image
+            /*
+            byte[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer("buttedJoint1")._intensity;
+            int width = MainWindow._envBottom.GetImageBuffer("buttedJoint1").Info.Width;
+            int height = MainWindow._envBottom.GetImageBuffer("buttedJoint1").Info.Height;
+            Bitmap bitmapJoint1 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            ByteArray2bitmap(byteArrayJoint1, width, height, bitmapJoint1);
+            Bitmap resizedJoint1 = model.ResizeBitmap(bitmapJoint1, 1009, 1450);
+            resizedJoint1.Save("VizDL/BottomButtedJoint/ButtedJoint1.png", ImageFormat.Png);
+
+            */
+            
+            Bitmap resizedJoint = new Bitmap("C:/Users/MICHE/Desktop/Git_Sick/DL/ButtedJoint/data/ButtedJoint/Images/buttedJoint6.3.png");
+            Bitmap resizedJoint1 = model.ResizeBitmap(resizedJoint, 1009, 1450);
+            Bitmap gray = new Bitmap(resizedJoint1.Width, resizedJoint1.Height, PixelFormat.Format24bppRgb);
+
+            using (Graphics g = Graphics.FromImage(gray))
+            {
+                g.DrawImage(resizedJoint1, 0, 0);
+            }
+
+            float[] imageData = new float[3 * gray.Width * gray.Height];
+
+            int indexR = 0, indexG = gray.Width * gray.Height, indexB = 2 * gray.Width * gray.Height;
+
+            for (int y = 0; y < gray.Height; y++)
+            {
+                for (int x = 0; x < gray.Width; x++)
+                {
+                    Color pixel = gray.GetPixel(x, y);
+                    // Convertir a escala de grises
+                    float grayValue = (pixel.R * 0.3f + pixel.G * 0.59f + pixel.B * 0.11f) / 255.0f;
+
+                    imageData[indexR++] = grayValue;
+                    imageData[indexG++] = grayValue;
+                    imageData[indexB++] = grayValue;
+                }
+            }
+            //Process the image for inference
+            float[] imageData1 = model.ProcessBitmapForInference(gray, gray.Width, gray.Height);
+            float[][] results = model.RunInferenceButtedJoint(imageData1, gray.Height, gray.Width);
+
+            //Get the results
+            float[] boxes = results[0];
+            float[] labels = results[1];
+            float[] scores = results[2];
+            float[] masks = results[3];
+            //Vizualice Results------------------------------------------------------------------------------------------
+            string LeadingMainImage = "VizDL/BottomButtedJoint/ButtedJoint.png";
+
+            //Condition to save the results as png Images
+            if (true)
+            {
+                resizedJoint1.Save(LeadingMainImage, ImageFormat.Png);
+                model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "ButtedJoint.png");
+
+            }
+
+            // Convert to32bppArgb to draw results and display it 
+            Bitmap tempBitmap = new Bitmap(resizedJoint1.Width, resizedJoint1.Height, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(tempBitmap))
+            {
+                g.DrawImage(resizedJoint1, new Rectangle(0, 0, resizedJoint1.Width, resizedJoint1.Height));
+            }
+            resizedJoint1.Dispose(); // Liberar el anterior
+            resizedJoint1 = tempBitmap; // Usar el nuevo bitmap compatible
+
+            // Draw the segmented objects
+            List<bool[,]> binaryMasks = model.ConvertMasksToBinary(masks, resizedJoint1.Width, resizedJoint1.Height, scores.Length);
+            List<bool[]> binaryMasks2 = model.ConvertMasksToBinary2(masks, resizedJoint1.Width, resizedJoint1.Height, scores.Length);
+            //------------------------------------------------------------------------------------------------------------
+
+            bool[] ScoresResults = new bool[scores.Length];
+            int[] Centroids;
+            float threshold = 0.5f; 
+            //If there are no 3 nails, set the defect
+            if (scores.Length > 2 )
+            {
+
+
+                    Centroids = model.getCentroids4(boxes, scores, threshold);
+                for(int h = 0; h < Centroids.Length / 2; h++)
+                {
+                    //Note:Double check model, after last training it decrease the accuracy
+                    //Note:Last model works good in python paste it here and check the results before uncomment the following lines.
+                    //model.GetMaxRangeInCircle(Centroids[h * 2], Centroids[h * 2 + 1], binaryMasks2[h], resizedJoint1.Width, resizedJoint1.Height, 10, 0.5f, out int minX, out int maxX, out int minY, out int maxY);
+                }
+
+
+
+            }
+            else
+            {
+
+                //AddDefect(B, PalletDefect.DefectType.buttedJoint, "Butted Joint With Less Than 3 Nails");
+
+            }
+
+
+        }
         public void RetrieveButtedJointImages()
         {
             byte[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer("buttedJoint1")._intensity;
