@@ -1102,10 +1102,10 @@ namespace PalletCheck
                     float[][] results = model.RunInference(imageData, croppedBitmapR.Height, croppedBitmapR.Width);
 
                     //Get the results
-                    float[] boxes = results[0];
-                    float[] labels = results[1];
-                    float[] scores = results[2];
-                    float[] masks = results[3];
+                    float[] boxes  =  results[0];
+                    float[] labels =  results[1];
+                    float[] scores =  results[2];
+                    float[] masks  =  results[3];
                     //Vizualice BB Results
                     string LeadingMainImage = "VizDL/TopSplit/Leading.png";
 
@@ -1113,7 +1113,6 @@ namespace PalletCheck
                     if (isSaveTopSplitResults) {
                         croppedBitmapR.Save(LeadingMainImage, ImageFormat.Png);
                         model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
-
                     }
 
                     // Convert to32bppArgb to draw results and display it 
@@ -1155,8 +1154,7 @@ namespace PalletCheck
                    };
 
                     //Old dataset X crops
-                    //int X1 = 49;         
-                    //int X2 = 2400;
+
                     
                     int X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
                     int X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
@@ -1165,12 +1163,21 @@ namespace PalletCheck
                     lowerY1 = model.ScaleVal(lowerY1, 688, ScaleVal); 
 
                     if (img1Exist && img2Exist)
-                    {//Both images exist Upper Y taked intop account
+                    {
+
+                        if (upperY2 == 0 && lowerY1 == 0)
+                        {
+                            upperY2 = 269;
+                            lowerY1 = 230;
+                        }
+                        //Both images exist Upper Y taked intop account
+
                         H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
                               startR, upperY2 + startR, paramStorage);
                         //captureBuffers[0].SaveImage("H1.png");
                         H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2, 1,
                                lowerY1 + startR, endR, paramStorage);
+
                         startY[0] = startR;
                         endY[0] = upperY2 + startR;
                         startY[1] = lowerY1 + startR;
@@ -2546,9 +2553,9 @@ namespace PalletCheck
                 if (MeasLen < MinLen)
                 {
                     //  Mark the board as too short and set defect marker
-                    AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.XResolution)).ToString() +
-                        "(mm) shorter than " + ((int)(MinLen * B.XResolution)).ToString() + "(mm) (" + BoardLenPerc100.ToString() + "% of the Lenth)");
-                    SetDefectMarker(B);
+                   // AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.XResolution)).ToString() +
+                   //     "(mm) shorter than " + ((int)(MinLen * B.XResolution)).ToString() + "(mm) (" + BoardLenPerc100.ToString() + "% of the Lenth)");
+                   // SetDefectMarker(B);
                     return;
                 }
             }
@@ -2566,9 +2573,9 @@ namespace PalletCheck
                 if (MeasLen < MinLen)
                 {
                     //  Mark the board as too short and set defect marker
-                    AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.YResolution)).ToString() + 
-                        "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Length)");
-                    SetDefectMarker(B);
+                   // AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.YResolution)).ToString() + 
+                   //     "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Length)");
+                  //  SetDefectMarker(B);
                     return;
                 }
             }
