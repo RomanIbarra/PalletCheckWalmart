@@ -1089,7 +1089,7 @@ namespace PalletCheck
 
 
                     int xOffset = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
-                    int startC = 49+700;
+                    int startC = 49+400;
                     int endC = 2400+ 700;
                     
                     //int endC = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
@@ -1165,10 +1165,10 @@ namespace PalletCheck
                     if (img1Exist && img2Exist)
                     {
 
-                        if (upperY2 == 0 && lowerY1 == 0)
+                        if (upperY2 == 0 || lowerY1 == 0)
                         {
-                            upperY2 = 269;
-                            lowerY1 = 230;
+                            upperY2 = 281;// Limite superior tabla de abajo en leading
+                            lowerY1 = 280;//limite inferior tabla de arriba en leading
                         }
                         //Both images exist Upper Y taked intop account
 
@@ -1519,11 +1519,11 @@ namespace PalletCheck
             Task.WaitAll(boardTasks1.ToArray());
             */
             
-            if (position == PositionOfPallet.Bottom) {
+            /*if (position == PositionOfPallet.Bottom) {
                 var board1 = BList[0];
                 test1(1, board1);
-
-            }
+            
+            }*/
             
 
             if (isDeepLActive)

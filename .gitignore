@@ -417,3 +417,13 @@ obj/x64/Debug/MainWindow.g.i.cs
 /obj/x64/Debug/MainWindow.g.cs
 /DL_Models/RaisedNailsDetector5.onnx
 /DL_Models/RN_Board.onnx
+*.env
+*.env
+*.env
+EasyRangerEnvironments/Bottom.env
+EasyRangerEnvironments/Sides.env
+EasyRangerEnvironments/Top.txt
+EasyRangerEnvironments/Bottom.env
+EasyRangerEnvironments/Bottom.env
+EasyRangerEnvironments/Bottom.env
+EasyRangerEnvironments/Bottom.env
