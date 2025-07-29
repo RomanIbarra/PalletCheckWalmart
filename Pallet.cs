@@ -840,10 +840,12 @@ namespace PalletCheck
                         float yScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.YResolution;
                         cntr = cntr + 1;
                         DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Bottom, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
-                        RetrieveButtedJointImages();
+                        
                     }
                 }
 
+                // RetrieveButtedJointImages(); Function disabled cause it saves distorted images.
+                // Instead, images are saved from the Easy Ranger Environment
                 iCount = 5;
                 int TopX = FindTopX(ProbeCB,paramStorage);
                 int BottomY  = FindBottomY(ProbeCB,paramStorage);
@@ -1499,32 +1501,25 @@ namespace PalletCheck
             {
                 // 为每个板子创建一个Task，并启动ProcessBoard
                 var board = BList[i];
-                boardTasks.Add(Task.Run(() => ProcessBoard(board, paramStorage, i, Pos, position)));
-
-                
+                boardTasks.Add(Task.Run(() => ProcessBoard(board, paramStorage, i, Pos, position)));            
             }
+
             Task.WaitAll(boardTasks.ToArray());
 
 
-            /*
-            List<Task> boardTasks1 = new List<Task>();
-
-            for (int i = 0; i < 3; i++)
+            /*if (position == PositionOfPallet.Bottom)
             {
-                
-                var board = BList[i];
-                boardTasks1.Add(Task.Run(() => test1(i)));
-                
-            }
-            Task.WaitAll(boardTasks1.ToArray());
-            */
-            
-            /*if (position == PositionOfPallet.Bottom) {
-                var board1 = BList[0];
-                test1(1, board1);
-            
-            }*/
-            
+                List<Task> boardTasks1 = new List<Task>();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    int currentIndex = i + 1; // Capture the current value 
+                    var board1 = BList[i];
+                    boardTasks1.Add(Task.Run(() => CheckButtedJoint(currentIndex, board1))); //Add 1 to i because butted images start from 1       
+                }
+
+                Task.WaitAll(boardTasks1.ToArray());
+            }                 */    
 
             if (isDeepLActive)
             {/*
@@ -1634,11 +1629,9 @@ namespace PalletCheck
             }
 
             try
-            {
-                
-
-                
-                if (position == PositionOfPallet.Top) {
+            {         
+                if (position == PositionOfPallet.Top) 
+                {
                     //Find Raised Board for top
                     FindRaisedBoard(B, paramStorage);
                     //Finds contourns
@@ -1647,10 +1640,6 @@ namespace PalletCheck
                     SaveCrackDetectionImage(B, B.BoardName+"Top_Cracks.png");
                     //Finds cracks and breaks and look for break across the width   
                     CheckForBreaks(B, paramStorage);
-                    //Looks for punctures in the board   //IsCrackAClosedShape(B, paramStorage);
-
-                    //Thin the cracks
-                    // ThinCracksInBuffer(B, erosionIterations: 6);
 
                     SmoothBinaryCracks(B);
                     SkeletonizeBufferZhangSuen(B);
@@ -1659,44 +1648,35 @@ namespace PalletCheck
                     List<List<System.Drawing.Point>> closedHoles;
                     bool hasHoles = HasClosedHole(B, out closedHoles,paramStorage);
                     
-
                     if (hasHoles)
                     {
-                        SaveClosedHolesImage(B, B.BoardName+"_Puncture.png", closedHoles,paramStorage);
-                       
+                        SaveClosedHolesImage(B, B.BoardName+"_Puncture.png", closedHoles,paramStorage);                      
                     }
-
                 }
 
-
-                if (position == PositionOfPallet.Bottom) {
+                if (position == PositionOfPallet.Bottom)
+                {
                     //Find Raised Board for top
                     FindRaisedBoard(B, paramStorage);
                     //Finds contourns
                     FindCracks(B, paramStorage);
                     //Draws contours for analisys
-                   // SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");           
+                    //SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");           
                     //Finds cracks and breaks and look for break across the width   
                     CheckForBreaks(B, paramStorage);
-
-
-
-
-
+                    //Check for less than 3 nails securing the boards
+                    CheckButtedJoint(B, paramStorage);
                 }
+
                 //Calculate missing wood
                 CalculateMissingWood(B, paramStorage);                
                 //Check for missing wood across the length of the board
                 CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
                 //Check for missing wood less than 1/2 its width at one point of the board 
                 //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
-                //Check for puncture in or between boards
-                
                 //Check for RaisedNails 
                 if (!isDeepLActive) {FindRaisedNails(B, paramStorage);}
                 else{/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
-
-
             }
 
             catch (Exception E)
@@ -4967,110 +4947,85 @@ namespace PalletCheck
 
             return -1;
         }
-        public void test1(int i, Board B) {
 
+        public void CheckButtedJoint(Board B, ParamStorage paramStorage) 
+        {
+            int index = 0;   
 
+            // A pair of butted joint regions are analyzed per vertical board so image nubmer (index) is defined according to the board inspected
+            if (B.BoardName == "V1") {  index = 1; }        // V1: 1, 4
+            else if (B.BoardName == "V2") { index = 2; }    // V2: 2, 5
+            else if (B.BoardName == "V3") { index = 3; }    // V3: 3, 6
+            else { return; }
 
-            //Get the image
-            /*
-            byte[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer("buttedJoint1")._intensity;
-            int width = MainWindow._envBottom.GetImageBuffer("buttedJoint1").Info.Width;
-            int height = MainWindow._envBottom.GetImageBuffer("buttedJoint1").Info.Height;
-            Bitmap bitmapJoint1 = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
-            ByteArray2bitmap(byteArrayJoint1, width, height, bitmapJoint1);
-            Bitmap resizedJoint1 = model.ResizeBitmap(bitmapJoint1, 1009, 1450);
-            resizedJoint1.Save("VizDL/BottomButtedJoint/ButtedJoint1.png", ImageFormat.Png);
-
-            */
-            
-            Bitmap resizedJoint = new Bitmap("C:/Users/MICHE/Desktop/Git_Sick/DL/ButtedJoint/data/ButtedJoint/Images/buttedJoint6.3.png");
-            Bitmap resizedJoint1 = model.ResizeBitmap(resizedJoint, 1009, 1450);
-            Bitmap gray = new Bitmap(resizedJoint1.Width, resizedJoint1.Height, PixelFormat.Format24bppRgb);
-
-            using (Graphics g = Graphics.FromImage(gray))
+            //for loop will only run 2 times (analyze 2 butted joint images per board)
+            for (int i = index; i <= 6; i += 3) // Set limit to 6 cause there are only 6 butted joint regions
             {
-                g.DrawImage(resizedJoint1, 0, 0);
-            }
+                string imageName = "buttedJoint" + i;
+                float[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer(imageName)._range; // Get the image  
+                int width = MainWindow._envBottom.GetImageBuffer(imageName).Info.Width;
+                int height = MainWindow._envBottom.GetImageBuffer(imageName).Info.Height;
 
-            float[] imageData = new float[3 * gray.Width * gray.Height];
+                Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
+                Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
+                Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format24bppRgb);
 
-            int indexR = 0, indexG = gray.Width * gray.Height, indexB = 2 * gray.Width * gray.Height;
-
-            for (int y = 0; y < gray.Height; y++)
-            {
-                for (int x = 0; x < gray.Width; x++)
+                using (Graphics g = Graphics.FromImage(gray))
                 {
-                    Color pixel = gray.GetPixel(x, y);
-                    // Convertir a escala de grises
-                    float grayValue = (pixel.R * 0.3f + pixel.G * 0.59f + pixel.B * 0.11f) / 255.0f;
-
-                    imageData[indexR++] = grayValue;
-                    imageData[indexG++] = grayValue;
-                    imageData[indexB++] = grayValue;
-                }
-            }
-            //Process the image for inference
-            float[] imageData1 = model.ProcessBitmapForInference(gray, gray.Width, gray.Height);
-            float[][] results = model.RunInferenceButtedJoint(imageData1, gray.Height, gray.Width);
-
-            //Get the results
-            float[] boxes = results[0];
-            float[] labels = results[1];
-            float[] scores = results[2];
-            float[] masks = results[3];
-            //Vizualice Results------------------------------------------------------------------------------------------
-            string LeadingMainImage = "VizDL/BottomButtedJoint/ButtedJoint.png";
-
-            //Condition to save the results as png Images
-            if (true)
-            {
-                resizedJoint1.Save(LeadingMainImage, ImageFormat.Png);
-                model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "ButtedJoint.png");
-
-            }
-
-            // Convert to32bppArgb to draw results and display it 
-            Bitmap tempBitmap = new Bitmap(resizedJoint1.Width, resizedJoint1.Height, PixelFormat.Format32bppArgb);
-            using (Graphics g = Graphics.FromImage(tempBitmap))
-            {
-                g.DrawImage(resizedJoint1, new Rectangle(0, 0, resizedJoint1.Width, resizedJoint1.Height));
-            }
-            resizedJoint1.Dispose(); // Liberar el anterior
-            resizedJoint1 = tempBitmap; // Usar el nuevo bitmap compatible
-
-            // Draw the segmented objects
-            List<bool[,]> binaryMasks = model.ConvertMasksToBinary(masks, resizedJoint1.Width, resizedJoint1.Height, scores.Length);
-            List<bool[]> binaryMasks2 = model.ConvertMasksToBinary2(masks, resizedJoint1.Width, resizedJoint1.Height, scores.Length);
-            //------------------------------------------------------------------------------------------------------------
-
-            bool[] ScoresResults = new bool[scores.Length];
-            int[] Centroids;
-            float threshold = 0.5f; 
-            //If there are no 3 nails, set the defect
-            if (scores.Length > 2 )
-            {
-
-
-                    Centroids = model.getCentroids4(boxes, scores, threshold);
-                for(int h = 0; h < Centroids.Length / 2; h++)
-                {
-                    //Note:Double check model, after last training it decrease the accuracy
-                    //Note:Last model works good in python paste it here and check the results before uncomment the following lines.
-                    //model.GetMaxRangeInCircle(Centroids[h * 2], Centroids[h * 2 + 1], binaryMasks2[h], resizedJoint1.Width, resizedJoint1.Height, 10, 0.5f, out int minX, out int maxX, out int minY, out int maxY);
+                    g.DrawImage(resizedJoint, 0, 0);
                 }
 
+                //Process the image for inference
+                float[] imageData1 = model.ProcessBitmapForInference(gray, gray.Width, gray.Height);
+                float[][] results = model.RunInferenceButtedJoint(imageData1, gray.Height, gray.Width);
 
+                //Get the results
+                float[] boxes = results[0];     //Coordinates for the bounding boxes of the model. x1,y1: top left corner, x2,y2: bottom right corner 
+                float[] labels = results[1];    //Classes
+                float[] scores = results[2];    //Precission of the detection in float (%)
+                float[] masks = results[3];     //Vector of vectors. Matrices, 0 = backgroud, 1=foreground (segmentation masks)
 
+                //Save the results to visualize them
+                try
+                {
+                    string resultImageName = "VizDL/ButtedJointResults/" + imageName + ".png";
+                    resizedJoint.Save(resultImageName, ImageFormat.Png);
+                    resizedJoint.Dispose();
+                    string newimageName = "VizDL/ButtedJointResults/results_" + imageName + ".png";
+                    model.DrawBoxes(resultImageName, boxes, scores, newimageName);
+                }
+
+                catch (Exception e)
+                {
+                    throw e;
+                }
+
+                bool[] ScoresResults = new bool[scores.Length];
+                int[] Centroids;
+                float threshold = 0.4f; // Threshold to select only results above this limit
+                int securedNails = 0;
+                int centroidsIndex = 0;
+
+                Centroids = model.getCentroids4(boxes, scores, threshold); //Centroids[0] = x1, Centroids[1] = y1, Centroids[2] = x2 ...
+
+                for (int j = 0; j < Centroids.Length / 2; j ++)
+                {
+                    if (!model.IsMajorityNaN(Centroids[centroidsIndex], Centroids[centroidsIndex + 1], 20, width, height, byteArrayJoint1))
+                    {
+                        securedNails++;                       
+                    }
+                    centroidsIndex += 2;
+                }
+
+                if (securedNails < 3)
+                {
+                    AddDefect(B, PalletDefect.DefectType.buttedJoint, "Butted Joint With Less Than 3 Nails");
+                }
+                
             }
-            else
-            {
-
-                //AddDefect(B, PalletDefect.DefectType.buttedJoint, "Butted Joint With Less Than 3 Nails");
-
-            }
-
-
+           
         }
+
         public void RetrieveButtedJointImages()
         {
             byte[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer("buttedJoint1")._intensity;

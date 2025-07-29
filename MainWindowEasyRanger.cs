@@ -201,20 +201,14 @@ namespace PalletCheck
                             }
                         }
                     }
-                    /*  Variables for Unsecured Horizontal Block  */
 
-
-                    //double[] BlobCentroidsB1 = env.GetDouble("CentroidsB1");
+                    // Variables for Unsecured Horizontal Block
                     System.Windows.Point[] BlobCentroidsB1Point = env.GetPoint2D("CentroidsB1");
                     System.Windows.Point[] BlobCentroidsB2Point = env.GetPoint2D("CentroidsB2");
                     System.Windows.Point[] BlobCentroidsB3Point = env.GetPoint2D("CentroidsB3");
-                    /*double[] BlobCentroidsB2 = env.GetDouble("CentroidsB2");
-                    double[] BlobCentroidsB3 = env.GetDouble("CentroidsB3");
-                    BlobCentroidsB1.GetLength(0);
-                    */
 
-                    /*  Variables needed for missing volume  feature */
-                    int[] ExpectedDepth = new int[3];//mm2
+                    // Variables needed for missing volume  feature
+                    int[] ExpectedDepth = new int[3]; //mm2
                     float[] ExpectedSurface = new float[3];
                     float[] ExpectedVolume = new float[3];
 
@@ -237,13 +231,7 @@ namespace PalletCheck
                     if (customXResolution == 0) { Xres = (float)env.GetDouble("M_XResolution", 0); }
                          else { Xres = customXResolution; }
                     if (customYResolution == 0) { Yres = (float)env.GetDouble("M_YResolution", 0); }
-                         else { Yres = customYResolution; }
-
-                    
-
-                    
-
-
+                         else { Yres = customYResolution; }                 
 
                     for (int i = 0; i < 3; i++)
                     {
@@ -254,16 +242,10 @@ namespace PalletCheck
 
                         if (missingBlocks[i] == 1)
                         {
-
-
                             /*  Missing volume feature:
                              *  Description: this segment of code evaluates the volume of each existent block and compares 
                              *  it against (expected volume * percentage parameter), if missing volume is greater than the 
-                             *  expected volume, it will mark the defect
-                             *  
-                             
-                             
-                             */
+                             *  expected volume, it will mark the defect */
                             double ExpectedSurfacemm2 = ExpectedSurface[i];
                             double ExpectedVolumemm3 = ExpectedVolume[i];
                             int Depthmm = ExpectedDepth[i];
@@ -280,20 +262,14 @@ namespace PalletCheck
                                 P.AddDefect(P.BList[i], PalletDefect.DefectType.missing_blocks, "Missing block volume: " + Math.Round((TotalMissingVolume), 2) + "mm³ > " + Math.Round(minimumExpectedVolume, 2) + "mm³(minimum expected volume)");
                                 viewer.DrawRoi("OutputRegions", i, red, 128);
                                 isFail = true;
-
                             }
-                            else {
 
-                                
-
-
-
-
+                            else 
+                            {
                                 viewer.DrawRoi("OutputRegions", i, green, 50);
-                                if (i == 0)
-                                {
 
-                                    
+                                if (i == 0)
+                                {                                  
                                     if (BlobCentroidsB1Point.Length > 1)
                                     {
                                         if (Math.Abs(BlobCentroidsB1Point[0].Y - BlobCentroidsB1Point[1].Y) > 40)
@@ -304,6 +280,7 @@ namespace PalletCheck
                                         }
                                     }
                                 }
+
                                 if (i == 1)
                                 {
                                     if (BlobCentroidsB2Point.Length > 1)
@@ -316,6 +293,7 @@ namespace PalletCheck
                                         }
                                     }
                                 }
+
                                 if (i == 2)
                                 {
                                     if (BlobCentroidsB3Point.Length > 1)
@@ -328,12 +306,6 @@ namespace PalletCheck
                                         }
                                     }
                                 }
-
-
-
-
-
-
                             }
                         }
 

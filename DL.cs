@@ -33,7 +33,7 @@ namespace PalletCheck
         private static string modelPath4 = "../../../DL_Models/RN_Board.onnx";            //TopRN
         private static string modelPath5 = "../../../DL_Models/RaisedNailsDetector5.onnx";
         private static string modelPath6 = "../../../DL_Models/RN_Board.onnx";
-        private static string modelPath7 = "../../../DL_Models/RN_Board.onnx";
+        private static string modelPath7 = "../../../DL_Models/RaisedNailDet_4buttedJoint.onnx";
         private static InferenceSession session;
         private static InferenceSession session2;
         private static InferenceSession session3;
@@ -624,7 +624,70 @@ namespace PalletCheck
             return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2.
         }
 
-        public static int[] getCentroids4(float[] boxes, float[] scores, double Score)
+        public static void DrawBoxes(string imagePath, float[] boxes, float[] scores, string savePath)
+        {
+            // Obtener la ruta del ejecutable
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Construir la ruta completa de la imagen
+            string path = Path.Combine(exeDirectory, imagePath);
+
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"Error: La imagen '{path}' no existe.");
+                return;
+            }
+
+            WMI.BitmapImage bitmapImage = new WMI.BitmapImage(new Uri(path, UriKind.Absolute));
+            int width = bitmapImage.PixelWidth;
+            int height = bitmapImage.PixelHeight;
+
+            // Crear un WriteableBitmap para modificar la imagen
+            WMI.WriteableBitmap writableBitmap = new WMI.WriteableBitmap(bitmapImage);
+            WM.DrawingVisual visual = new WM.DrawingVisual();
+
+            using (WM.DrawingContext dc = visual.RenderOpen())
+            {
+                dc.DrawImage(bitmapImage, new W.Rect(0, 0, width, height));
+
+                // Seleccionar los dos mejores bounding boxes
+                int[] topIndices = scores
+                    .Select((score, index) => new { Score = score, Index = index })
+                    .OrderByDescending(x => x.Score)
+                    .Take(5)
+                    .Select(x => x.Index)
+                    .ToArray();
+
+                WM.Pen pen = new WM.Pen(WM.Brushes.Red, 3);
+
+                foreach (int i in topIndices)
+                {
+                    int x1 = (int)boxes[i * 4];
+                    int y1 = (int)boxes[i * 4 + 1];
+                    int x2 = (int)boxes[i * 4 + 2];
+                    int y2 = (int)boxes[i * 4 + 3];
+
+                    W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);
+                    dc.DrawRectangle(null, pen, rect);
+                }
+            }
+
+            // Renderizar y guardar la imagen modificada
+            WMI.RenderTargetBitmap rtb = new WMI.RenderTargetBitmap(width, height, 96, 96, WM.PixelFormats.Pbgra32);
+            rtb.Render(visual);
+
+            WMI.PngBitmapEncoder encoder = new WMI.PngBitmapEncoder();
+            encoder.Frames.Add(WMI.BitmapFrame.Create(rtb));
+
+            using (FileStream fs = new FileStream(savePath, FileMode.Create))
+            {
+                encoder.Save(fs);
+            }
+
+            Console.WriteLine($"Imagen guardada en {savePath}");
+        }
+
+        public static int[] getCentroids4(float[] boxes, float[] scores, double scoreThreshold)
         {
             // Cargar imagen original
             // Obtener la ruta del ejecutable
@@ -634,9 +697,9 @@ namespace PalletCheck
             // Seleccionar los dos mejores bounding boxes
              int[] topIndices = scores
                    .Select((score, index) => new { Score = score, Index = index })
-                   .Where(x => x.Score > Score) // Filtrar por score mayor a 0.7 (score)
+                   .Where(x => x.Score > scoreThreshold) // Filtrar por score mayor al umbral
                    .OrderByDescending(x => x.Score)
-                   .Take(3) // Tomar los 3 mejores
+                   .Take(5) // Tomar los 5 mejores
                    .Select(x => x.Index)
                    .ToArray();
 
@@ -652,14 +715,12 @@ namespace PalletCheck
                     int centerY = (y1 + y2) / 2;
                     centroids.Add(centerX);
                     centroids.Add(centerY);
-
-                    W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);
-                    
-                }
-           
+                    W.Rect rect = new W.Rect(x1, y1, x2 - x1, y2 - y1);                 
+                }    
 
             return centroids.ToArray(); // Devuelve 2 valores si hay 1 objeto, 4 si hay 2, etc...
         }
+
         public static int[] DrawCentroids(string imagePath, float[] boxes, float[] scores, string savePath,bool saveViz)
         {
             // Cargar imagen original
@@ -1371,18 +1432,46 @@ namespace PalletCheck
             }
         }
 
+        //Returns true if nail is not secured
+        public static bool IsMajorityNaN(int x, int y, int maskSize, int width, int height, float[] floatArray)
+        {
+            // Definir los límites de la región de interés
+            //x, y: nail coordinates (
+            //maskSize: 20 pixels equals aprox 1 cm, so the search will be 1cm around the nail
+            int startX = Math.Max(0, x - maskSize);
+            int endX = Math.Min(width - 1, x + maskSize);
+            int startY = Math.Max(0, y - maskSize);
+            int endY = Math.Min(height - 1, y + maskSize);
 
+            int totalCount = 0;
+            int nanCount = 0;
 
+            //Console.WriteLine("Cuadrado de valores en la región de interés:");
 
+            for (int i = startY; i <= endY; i++)
+            {
+                string rowValues = "";
+                for (int j = startX; j <= endX; j++)
+                {
+                    int index = i * width + j;
+                    float value = floatArray[index];
+                    totalCount++;
 
+                    if (float.IsNaN(value))
+                    {
+                        nanCount++;
+                    }
 
+                    rowValues += value.ToString("F2") + " ";
+                }
+                //Console.WriteLine(rowValues.Trim());
+            }
+
+            // Determinar si la mayoría son NaN
+            return nanCount > totalCount / 2; //Divided by 2 to set 50% of material surrounding the nail
+        }
 
     }
-
-
-
-
-
 }
 
 
