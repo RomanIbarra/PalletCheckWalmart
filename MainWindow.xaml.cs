@@ -81,7 +81,7 @@ namespace PalletCheck
         /*Save results Sides nails protruding outside of pallet*/
         public static bool isSaveSideNailsProtrudingResults = false;
         /*Save results for pallet classifier*/
-        public static bool isSavePalletClassifierResults = true;
+        public static bool isSavePalletClassifierResults = false;
         /*Save results Top nails with head cutoff*/
         public static bool isSaveTopRNWHCO = false;
         /*Buffer for saving the defects*/
