@@ -1170,9 +1170,7 @@ namespace PalletCheck
         public static void SplitBoard2(Bitmap bitmap, float[] boxes, float[] scores, List<bool[,]> masks,
                                 string name, ref bool img1Exists, ref bool img2Exists,
                                 ref int upperY1, ref int upperY2, ref int lowerY1, ref int lowerY2,bool activateViz=false)
-
         {
-
 
             // Seleccionar los 2 mejores objetos
             int[] topIndices = scores
@@ -1182,43 +1180,38 @@ namespace PalletCheck
                 .Select(x => x.Index)
                 .ToArray();
 
-            if (scores.Length < 1)
+            if (scores.Length <= 1)
             {
 
                 Console.WriteLine("No se encontraron suficientes objetos.");
                 PointF idk = CalculateCentroid(masks[0]);
+
                 if (idk.Y > (bitmap.Height / 2))
                 {
                     img2Exists = true;
                     img1Exists = false;
                 }
+
                 else
                 {
                     img2Exists = false;
                     img1Exists = true;
-
                 }
-
-
             }
+
             else
             {
-
                 img1Exists = true;
                 img2Exists = true;
             }
-
-
 
             for (int objIndex = 0; objIndex < 2; objIndex++)
             {
                 using (Bitmap objectBitmap = new Bitmap(bitmap))
                 using (Graphics graphics = Graphics.FromImage(objectBitmap))
-
                 {
                     // System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 3);
                     Random rand = new Random();
-
                     // Determinar cuál objeto excluir
                     int excludeIndex = topIndices[objIndex];
 
@@ -1226,7 +1219,6 @@ namespace PalletCheck
                     {
                         if (topIndices[i] == excludeIndex)
                             continue; // No dibujar este objeto
-
 
                         // Dibujar la máscara del objeto permitido
                         if (masks != null && masks.Count > topIndices[i])
@@ -1246,8 +1238,10 @@ namespace PalletCheck
                                 }
                             }
                         }
+
                         int yy2 = 0;
                         int yy1 = 0;
+
                         if (topIndices[i] == 0)
                         {
                             int x1 = (int)boxes[topIndices[1] * 4];
@@ -1260,8 +1254,8 @@ namespace PalletCheck
                             yy1 = y1;
                             // Dibujar el bounding box del objeto que sí queremos mostrar
                             // graphics.DrawRectangle(pen, x1, y1, boxWidth, boxHeight);
-
                         }
+
                         if (topIndices[i] == 1)
                         {
                             int x1 = (int)boxes[topIndices[0] * 4];
@@ -1274,19 +1268,15 @@ namespace PalletCheck
                             yy1 = y1;
                             // Dibujar el bounding box del objeto que sí queremos mostrar
                             // graphics.DrawRectangle(pen, x1, y1, boxWidth, boxHeight);
-
                         }
-
-
-
 
                         // Guardar la imagen con el objeto excluido
                         PointF centroid = CalculateCentroid(masks[topIndices[i]]);
                         if (centroid.Y > (bitmap.Height / 2))
                         {
-
-                            //////////////////////////Crop Upper
-                            if (activateViz) {
+                            //Crop Upper
+                            if (activateViz) 
+                            {
                                 string savePathObj = "VizDL/TopSplit/Upper_"+name+".png";
                                 string savePathObj2 = "VizDL/TopSplit/upperSplit"+name+".png";
                                 objectBitmap.Save(savePathObj, ImageFormat.Png);
@@ -1294,21 +1284,14 @@ namespace PalletCheck
                                 Rectangle cropRect = new Rectangle(0, 0, objectBitmap.Width, yy2);
                                 Bitmap croppedBitmap = bitmap.Clone(cropRect, objectBitmap.PixelFormat);
                                 croppedBitmap.Save(savePathObj2, ImageFormat.Png);
-
                             } 
 
-                         
                             upperY1 = yy1;
                             upperY2 = yy2;
-
-
-
-
-
                         }
+
                         if (centroid.Y < (bitmap.Height / 2))
                         {
-
                             if (activateViz)
                             {
                                 string savePathObj = "VizDL/TopSplit/Lower_"+name+".png";
@@ -1320,22 +1303,11 @@ namespace PalletCheck
                                 Bitmap croppedBitmap = bitmap.Clone(cropRect, objectBitmap.PixelFormat);
                                 croppedBitmap.Save(savePathObj2, ImageFormat.Png);
                             }
+
                             lowerY1 = yy1;
                             lowerY2 = yy2;
-
-
-
                         }
-
-
                     }
-
-
-
-
-
-
-
                 }
             }
         }

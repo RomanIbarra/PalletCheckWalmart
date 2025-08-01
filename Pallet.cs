@@ -2342,15 +2342,13 @@ namespace PalletCheck
                 }
             }
         }
-        /*Note this algorithm loolks for cracks across width(previous description wasn't correct) 
- * Ex. crack connecting rigth and left edges if the board is vertical
- Top and bottom edges if its horizontal */
-        //=====================================================================
+
+
+        /*Note this algorithm loolks for cracks across width Ex. crack connecting rigth and left edges 
+         * if the board is vertical
+         * Top and bottom edges if its horizontal */
         void IsCrackABrokenBoard(Board B, ParamStorage paramStorage)
         {
-            // Retrieve the block size from the parameter storage (not used in this version of the function).
-            int BlockSize = paramStorage.GetInt(StringsLocalization.CrackTrackerBlockSize);
-
             // Get the dimensions of the crack tracker matrix (height and width).
             int w = B.CrackTracker.GetLength(1);  // Width of the board
             int h = B.CrackTracker.GetLength(0);  // Height of the board
@@ -2365,7 +2363,7 @@ namespace PalletCheck
             // --- Scan for cracks that touch both edges (edge-to-edge connection) ---
             if (isHoriz)
             {
-                // Board is wider than tall; check for vertical cracks (top to bottom)
+                // Board is wider than taller; check for vertical cracks (top to bottom)
                 for (int y = 0; y < h; y++)
                 {
                     for (int x = 0; x < w; x++)
@@ -2486,19 +2484,6 @@ namespace PalletCheck
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         //=====================================================================
         private void CheckForBreaks(Board B,ParamStorage paramStorage)

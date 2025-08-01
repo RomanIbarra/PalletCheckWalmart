@@ -1256,7 +1256,7 @@ namespace PalletCheck
             {
                 Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*", 
                 InitialDirectory = MainWindow.RecordingRootDir,        
-                Title = "Select Bottom Images"                           
+                Title = "Select Images"                           
             };
 
             if (OFD.ShowDialog() != true)
