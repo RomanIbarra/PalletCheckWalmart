@@ -36,6 +36,9 @@ namespace PalletCheck
 
         private void ProcessMeasurement(Action<bool> callback, PositionOfPallet position)
         {
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
             // Select environment and view based on position
             var env = (position == PositionOfPallet.Left) ? _envLeft : _envRight;
             var viewer = (position == PositionOfPallet.Left) ? ViewerLeft : ViewerRight;
@@ -94,7 +97,13 @@ namespace PalletCheck
                 env.SetInteger("InputStartCropY", StartCropY);
                 env.SetInteger("InputEndCropY", EndCropY);
                 env.SetDouble("NailHeight", NailHeight);
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
                 env.GetStepProgram("Main").RunFromBeginning();
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("EasyRanger environment FINISHED for {0} -  {1:0.000} sec", position.ToString(), AnalysisTotalSec));
+
                 double[] missingBlocks = env.GetDouble("OutputMissBlock");
                 double[] missingChunks = env.GetDouble("OutputMissChunk");
                 double[] RotateResult = env.GetDouble("OutputAngle");
@@ -376,6 +385,9 @@ namespace PalletCheck
         }
         private void ProcessMeasurementFrontBack(Action<bool> callback, PositionOfPallet position)
         {
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
             // Select environment and view based on position
             var env = (position == PositionOfPallet.Front) ? _envFront : _envBack;
             var viewer = (position == PositionOfPallet.Front) ? ViewerFront : ViewerBack;
@@ -435,7 +447,14 @@ namespace PalletCheck
                 env.SetInteger("InputStartCropY", StartCropY);
                 env.SetInteger("InputEndCropY", EndCropY);
                 env.SetDouble("NailHeight", NailHeight);
+
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
                 env.GetStepProgram("Main").RunFromBeginning();
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("EasyRanger environment FINISHED for {0} -  {1:0.000} sec", position.ToString(), AnalysisTotalSec));
+
                 double[] missingBlocks = env.GetDouble("OutputMissBlock");
                 double[] missingChunks = env.GetDouble("OutputMissChunk");
                 double[] RotateResult = env.GetDouble("OutputAngle");
@@ -652,6 +671,9 @@ namespace PalletCheck
 
         private int[] GetCentroidsDL(float[] floatArray, byte[] byteArray, CaptureBuffer rangeBuffer, CaptureBuffer ReflBuf, PositionOfPallet position, double NailHeight)
         {
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
             Bitmap bitmap = new Bitmap(ReflBuf.Width, ReflBuf.Height, GDII.PixelFormat.Format8bppIndexed);
             model model = new model();
             model.ByteArray2bitmap(byteArray, bitmap.Width, bitmap.Height, bitmap);
@@ -663,9 +685,16 @@ namespace PalletCheck
             CheckIfDirectoryExists(vizDLFolder);          
             ReflBuf.SaveImage(fullImagePath, true);
 
+            //Get Exec time
+            AnalysisStartTime = DateTime.Now;
+
             //Process the image for inference
             float[] imageData = model.ProcessBitmapForInference(bitmap, bitmap.Width, bitmap.Height);
             float[][] results = model.RunInference2(imageData, bitmap.Height, bitmap.Width);
+
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("DeepLearning getCentroids FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
             //Get the results
             float[] boxes = results[0];

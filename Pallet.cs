@@ -1004,12 +1004,17 @@ namespace PalletCheck
                     /*************************************
                      *Critical time functions to improve *
                      *************************************/
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
 
                     //Process the image for inference
                     float[] imageDataClass = model.ProcessBitmapForInference(resizedImage, resizedImage.Width, resizedImage.Height);
                     int resultClass = model.RunInferenceClassifier(imageDataClass, resizedImage.Height, resizedImage.Width);
                     PalletClassifier = resultClass; // 0 = International, 1 = Standard
                     paramStorage = PalletClassifier == 1 ? GetParamStorage(PositionOfPallet.Top) : GetParamStorage(PositionOfPallet.TopInternational);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Classifier FINISHED, {0} -  {1:0.000} sec", PalletClassifier, AnalysisTotalSec));
                 }
 
                 RoiType[] roiTypes = new RoiType[7];
@@ -1099,9 +1104,16 @@ namespace PalletCheck
                     Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
                     Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 2560, 688);
+
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
                     //Process the image for inference
                     float[] imageData = model.ProcessBitmapForInference(croppedBitmapR, croppedBitmapR.Width, croppedBitmapR.Height);
                     float[][] results = model.RunInference(imageData, croppedBitmapR.Height, croppedBitmapR.Width);
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Leading block FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
                     //Get the results
                     float[] boxes  =  results[0];
@@ -1260,9 +1272,16 @@ namespace PalletCheck
                     croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapT = model.ResizeBitmap(croppedBitmap, 2560, 688);
 
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
+
                     //Process the image for inference
                     imageData = model.ProcessBitmapForInference(croppedBitmapT, croppedBitmapT.Width, croppedBitmapT.Height);
                     results = model.RunInference(imageData, croppedBitmapT.Height, croppedBitmapT.Width);
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Trailing block FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
                     //Get the results
                     boxes = results[0];
@@ -3738,6 +3757,9 @@ namespace PalletCheck
         //=====================================================================
         private void FindRaisedNailsDL(Board B, ParamStorage paramStorage, bool defecActivated, int i,bool Pos) {
 
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
             /*inference---------------------------------------------------------------------------------------------------------------------------------*/
             int widthC = B.CB.Width;
             int heightC = B.CB.Height;
@@ -3763,9 +3785,16 @@ namespace PalletCheck
             else {
                // croppedBitmapR.Save($"Bottom{i}.png");
             }
-            
+
+            //Get Exec time
+            AnalysisStartTime = DateTime.Now;
+
             float[] imageDataTop = model.ProcessBitmapForInference(croppedBitmapR, croppedBitmapR.Width, croppedBitmapR.Height);
             float[][] resultsTop = model.RunInferenceTop(imageDataTop, croppedBitmapR.Height, croppedBitmapR.Width);
+
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("DeepLearning FindNails FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
             //Get the results
             float[] boxesTop = resultsTop[0];
@@ -4950,6 +4979,9 @@ namespace PalletCheck
 
         public void CheckButtedJoint(Board B, ParamStorage paramStorage) 
         {
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
             int index = 0;   
 
             // A pair of butted joint regions are analyzed per vertical board so image nubmer (index) is defined according to the board inspected
@@ -4966,18 +4998,31 @@ namespace PalletCheck
                 int width = MainWindow._envBottom.GetImageBuffer(imageName).Info.Width;
                 int height = MainWindow._envBottom.GetImageBuffer(imageName).Info.Height;
 
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
+
                 Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
                 Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
                 Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format24bppRgb);
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint resize image FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
                 using (Graphics g = Graphics.FromImage(gray))
                 {
                     g.DrawImage(resizedJoint, 0, 0);
                 }
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
 
                 //Process the image for inference
                 float[] imageData1 = model.ProcessBitmapForInference(gray, gray.Width, gray.Height);
                 float[][] results = model.RunInferenceButtedJoint(imageData1, gray.Height, gray.Width);
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Analysis FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
                 //Get the results
                 float[] boxes = results[0];     //Coordinates for the bounding boxes of the model. x1,y1: top left corner, x2,y2: bottom right corner 
