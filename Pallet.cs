@@ -340,7 +340,7 @@ namespace PalletCheck
         {
             AnalysisStartTime = DateTime.Now;
             Busy = true;
-            Logger.WriteLine("Pallet::DoAnalysis START");
+            Logger.WriteLine("Pallet::DoAnalysis START - " + position.ToString());
             AddCaptureBuffer("Image", ReflectanceCB);
             Logger.WriteLine(String.Format("DoAnalysisBlocking: Original W,H  {0}  {0}", Original.Width, Original.Height));
             AddCaptureBuffer("Original", Original);
@@ -451,7 +451,7 @@ namespace PalletCheck
             Busy = false;
             AnalysisStopTime = DateTime.Now;
             AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-            Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED  -  {0:0.000} sec", AnalysisTotalSec));      
+            Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED {0} -  {1:0.000} sec", position.ToString(), AnalysisTotalSec));      
         }      
 
         private CaptureBuffer DeNoiseEasyRanger(CaptureBuffer SourceCB, PositionOfPallet position)
@@ -1113,7 +1113,7 @@ namespace PalletCheck
 
                     AnalysisStopTime = DateTime.Now;
                     AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                    Logger.WriteLine(String.Format("DeepLearning Leading block FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+                    Logger.WriteLine(String.Format("DeepLearning Leading block FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
 
                     //Get the results
                     float[] boxes  =  results[0];
@@ -1134,6 +1134,7 @@ namespace PalletCheck
                     using (Graphics g = Graphics.FromImage(tempBitmap))
                     {
                         g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmapR.Width, croppedBitmapR.Height));
+                        Logger.WriteLine(String.Format("Image updated for {0} (leading)", position.ToString()));
                     }
                     croppedBitmap.Dispose(); // Liberar el anterior
                     croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
@@ -1281,7 +1282,7 @@ namespace PalletCheck
 
                     AnalysisStopTime = DateTime.Now;
                     AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                    Logger.WriteLine(String.Format("DeepLearning Trailing block FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+                    Logger.WriteLine(String.Format("DeepLearning Trailing block FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
 
                     //Get the results
                     boxes = results[0];
@@ -1301,6 +1302,7 @@ namespace PalletCheck
                     using (Graphics g = Graphics.FromImage(tempBitmap))
                     {
                         g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmap.Width, croppedBitmap.Height));
+                        Logger.WriteLine(String.Format("Image updated for {0} (trailing)", position.ToString()));
                     }
                     croppedBitmap.Dispose(); // Liberar el anterior
                     croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
@@ -1638,6 +1640,14 @@ namespace PalletCheck
 
         private void ProcessBoard(object _B,ParamStorage paramStorage, int i,bool Pos, PositionOfPallet position)
         {
+            DateTime AnalysisStartTotalTime;
+            DateTime AnalysisStopTotalTime;
+
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
+
+            AnalysisStartTotalTime = DateTime.Now;
             Board B = (Board)_B;
 
             if (UseBackgroundThread)
@@ -1651,19 +1661,52 @@ namespace PalletCheck
             {         
                 if (position == PositionOfPallet.Top) 
                 {
+                    AnalysisStartTime = DateTime.Now;
                     //Find Raised Board for top
                     FindRaisedBoard(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} FindRaisedBoard FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
                     //Finds contourns
                     FindCracks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
                     //Draws contours for analisys
                     SaveCrackDetectionImage(B, B.BoardName+"Top_Cracks.png");
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SaveCrackDetectionImage FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+                    
+                    AnalysisStartTime = DateTime.Now;
                     //Finds cracks and breaks and look for break across the width   
                     CheckForBreaks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} CheckForBreaks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
 
+                    AnalysisStartTime = DateTime.Now;
                     SmoothBinaryCracks(B);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SmoothBinaryCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
                     SkeletonizeBufferZhangSuen(B);
-                    SaveCrackDetectionImage(B, B.BoardName + "Schelet.png");
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SkeletonizeBufferZhangSuen FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
                     
+                    AnalysisStartTime = DateTime.Now;
+                    SaveCrackDetectionImage(B, B.BoardName + "Schelet.png");
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SaveCrackDetectionImage FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
                     List<List<System.Drawing.Point>> closedHoles;
                     bool hasHoles = HasClosedHole(B, out closedHoles,paramStorage);
                     
@@ -1675,28 +1718,63 @@ namespace PalletCheck
 
                 if (position == PositionOfPallet.Bottom)
                 {
+                    AnalysisStartTime = DateTime.Now;
                     //Find Raised Board for top
                     FindRaisedBoard(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} FindRaisedBoard FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
                     //Finds contourns
                     FindCracks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
                     //Draws contours for analisys
-                    //SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");           
+                    //SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");
+                    AnalysisStartTime = DateTime.Now;
                     //Finds cracks and breaks and look for break across the width   
                     CheckForBreaks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} CheckForBreaks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
                     //Check for less than 3 nails securing the boards
                     CheckButtedJoint(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} CheckButtedJoint FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
                 }
 
+                AnalysisStartTime = DateTime.Now;
                 //Calculate missing wood
-                CalculateMissingWood(B, paramStorage);                
+                CalculateMissingWood(B, paramStorage);
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("CalculateMissingWood {0} FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                AnalysisStartTime = DateTime.Now;
                 //Check for missing wood across the length of the board
                 CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("CheckNarrowBoardHUB {0} FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
                 //Check for missing wood less than 1/2 its width at one point of the board 
                 //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
+                
+                AnalysisStartTime = DateTime.Now;
                 //Check for RaisedNails 
                 if (!isDeepLActive) {FindRaisedNails(B, paramStorage);}
                 else{/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("FindRaisedNails FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
             }
+
 
             catch (Exception E)
             {
@@ -1704,6 +1782,10 @@ namespace PalletCheck
                 AddDefect(B, PalletDefect.DefectType.board_segmentation_error, "Exception thrown in ProcessBoard()");
                 return;
             }
+
+            AnalysisStopTotalTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTotalTime - AnalysisStartTotalTime).TotalSeconds;
+            Logger.WriteLine(String.Format("Board Analysis FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
 
         //=====================================================================
@@ -3794,7 +3876,7 @@ namespace PalletCheck
 
             AnalysisStopTime = DateTime.Now;
             AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-            Logger.WriteLine(String.Format("DeepLearning FindNails FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+            Logger.WriteLine(String.Format("DeepLearning FindNails FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
 
             //Get the results
             float[] boxesTop = resultsTop[0];
@@ -4979,10 +5061,13 @@ namespace PalletCheck
 
         public void CheckButtedJoint(Board B, ParamStorage paramStorage) 
         {
+            DateTime AnalysisStartTimeTotal;
+            DateTime AnalysisStopTimeTotal;
             DateTime AnalysisStartTime;
             DateTime AnalysisStopTime;
             double AnalysisTotalSec;
-            int index = 0;   
+            int index = 0;
+            AnalysisStartTimeTotal = DateTime.Now;
 
             // A pair of butted joint regions are analyzed per vertical board so image nubmer (index) is defined according to the board inspected
             if (B.BoardName == "V1") {  index = 1; }        // V1: 1, 4
@@ -4995,34 +5080,63 @@ namespace PalletCheck
             {
                 string imageName = "buttedJoint" + i;
                 float[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer(imageName)._range; // Get the image  
+                byte[] byteArrayBottom = MainWindow._envBottom.GetImageBuffer(imageName)._intensity;
                 int width = MainWindow._envBottom.GetImageBuffer(imageName).Info.Width;
                 int height = MainWindow._envBottom.GetImageBuffer(imageName).Info.Height;
+                Bitmap bitmapBottom = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
                 //Get Exec time
                 AnalysisStartTime = DateTime.Now;
 
+                
                 Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
-                Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
-                Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
+                //Bitmap resizedJoint = model.ResizeBitmap(joint, width/2, height/2);
+                Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                
 
+                /*
+                Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
+                //Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
+                Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                */
+                /*
+                //Convert the byte array to bitmap
+                ByteArray2bitmap(byteArrayBottom, width, height, bitmapBottom);
+                Bitmap resizedJoint = model.ResizeBitmap(bitmapBottom, 1009, 1450);
+                Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format8bppIndexed);
+                */
                 AnalysisStopTime = DateTime.Now;
                 AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                Logger.WriteLine(String.Format("DeepLearning Buttedjoint resize image FINISHED -  {0:0.000} sec", AnalysisTotalSec));
-
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint resize image FINISHED {0}:{1}  -  {2:0.000} sec", B.BoardName, imageName, AnalysisTotalSec));
+                
                 using (Graphics g = Graphics.FromImage(gray))
                 {
-                    g.DrawImage(resizedJoint, 0, 0);
+                    //g.DrawImage(resizedJoint, 0, 0);
+                    g.DrawImage(joint, 0, 0);
+                    Logger.WriteLine(String.Format("Image updated for {0} (buttedJoint)", B.BoardName));
                 }
+                
                 //Get Exec time
                 AnalysisStartTime = DateTime.Now;
 
                 //Process the image for inference
                 float[] imageData1 = model.ProcessBitmapForInference(gray, gray.Width, gray.Height);
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Process Image FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
                 float[][] results = model.RunInferenceButtedJoint(imageData1, gray.Height, gray.Width);
 
                 AnalysisStopTime = DateTime.Now;
                 AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Analysis FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Analysis FINISHED {0}:{1}  -  {2:0.000} sec", B.BoardName, imageName, AnalysisTotalSec));
 
                 //Get the results
                 float[] boxes = results[0];     //Coordinates for the bounding boxes of the model. x1,y1: top left corner, x2,y2: bottom right corner 
@@ -5033,11 +5147,18 @@ namespace PalletCheck
                 //Save the results to visualize them
                 try
                 {
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
                     string resultImageName = "VizDL/ButtedJointResults/" + imageName + ".png";
-                    resizedJoint.Save(resultImageName, ImageFormat.Png);
-                    resizedJoint.Dispose();
+                    joint.Save(resultImageName, ImageFormat.Png);
+                    joint.Dispose();
+                    //resizedJoint.Save(resultImageName, ImageFormat.Png);
+                    //resizedJoint.Dispose();
                     string newimageName = "VizDL/ButtedJointResults/results_" + imageName + ".png";
                     model.DrawBoxes(resultImageName, boxes, scores, newimageName);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Buttedjoint Draw Boxes FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
                 }
 
                 catch (Exception e)
@@ -5051,6 +5172,9 @@ namespace PalletCheck
                 int securedNails = 0;
                 int centroidsIndex = 0;
 
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
+
                 Centroids = model.getCentroids4(boxes, scores, threshold); //Centroids[0] = x1, Centroids[1] = y1, Centroids[2] = x2 ...
 
                 for (int j = 0; j < Centroids.Length / 2; j ++)
@@ -5062,13 +5186,21 @@ namespace PalletCheck
                     centroidsIndex += 2;
                 }
 
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint getCentroids4 FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
                 if (securedNails < 3)
                 {
                     AddDefect(B, PalletDefect.DefectType.buttedJoint, "Butted Joint With Less Than 3 Nails");
                 }
                 
             }
-           
+
+            AnalysisStopTimeTotal = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTimeTotal - AnalysisStartTimeTotal).TotalSeconds;
+            Logger.WriteLine(String.Format("DeepLearning Buttedjoint total FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
         }
 
         public void RetrieveButtedJointImages()
