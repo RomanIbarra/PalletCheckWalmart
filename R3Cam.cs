@@ -480,7 +480,7 @@ namespace PalletCheck
                     if (frameGrabber.IsStarted)
                     {
                         SetCaptureState(CaptureState.Capturing);
-                        Logger.WriteLine("frameGrabber Start Capturing - " + CameraName);
+                        //Logger.WriteLine("frameGrabber Start Capturing - " + CameraName);
                         Thread.Sleep(1000);
                         //try
                         //{
