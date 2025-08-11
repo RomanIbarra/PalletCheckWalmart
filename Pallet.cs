@@ -13,6 +13,7 @@ using static OpenTK.Audio.OpenAL.XRamExtension;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
 using System.Windows.Media.Imaging;
+using System.Xml.Schema;
 
 namespace PalletCheck
 {
@@ -1080,15 +1081,12 @@ namespace PalletCheck
                 try
                 {
                     //Leading split inference
-
-                    //define the bitmap
                     Bitmap bitmap = new Bitmap(W[0], Y[0], PixelFormat.Format8bppIndexed);
 
                     //Convert the byte array to bitmap
                     ByteArray2bitmap(bytesIntensity[0], W[0], Y[0], bitmap);
                     // Define area of interest and cropp
                     //int startC = 0; int endC = W[0]; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
-
 
                     int xOffset = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
                     int startC = 49+400;
@@ -1099,23 +1097,23 @@ namespace PalletCheck
                     Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
                     Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 2560, 688);
+
                     //Process the image for inference
                     float[] imageData = model.ProcessBitmapForInference(croppedBitmapR, croppedBitmapR.Width, croppedBitmapR.Height);
                     float[][] results = model.RunInference(imageData, croppedBitmapR.Height, croppedBitmapR.Width);
-
+                    string pName = String.Format(StringsLocalization.TopHXBoardWidth_in, "1");
+                    int boardWidthPixels = (croppedBitmapR.Width * MainWindow.GetParamStorage(position).GetPixY(pName)) / bitmap.Width;
+                    
                     //Get the results
-                    float[] boxes  =  results[0];
-                    float[] labels =  results[1];
-                    float[] scores =  results[2];
-                    float[] masks  =  results[3];
-                    //Vizualice BB Results
-                    string LeadingMainImage = "VizDL/TopSplit/Leading.png";
+                    float[] boxes = results[0].Length <= 4 ? AddBoundingBox(results, (float)boardWidthPixels) : results[0];   //Coordinates for the bounding boxes of the model. x1,y1: top left corner, x2,y2: bottom right corner 
+                    float[] labels =  results[1];   //Classes
+                    float[] scores =  results[2].Length == 1 ? new float[] { results[2][0], results[2][0] } : results[2] ;   //Precission of the detection in float (%)
+                    float[] masks  =  results[3];   //Vector of vectors. Matrices, 0 = backgroud, 1=foreground (segmentation masks)  
 
-                    //Condition to save the results as png Images
-                    if (isSaveTopSplitResults) {
-                        croppedBitmapR.Save(LeadingMainImage, ImageFormat.Png);
-                        model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
-                    }
+                    //Visualize Bounding Box Results
+                    string LeadingMainImage = "VizDL/TopSplit/Leading.png";
+                    croppedBitmapR.Save(LeadingMainImage, ImageFormat.Png);
+                    model.DrawTopBoxes2(LeadingMainImage, boxes, scores, "BB_Leading.png");
 
                     // Convert to32bppArgb to draw results and display it 
                     Bitmap tempBitmap = new Bitmap(croppedBitmapR.Width, croppedBitmapR.Height, PixelFormat.Format32bppArgb);
@@ -5430,6 +5428,23 @@ namespace PalletCheck
                 System.IO.Directory.CreateDirectory(path);
                 Console.WriteLine($"Directory created: {path}");
             }
+        }
+
+        private float[] AddBoundingBox(float[][] results, float boardWidthPixels)
+        {
+            float[] boxes = new float[8];
+
+            for (int i = 0; i < results[0].Length; i++)
+            {
+                boxes[i] = results[0][i];
+            }
+
+            boxes[4] = results[0][0];     // x3 = x1
+            boxes[5] = results[0][1];     // y3 = y1
+            boxes[6] = results[0][2];     // x4 = x2
+            boxes[7] = results[0][3] - boardWidthPixels;     // y4 = y2 - 
+
+            return boxes;
         }
     }
 }
