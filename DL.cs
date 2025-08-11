@@ -1205,20 +1205,20 @@ namespace PalletCheck
                 img2Exists = true;
             }
 
-            for (int objIndex = 0; objIndex < 2; objIndex++)
+            int iterations = topIndices.Length == 2 ? 2 : 1; 
+
+            for (int objIndex = 0; objIndex < iterations; objIndex++)
             {
                 using (Bitmap objectBitmap = new Bitmap(bitmap))
                 using (Graphics graphics = Graphics.FromImage(objectBitmap))
                 {
-                    // System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 3);
-                    Random rand = new Random();
                     // Determinar cuál objeto excluir
-                    int excludeIndex = topIndices[objIndex];
+                    //int excludeIndex = topIndices[objIndex];
 
                     for (int i = 0; i < topIndices.Length; i++)
                     {
-                        if (topIndices[i] == excludeIndex)
-                            continue; // No dibujar este objeto
+                        //if (topIndices[i] == excludeIndex)
+                            //break; // No dibujar este objeto
 
                         // Dibujar la máscara del objeto permitido
                         if (masks != null && masks.Count > topIndices[i])
@@ -1242,7 +1242,7 @@ namespace PalletCheck
                         int yy2 = 0;
                         int yy1 = 0;
 
-                        if (topIndices[i] == 0)
+                        if (topIndices[i] == 1)
                         {
                             int x1 = (int)boxes[topIndices[1] * 4];
                             int y1 = (int)boxes[topIndices[1] * 4 + 1];
@@ -1256,7 +1256,7 @@ namespace PalletCheck
                             // graphics.DrawRectangle(pen, x1, y1, boxWidth, boxHeight);
                         }
 
-                        if (topIndices[i] == 1)
+                        if (topIndices[i] == 0)
                         {
                             int x1 = (int)boxes[topIndices[0] * 4];
                             int y1 = (int)boxes[topIndices[0] * 4 + 1];
@@ -1264,7 +1264,7 @@ namespace PalletCheck
                             int y2 = (int)boxes[topIndices[0] * 4 + 3];
                             int boxWidth = Math.Abs(x2 - x1);
                             int boxHeight = Math.Abs(y2 - y1);
-                            yy2 = y2;
+                            yy2 = topIndices.Length == 1 ? y2 / 2 : y2 ;
                             yy1 = y1;
                             // Dibujar el bounding box del objeto que sí queremos mostrar
                             // graphics.DrawRectangle(pen, x1, y1, boxWidth, boxHeight);
@@ -1272,13 +1272,13 @@ namespace PalletCheck
 
                         // Guardar la imagen con el objeto excluido
                         PointF centroid = CalculateCentroid(masks[topIndices[i]]);
-                        if (centroid.Y > (bitmap.Height / 2))
+                        if (centroid.Y < (bitmap.Height / 2))
                         {
                             //Crop Upper
                             if (activateViz) 
                             {
                                 string savePathObj = "VizDL/TopSplit/Upper_"+name+".png";
-                                string savePathObj2 = "VizDL/TopSplit/upperSplit"+name+".png";
+                                string savePathObj2 = "VizDL/TopSplit/UpperSplit"+name+".png";
                                 objectBitmap.Save(savePathObj, ImageFormat.Png);
                                 Console.WriteLine($"Imagen guardada en {savePathObj}");
                                 Rectangle cropRect = new Rectangle(0, 0, objectBitmap.Width, yy2);
@@ -1290,7 +1290,7 @@ namespace PalletCheck
                             upperY2 = yy2;
                         }
 
-                        if (centroid.Y < (bitmap.Height / 2))
+                        if (centroid.Y > (bitmap.Height / 2))
                         {
                             if (activateViz)
                             {
