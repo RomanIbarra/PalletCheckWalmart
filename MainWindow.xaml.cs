@@ -1117,11 +1117,22 @@ namespace PalletCheck
 
         public Pallet CreateTopPallet()
         {
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
+
             try
             {
                 // Add frame to the environment
                 AddFrameToEnvironment(SickFrames[0], "Image", _envTop);
+
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
                 _envTop.GetStepProgram("Main").RunFromBeginning();
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("EasyRanger environment FINISHED for Top -  {0:0.000} sec", AnalysisTotalSec));
 
                 // Retrieve image data
                 float[] floatArray = MainWindow._envTop.GetImageBuffer("CropImage")._range;
@@ -1185,6 +1196,10 @@ namespace PalletCheck
 
         public Pallet CreateBottomPallet()
         {
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
+
             // Add frames to the environment
             AddFrameToEnvironment(SickFrames[1], "Left", _envBottom);
             AddFrameToEnvironment(SickFrames[2], "Mid", _envBottom);
@@ -1201,8 +1216,14 @@ namespace PalletCheck
                 _envBottom.SetInteger(endXName, EndX[i]);
                 _envBottom.SetDouble(offsetZName, OffsetZ[i]);
             }
+
+            //Get Exec time
+            AnalysisStartTime = DateTime.Now;
             // Run the program and save the environment
             _envBottom.GetStepProgram("Main").RunFromBeginning();
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("EasyRanger environment FINISHED for Bottom -  {0:0.000} sec", AnalysisTotalSec));
 
             // Retrieve image data
             float[] floatArray = MainWindow._envBottom.GetImageBuffer("ComImage")._range;
