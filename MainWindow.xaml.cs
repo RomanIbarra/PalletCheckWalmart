@@ -552,7 +552,7 @@ namespace PalletCheck
             ClearAnalysisResults(PositionOfPallet.Top);
             //ProgressBar_Clear();
 
-            PProcessorTop = new PalletProcessor(7, 7);
+            PProcessorTop = new PalletProcessor(9, 9);
             PProcessorBottom = new PalletProcessor(5, 5);
 
 
@@ -599,6 +599,7 @@ namespace PalletCheck
             UpdateTextBlock(PalletName0, "▲");
             //_FilenameDateTime
             //TryGenerateFilenameDateTime();
+            Logger.WriteLine("Image ready for TOP side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 try
@@ -621,10 +622,10 @@ namespace PalletCheck
 
         private void ProcessFrameForCameraBottomLeftCallback(GrabResult result)
         {
-
             UpdateTextBlock(LogText, "BottomLeft New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName1, "▲");
             //TryGenerateFilenameDateTime();
+            Logger.WriteLine("Image ready for BOTTOM left side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 try
@@ -649,9 +650,8 @@ namespace PalletCheck
         private void ProcessFrameForCameraBottomMidCallback(GrabResult result)
         {
             //TryGenerateFilenameDateTime();
-
-
             UpdateTextBlock(LogText, "BottomMiddle New Frame", MessageState.Normal);
+            Logger.WriteLine("Image ready for BOTTOM Middle side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 try
@@ -674,8 +674,8 @@ namespace PalletCheck
         private void ProcessFrameForCameraBottomRightCallback(GrabResult result)
         {
             //TryGenerateFilenameDateTime();
-
             UpdateTextBlock(LogText, "BottomRight New Frame", MessageState.Normal);
+            Logger.WriteLine("Image ready for BOTTOM right side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 try
@@ -709,9 +709,9 @@ namespace PalletCheck
         private void ProcessFrameForCameraLeftCallback(GrabResult result)
         {
             //TryGenerateFilenameDateTime();
-
             UpdateTextBlock(LogText, "Left New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName2, "▲");
+            Logger.WriteLine("Image ready for LEFT side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 SickFrames[4] = frame.Copy();
@@ -746,6 +746,7 @@ namespace PalletCheck
             //TryGenerateFilenameDateTime();
             UpdateTextBlock(LogText, "Right New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName3, "▲");
+            Logger.WriteLine("Image ready for RIGHT side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 SickFrames[5] = frame.Copy();
@@ -773,6 +774,7 @@ namespace PalletCheck
         {
             UpdateTextBlock(LogText, "Front New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName4, "▲");
+            Logger.WriteLine("Image ready for FRONT side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 SickFrames[6] = frame.Copy();
@@ -799,6 +801,7 @@ namespace PalletCheck
         {
             UpdateTextBlock(LogText, "Back New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName5, "▲");
+            Logger.WriteLine("Image ready for BACK side (New Frame)");
             result.IfCompleteFrame(frame =>
             {
                 SickFrames[7] = frame.Copy();
@@ -1518,11 +1521,12 @@ namespace PalletCheck
             //SendPLCTotalResult(P);
 
             UpdateUIWithPalletResults(P, position);
+            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete " + position.ToString());
         }
 
         private void Pallet_OnProcessMultiplePalletAnalysisComplete(Pallet P, PositionOfPallet position)
         {
-            Logger.WriteLine("Pallet_OnProcessMultiplePalletAnalysisComplete");
+            Logger.WriteLine("Pallet_OnProcessMultiplePalletAnalysisComplete " + position.ToString());
 
             //ProcessRecordingFinishedPalletCount += 1;
             //ProgressBar_SetText(string.Format("Processing Recording... Finished {0} of {1}", ProcessRecordingFinishedPalletCount, ProcessRecordingTotalPalletCount));
@@ -1552,7 +1556,7 @@ namespace PalletCheck
             //SendPLCTotalResult(P);
             UpdateUIWithPalletResults(P, position);
 
-            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete");
+            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete " + position.ToString());
             //Logger.WriteBorder("PALLET COMPLETE: " + P.Filename);
 
         }
@@ -2242,7 +2246,7 @@ namespace PalletCheck
                 SaveDataToFile(string.Join(",", finalString));
                 
             });
-            lock (LockObjectCombine)
+            //lock (LockObjectCombine)
             {
                 CombinedBoards.Clear();
                 CombinedDefects.Clear();

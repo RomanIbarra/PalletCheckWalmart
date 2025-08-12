@@ -141,6 +141,7 @@ namespace PalletCheck
                     viewer.ClearAll();
                     viewer.DrawImage("FilteredImage", SubComponent.Intensity);
                     viewer.DrawRoi("OutputRegionsForNails", -1, red, 250);
+                    Logger.WriteLine(String.Format("Image updated for {0}", position.ToString() ));
 
                     if (enableDatasetExtraction) { ExtractDataset(floatArray, byteArray, env, position); }
 
@@ -355,7 +356,7 @@ namespace PalletCheck
                             viewer.DrawText("MyText", green);
                         }*/
 
-                        lock (LockObjectCombine)
+                        //lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
@@ -377,6 +378,7 @@ namespace PalletCheck
                 {
                     viewer.ClearAll();
                     viewer.DrawImage("ImageFinal", SubComponent.Intensity);
+                    Logger.WriteLine(String.Format("Image updated with an exception for {0}", position.ToString()));
                     System.Windows.MessageBox.Show(ex.Message);
                 });
                 ProcessCameraResult((int)position, false ? InspectionResult.PASS : InspectionResult.FAIL);
@@ -491,6 +493,7 @@ namespace PalletCheck
                     viewer.ClearAll();
                     viewer.DrawImage("FilteredImage", SubComponent.Intensity);
                     viewer.DrawRoi("OutputRegionsForNails", -1, red, 250);
+                    Logger.WriteLine(String.Format("Image updated for {0}", position.ToString()));
 
                     if (enableDatasetExtraction) { ExtractDataset(floatArray, byteArray, env, position); }
 
@@ -575,7 +578,7 @@ namespace PalletCheck
 
                         env.SetText("MyText", textArray, xArray, yArray, sizeArray);
 
-                        lock (LockObjectCombine)
+                        //lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
@@ -597,6 +600,7 @@ namespace PalletCheck
                 {
                     viewer.ClearAll();
                     viewer.DrawImage("ImageFinal", SubComponent.Intensity);
+                    Logger.WriteLine(String.Format("Image updated with an exception for {0}", position.ToString()));
                     System.Windows.MessageBox.Show(ex.Message);
                 });
                 ProcessCameraResult((int)position, false ? InspectionResult.PASS : InspectionResult.FAIL);
@@ -694,7 +698,7 @@ namespace PalletCheck
 
             AnalysisStopTime = DateTime.Now;
             AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-            Logger.WriteLine(String.Format("DeepLearning getCentroids FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+            Logger.WriteLine(String.Format("DeepLearning getCentroids FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
 
             //Get the results
             float[] boxes = results[0];

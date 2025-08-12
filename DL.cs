@@ -367,35 +367,6 @@ namespace PalletCheck
 
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Función para leer la imagen y pasarla a la función RunInference
         public static float[] ProcessImage(string imagePath, int heigth, int width)
         {

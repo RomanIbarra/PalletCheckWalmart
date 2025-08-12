@@ -130,6 +130,7 @@ namespace PalletCheck
             // 启动连接线程
             Thread connectionThread = new Thread(() => ConnectToCamera(discovery));
             connectionThread.IsBackground = true;
+            connectionThread.Name = "Connection Thread";
             connectionThread.Start();
         }
 
@@ -230,6 +231,7 @@ namespace PalletCheck
             StopCamThread = false;
 
             CamThread = new Thread(() => CameraProcessingThread(discovery));
+            CamThread.Name = "Camera Processing (Startup) Thread";
             CamThread.Start();
         }
 
@@ -250,6 +252,7 @@ namespace PalletCheck
             StopCamThread = false;
 
             CamThread = new Thread(() => CameraProcessingThread(discovery));
+            CamThread.Name = "Camera Processing (Update) Thread";
             CamThread.Start();
         }
 
@@ -480,7 +483,7 @@ namespace PalletCheck
                     if (frameGrabber.IsStarted)
                     {
                         SetCaptureState(CaptureState.Capturing);
-                        Logger.WriteLine("frameGrabber Start Capturing - " + CameraName);
+                        //Logger.WriteLine("frameGrabber Start Capturing - " + CameraName);
                         Thread.Sleep(1000);
                         //try
                         //{

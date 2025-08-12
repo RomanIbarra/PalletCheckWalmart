@@ -38,6 +38,7 @@ namespace PalletCheck
             {
                 m_KillInboxThread = false;
                 m_InboxThread = new Thread(new ThreadStart(LoggerInboxThreadFunc));
+                m_InboxThread.Name = "Logger Inbox Thread";
                 m_InboxThread.Start();
             }
         }

@@ -45,24 +45,24 @@ namespace PalletCheck
         }
 
 
-        public void ProcessPalletHighPriority(Pallet P, Pallet.palletAnalysisCompleteCB Callback,PositionOfPallet position)
+        public void ProcessPalletHighPriority(Pallet P, Pallet.palletAnalysisCompleteCB Callback, PositionOfPallet position)
         {
             P.OnAnalysisComplete_User += Callback;
             P.UseBackgroundThread = false;
 
-            lock (LockObject)
+            //lock (LockObject)
             {
                 HighInputQueue.Add(P);
                 UpdateHigh(position);
             }
         }
 
-        public void OnHighPalletCompleteCB(Pallet P,PositionOfPallet position)
+        public void OnHighPalletCompleteCB(Pallet P, PositionOfPallet position)
         {
             // This runs in the MAIN THREAD
 
             // Cleanup High Queue
-            lock (LockObject)
+            //lock (LockObject)
             {
                 if (HighInProgressList.Contains(P))
                     HighInProgressList.Remove(P);
@@ -77,7 +77,7 @@ namespace PalletCheck
         public void UpdateHigh(PositionOfPallet position)
         {
 
-            lock (LockObject)
+            //lock (LockObject)
             {
                 // Check if we can launch threads for items in the queues
                 if ((HighInputQueue.Count > 0) && (HighInProgressList.Count < MaxHighThreads))
@@ -90,10 +90,10 @@ namespace PalletCheck
                     {
                         Task.Factory.StartNew(() =>
                         {
+                            Thread.CurrentThread.Name = position.ToString() + " Thread";
                             ThreadPriority TPBackup = Thread.CurrentThread.Priority;
-                            Logger.WriteLine("HIGH THREAD PRIORITY: " + TPBackup.ToString());
                             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-
+                            Logger.WriteLine("HIGH THREAD PRIORITY (" + position.ToString() + "): " + Thread.CurrentThread.Priority.ToString());
                             try
                             {
                                 P.DoAnalysisBlocking(position);
@@ -109,9 +109,10 @@ namespace PalletCheck
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    OnHighPalletCompleteCB(P,position);
+                                    OnHighPalletCompleteCB(P, position);
                                 });
                             }
+
                         });
                     }
                 }
@@ -130,7 +131,7 @@ namespace PalletCheck
             }
         }
 
-        public void OnLowPalletCompleteCB(Pallet P,PositionOfPallet position)
+        public void OnLowPalletCompleteCB(Pallet P, PositionOfPallet position)
         {
             // This runs in the MAIN THREAD
 
@@ -254,13 +255,13 @@ namespace PalletCheck
 
         delegate CaptureBuffer addBufferCB(string s, UInt16[] buf);
 
-        public delegate void palletAnalysisCompleteCB(Pallet P,PositionOfPallet position);
+        public delegate void palletAnalysisCompleteCB(Pallet P, PositionOfPallet position);
         public event palletAnalysisCompleteCB OnAnalysisComplete_User;
 
         public void CallUserCallback()
         {
             if (OnAnalysisComplete_User != null)
-                OnAnalysisComplete_User(this,this.PoistionOfThisPallet);
+                OnAnalysisComplete_User(this, this.PoistionOfThisPallet);
         }
 
         public class Board
@@ -285,7 +286,7 @@ namespace PalletCheck
             public double MinWidthTooNarrow;
             public double MinWidthForChunk;
             public double MinLengthForChunk;
-            public double MinWidthForChunkAcrossLength =0;
+            public double MinWidthForChunkAcrossLength = 0;
             public float MaxAllowable;
             public float XResolution;
             public float YResolution;
@@ -310,12 +311,12 @@ namespace PalletCheck
         }
 
         public List<Board> BList;
-        public bool Pos= false;
+        public bool Pos = false;
         public int[] startY = new int[9];
-        public int[] endY= new int[9];
+        public int[] endY = new int[9];
         public List<PalletDefect> PalletLevelDefects = new List<PalletDefect>();
 
-        public Pallet(CaptureBuffer RangeCV, CaptureBuffer ReflCB,PositionOfPallet positionOfPallet)
+        public Pallet(CaptureBuffer RangeCV, CaptureBuffer ReflCB, PositionOfPallet positionOfPallet)
         {
             Original = RangeCV;
             ReflectanceCB = ReflCB;
@@ -341,7 +342,7 @@ namespace PalletCheck
         {
             AnalysisStartTime = DateTime.Now;
             Busy = true;
-            Logger.WriteLine("Pallet::DoAnalysis START");
+            Logger.WriteLine("Pallet::DoAnalysis START - " + position.ToString());
             AddCaptureBuffer("Image", ReflectanceCB);
             Logger.WriteLine(String.Format("DoAnalysisBlocking: Original W,H  {0}  {0}", Original.Width, Original.Height));
             AddCaptureBuffer("Original", Original);
@@ -354,10 +355,10 @@ namespace PalletCheck
             }
 
             Logger.WriteLine(String.Format("DoAnalysisBlocking: Denoised W,H  {0}  {0}", Denoised.Width, Denoised.Height));
-   
-            
+
+
             IsolateAndAnalyzeSurfaces(Denoised, position);
-           
+
             if (State == InspectionState.Fail)
             {
                 Logger.WriteLine("Pallet::DoAnalysis INSPECTION FAILED");
@@ -369,14 +370,13 @@ namespace PalletCheck
             // Final board size sanity check
             int ExpWidH = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.HBoardWidth_in);
             int ExpWidV1 = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
-
             // Check for debris causing unusually wide boards
             if (position == PositionOfPallet.Top)
             {
                 for (int i = 0; i < BList.Count; i++)
                 {
                     string paramName = string.Format(StringsLocalization.TopHXBoardWidth_in, i + 1);
-                    ExpWidH = MainWindow.GetParamStorage(position).GetPixY(paramName);                 
+                    ExpWidH = MainWindow.GetParamStorage(position).GetPixY(paramName);
 
                     if (BList[i].AllDefects.Count == 0)
                         continue;
@@ -384,8 +384,8 @@ namespace PalletCheck
                     int H_Wid = BList[i].BoundsP2.Y - BList[i].BoundsP1.Y;
                     if (H_Wid > (ExpWidH * 1.8))
                     {
-                       // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                       // SetDefectMarker(BList[i]);
+                        // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                        // SetDefectMarker(BList[i]);
                     }
 
                     // Add the current Board to the CombinedBoards
@@ -403,7 +403,7 @@ namespace PalletCheck
                 ExpWidH = MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.HBoardWidth_in);
                 ExpWidV1 = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
                 for (int i = 3; i < 5; i++)
-                {                 
+                {
                     if (BList[i].AllDefects.Count == 0)
                         continue;
 
@@ -411,8 +411,8 @@ namespace PalletCheck
 
                     if (H_Wid > (ExpWidH * 1.8))
                     {
-                       // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                       // SetDefectMarker(BList[i]);
+                        // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                        // SetDefectMarker(BList[i]);
                     }
 
                     // Add the current Board to the CombinedBoards
@@ -423,15 +423,15 @@ namespace PalletCheck
                     }
                 }
 
-                for (int i = 0; i < 3; i++) 
+                for (int i = 0; i < 3; i++)
                 {
                     if (BList[i].AllDefects.Count > 0)
                     {
                         int V1_Wid = BList[i].BoundsP2.X - BList[i].BoundsP1.X;
                         if (V1_Wid > (ExpWidV1 * 1.8))
                         {
-                           // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
-                           // SetDefectMarker(BList[i]);
+                            // AddDefect(BList[i], PalletDefect.DefectType.possible_debris, "Unusually wide board");
+                            // SetDefectMarker(BList[i]);
                         }
 
                         // Add the current Board to the CombinedBoards
@@ -452,13 +452,13 @@ namespace PalletCheck
             Busy = false;
             AnalysisStopTime = DateTime.Now;
             AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-            Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED  -  {0:0.000} sec", AnalysisTotalSec));      
-        }      
+            Logger.WriteLine(String.Format("Pallet::DoAnalysis FINISHED {0} -  {1:0.000} sec", position.ToString(), AnalysisTotalSec));
+        }
 
         private CaptureBuffer DeNoiseEasyRanger(CaptureBuffer SourceCB, PositionOfPallet position)
         {
             CaptureBuffer NewBuf = new CaptureBuffer();
-           if (position == PositionOfPallet.Bottom)
+            if (position == PositionOfPallet.Bottom)
             {
                 float[] floatArray = MainWindow._envBottom.GetImageBuffer("FilteredImage")._range;
                 byte[] byteArray = MainWindow._envBottom.GetImageBuffer("FilteredImage")._intensity;
@@ -477,7 +477,7 @@ namespace PalletCheck
                 NewBuf.yScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.YResolution;
 
                 AddCaptureBuffer("Filtered", NewBuf);
-               
+
             }
 
             if (position == PositionOfPallet.Top)
@@ -593,13 +593,13 @@ namespace PalletCheck
             }
         }
 
-        private void DeNoiseInPlace(CaptureBuffer CB,ParamStorage paramStorage)
+        private void DeNoiseInPlace(CaptureBuffer CB, ParamStorage paramStorage)
         {
             UInt16[] Source = CB.Buf;
             UInt16[] Res = (UInt16[])CB.Buf.Clone();
 
-            int leftEdge = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px); 
-            int rightEdge = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px); 
+            int leftEdge = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px);
+            int rightEdge = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px);
 
             for (int i = 1; i < Res.Length - 1; i++)
             {
@@ -632,13 +632,13 @@ namespace PalletCheck
 
 
         //=====================================================================
-        private int FindTopY(CaptureBuffer SourceCB,ParamStorage paramStorage)
+        private int FindTopY(CaptureBuffer SourceCB, ParamStorage paramStorage)
         {
             //
             // !!! Needs to work with Original and Denoised Buffers
             //
 
-             UInt16[] Source = SourceCB.Buf;
+            UInt16[] Source = SourceCB.Buf;
             int LROI = paramStorage.GetInt(StringsLocalization.RawCaptureROILeft_px);
             int RROI = paramStorage.GetInt(StringsLocalization.RawCaptureROIRight_px);
             //int MinZTh = ParamStorage.GetInt("Raw Capture ROI Min Z (px)");
@@ -676,7 +676,7 @@ namespace PalletCheck
             int InitialY = HighIndex * 10;
 
             // Check upward and see if there is a row completely black
-            for (int y = InitialY;  y > 0; y--)
+            for (int y = InitialY; y > 0; y--)
             {
                 bool NotClear = true;
                 for (int x = 0; x < SourceCB.Width; x++)
@@ -739,7 +739,7 @@ namespace PalletCheck
 
         //=====================================================================
         // Jack Note: Get the top X
-        private int FindTopX(CaptureBuffer SourceCB,ParamStorage paramStorage)
+        private int FindTopX(CaptureBuffer SourceCB, ParamStorage paramStorage)
         {
             //
             // !!! Needs to work with Original and Denoised Buffers
@@ -805,8 +805,19 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        private void IsolateAndAnalyzeSurfaces(CaptureBuffer SourceCB,PositionOfPallet position)
+        private void DeepLearningFindLeadingBoard()
         {
+
+        }
+
+        //=====================================================================
+        private void IsolateAndAnalyzeSurfaces(CaptureBuffer SourceCB, PositionOfPallet position)
+        {
+            DateTime AnalysisPreTotalStartTime = DateTime.Now;
+            DateTime AnalysisPreTotalStopTime;
+
+            Logger.WriteLine("Pallet::IsolateAndAnalyzeSurfaces START for " + position.ToString());
+
             int nRows = SourceCB.Height;
             int nCols = SourceCB.Width;
             ParamStorage paramStorage;
@@ -822,12 +833,17 @@ namespace PalletCheck
             BList = new List<Board>();
             int iCount = 0;
 
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("Pallet::IsolateAndAnalyzeSurfaces FindTopY {0}  -  {1:0.000} sec", position.ToString(), AnalysisTotalSec));
+
             // The ProbeCB gets modified as boards are found and subtracted...so need a unique copy
             // Jack Note: Get all boards with edge and so on
             CaptureBuffer ProbeCB = new CaptureBuffer(SourceCB);
-            
-            if(position == PositionOfPallet.Bottom)
+
+            if (position == PositionOfPallet.Bottom)
             {
+                Logger.WriteLine(String.Format("Pallet::IsolateAndAnalyzeSurfaces Bottom Start"));
                 //to extract datasaet 
                 if (enableDatasetExtraction)
                 {
@@ -841,26 +857,26 @@ namespace PalletCheck
                         float yScale = MainWindow._envBottom.GetImageBuffer("FilteredImage").Info.YResolution;
                         cntr = cntr + 1;
                         DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Bottom, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
-                        
+
                     }
                 }
 
                 // RetrieveButtedJointImages(); Function disabled cause it saves distorted images.
                 // Instead, images are saved from the Easy Ranger Environment
                 iCount = 5;
-                int TopX = FindTopX(ProbeCB,paramStorage);
-                int BottomY  = FindBottomY(ProbeCB,paramStorage);
+                int TopX = FindTopX(ProbeCB, paramStorage);
+                int BottomY = FindBottomY(ProbeCB, paramStorage);
                 //int LeftY = FindTopY(ProbeCB, paramStorage);
                 //int HBL = paramStorage.GetPixY("V Board Length (in)"); //1018mm
                 //int VBoardWid = paramStorage.GetPixX("H Board Width (in)"); 
 
-                int StartX1 = TopX - (int)(10/ SourceCB.xScale);
-                int EndX1 = StartX1 + (int)(220/ SourceCB.xScale);
+                int StartX1 = TopX - (int)(10 / SourceCB.xScale);
+                int EndX1 = StartX1 + (int)(220 / SourceCB.xScale);
 
                 int StartX2 = StartX1 + (int)(410 / SourceCB.xScale);
                 int EndX2 = StartX2 + (int)(220 / SourceCB.xScale);
 
-                int StartX3 = StartX2 + (int)(420 / SourceCB.xScale);;
+                int StartX3 = StartX2 + (int)(420 / SourceCB.xScale); ;
                 int EndX3 = StartX3 + (int)(220 / SourceCB.xScale);
 
 
@@ -880,10 +896,10 @@ namespace PalletCheck
                 Board H2 = ProbeVerticallyRotate90(ProbeCB, "H2", PalletDefect.DefectLocation.B_H2, StartX1, EndX3, 1, BottomY + 20, BottomY - 300, paramStorage);
 
                 V1.startX = StartX1;
-                V1.endX = EndX1;    
+                V1.endX = EndX1;
                 V1.startY = StartY;
                 V1.endY = EndY;
-                
+
                 V2.startX = StartX2;
                 V2.endX = EndX2;
                 V2.startY = StartY;
@@ -910,9 +926,9 @@ namespace PalletCheck
                 H1.ExpectedAreaPix = ExpLengthH * ExpWidH;
                 H2.ExpectedAreaPix = ExpLengthH * ExpWidH;
                 V1.ExpWidth = ExpWidV;
-                V2.ExpWidth = ExpWidV ;
-                V3.ExpWidth = ExpWidV ;
-                H1.ExpWidth = ExpWidH ;
+                V2.ExpWidth = ExpWidV;
+                V3.ExpWidth = ExpWidV;
+                H1.ExpWidth = ExpWidH;
                 H2.ExpWidth = ExpWidH;
 
                 //Parameters used for CheckNarrowBoard() function commented out cause it's not a requirement
@@ -937,17 +953,17 @@ namespace PalletCheck
                 float V1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V1MaxAllowedMissingWood);
                 float V2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V2MaxAllowedMissingWood);
                 float V3maxallowabe = MainWindow.GetParamStorage(position).GetFloat(StringsLocalization.V3MaxAllowedMissingWood);
-                float H1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood,"1"));
+                float H1maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, "1"));
                 float H2maxallowabe = MainWindow.GetParamStorage(position).GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, "2"));
 
                 V1.MaxAllowable = V1maxallowabe;
-                V2.MaxAllowable = V2maxallowabe; 
-                V3.MaxAllowable = V3maxallowabe; 
-                H1.MaxAllowable = H1maxallowabe; 
+                V2.MaxAllowable = V2maxallowabe;
+                V3.MaxAllowable = V3maxallowabe;
+                H1.MaxAllowable = H1maxallowabe;
                 H2.MaxAllowable = H2maxallowabe;
 
-                V1.XResolution= SourceCB.xScale;
-                V2.XResolution= SourceCB.xScale;
+                V1.XResolution = SourceCB.xScale;
+                V2.XResolution = SourceCB.xScale;
                 V3.XResolution = SourceCB.xScale;
                 H1.XResolution = SourceCB.xScale;
                 H2.XResolution = SourceCB.xScale;
@@ -957,7 +973,7 @@ namespace PalletCheck
                 V3.YResolution = SourceCB.yScale;
                 H1.YResolution = SourceCB.yScale;
                 H2.YResolution = SourceCB.xScale;
-              
+
                 BList.Add(V1);
                 BList.Add(V2);
                 BList.Add(V3);
@@ -965,12 +981,13 @@ namespace PalletCheck
                 BList.Add(H2);
             }
 
-            if(position == PositionOfPallet.Top)
+            if (position == PositionOfPallet.Top)
             {
+                AnalysisStartTime = DateTime.Now;
                 Pos = true;
-
                 //to extract datasaet 
-                if (enableDatasetExtraction) {
+                if (enableDatasetExtraction)
+                {
                     if (SelectPositionForExtraction == 0)
                     {
                         float[] floatA = MainWindow._envTop.GetImageBuffer("FilteredImage")._range;
@@ -983,39 +1000,49 @@ namespace PalletCheck
                         DatasetExtraction.ExtractRangeForDataset((int)PositionOfPallet.Top, byteA, floatA, width, height, xScale, yScale, cntr, enableDatasetExtraction);
                     }
                 }
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("Top ExtractRangeForDataset FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
 
                 if (!isDeepLActive)
                 {
+
+                    #region DeepLearning Classifier
+                    AnalysisStartTime = DateTime.Now;
                     /*Classifier inference---------------------------------------------------------------------------------------------------------------------------------*/
-                    int widthC = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Width;
-                    int heightC = MainWindow._envTop.GetImageBuffer("FilteredImage").Info.Height;
-                    byte[] byteArrayTop = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+                    int widthC = MainWindow._envTop.GetImageBuffer("ResizedImg").Info.Width;
+                    int heightC = MainWindow._envTop.GetImageBuffer("ResizedImg").Info.Height;
+                    byte[] byteArrayTop = MainWindow._envTop.GetImageBuffer("ResizedImg")._intensity;//Resized on Easy Ranger from FilteredImage
                     Bitmap bitmapTop = new Bitmap(widthC, heightC, PixelFormat.Format8bppIndexed);
 
                     //Convert the byte array to bitmap
                     ByteArray2bitmap(byteArrayTop, widthC, heightC, bitmapTop);
-                    Bitmap resizedImage = model.ResizeBitmap(bitmapTop, 512, 512);
+                    //Bitmap resizedImage = model.ResizeBitmap(bitmapTop, 512, 512);
 
+                    //AnalysisStopTime = DateTime.Now;
+                    //AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    //Logger.WriteLine(String.Format("DeepLearning Top Classifier ResizeBitmap  -  {0:0.000} sec", AnalysisTotalSec));
+
+                    //AnalysisStartTime = DateTime.Now;
                     if (isSavePalletClassifierResults)
                     {
                         CheckIfDirectoryExists("VizDL/Classifier");
-                        resizedImage.Save("VizDL/Classifier/classification.png", ImageFormat.Png);
+                        bitmapTop.Save("VizDL/Classifier/classification.png", ImageFormat.Png);
                     }
 
                     /*************************************
                      *Critical time functions to improve *
                      *************************************/
-                    //Get Exec time
-                    AnalysisStartTime = DateTime.Now;
 
                     //Process the image for inference
-                    float[] imageDataClass = model.ProcessBitmapForInference(resizedImage, resizedImage.Width, resizedImage.Height);
-                    int resultClass = model.RunInferenceClassifier(imageDataClass, resizedImage.Height, resizedImage.Width);
+                    float[] imageDataClass = model.ProcessBitmapForInference(bitmapTop, bitmapTop.Width, bitmapTop.Height);
+                    int resultClass = model.RunInferenceClassifier(imageDataClass, bitmapTop.Height, bitmapTop.Width);
                     PalletClassifier = resultClass; // 0 = International, 1 = Standard
                     paramStorage = PalletClassifier == 1 ? GetParamStorage(PositionOfPallet.Top) : GetParamStorage(PositionOfPallet.TopInternational);
                     AnalysisStopTime = DateTime.Now;
                     AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                    Logger.WriteLine(String.Format("DeepLearning Classifier FINISHED, {0} -  {1:0.000} sec", PalletClassifier, AnalysisTotalSec));
+                    Logger.WriteLine(String.Format("DeepLearning Top Classifier FINISHED, {0} -  {1:0.000} sec", PalletClassifier, AnalysisTotalSec));
+                    #endregion
                 }
 
                 RoiType[] roiTypes = new RoiType[7];
@@ -1025,22 +1052,24 @@ namespace PalletCheck
                 float[] ycs = new float[7];
                 float[] rotations = new float[7];
 
-                for (int i = 0;i< 7;i++)
+                AnalysisStartTime = DateTime.Now;
+
+                for (int i = 0; i < 7; i++)
                 {
                     MainWindow._envTop.GetRegionType("PalletRegions", ref roiTypes[i], ref widths[i], ref heights[i], ref xcs[i], ref ycs[i], ref rotations[i], i);
                 }
 
-                iCount = 9;               
+                iCount = 9;
                 List<CaptureBuffer> captureBuffers = new List<CaptureBuffer>();
                 List<byte[]> bytesIntensity = new List<byte[]>();
                 List<int> W = new List<int>();
                 List<int> Y = new List<int>();
 
                 for (int boardIndex = 0; boardIndex < 7; boardIndex++)
-                {                 
-                    string boardName = $"Board_{boardIndex}";           
+                {
+                    string boardName = $"Board_{boardIndex}";
                     float[] floatArray = MainWindow._envTop.GetImageBuffer(boardName)._range;
-                    byte[] byteArray = MainWindow._envTop.GetImageBuffer(boardName)._intensity;              
+                    byte[] byteArray = MainWindow._envTop.GetImageBuffer(boardName)._intensity;
                     bytesIntensity.Add(byteArray);
                     W.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Width);
                     Y.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Height);
@@ -1050,7 +1079,7 @@ namespace PalletCheck
 
                     for (int i = 0; i < floatArray.Length; i++)
                     {
-                        ushortArray[i] = (ushort)(floatArray[i] +1000);
+                        ushortArray[i] = (ushort)(floatArray[i] + 1000);
                     }
 
                     //Convert Reflectance to ushort
@@ -1065,7 +1094,7 @@ namespace PalletCheck
                     CaptureBuffer captureBuffer = new CaptureBuffer
                     {
                         Buf = ushortArray
-                        
+
                     };
 
                     captureBuffer.Width = MainWindow._envTop.GetImageBuffer(boardName).Info.Width;
@@ -1082,9 +1111,16 @@ namespace PalletCheck
 
                     };
                 }
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("Top board calculation  -  {0:0.000} sec", AnalysisTotalSec));
 
                 try
                 {
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
+
+                    #region DeepLearning Leading
                     //Leading split inference
                     Bitmap bitmap = new Bitmap(W[0], Y[0], PixelFormat.Format8bppIndexed);
 
@@ -1094,24 +1130,21 @@ namespace PalletCheck
                     //int startC = 0; int endC = W[0]; int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
 
                     int xOffset = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
-                    int startC = 49+400;
-                    int endC = 2400+ 700;
-                    
+                    int startC = 49 + 400;
+                    int endC = 2400 + 700;
+
                     //int endC = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
                     int startR = (int)(ycs[0] - heights[0] / 2); int endR = (int)(ycs[0] + heights[0] / 2);
                     Rectangle cropRect = new Rectangle(startC, startR, endC, endR);
                     Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 2560, 688);
 
-                    //Get Exec time
-                    AnalysisStartTime = DateTime.Now;
+                    Logger.WriteLine(String.Format("Pallet::IsolateAndAnalyzeSurfaces Top Start"));
+
+
                     //Process the image for inference
                     float[] imageData = model.ProcessBitmapForInference(croppedBitmapR, croppedBitmapR.Width, croppedBitmapR.Height);
                     float[][] results = model.RunInference(imageData, croppedBitmapR.Height, croppedBitmapR.Width);
-
-                    AnalysisStopTime = DateTime.Now;
-                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                    Logger.WriteLine(String.Format("DeepLearning Leading block FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
                     //Get the results
                     //float[] boxes = results[0].Length <= 4 ? AddBoundingBox(results, (float)boardWidthPixels) : results[0];   //Coordinates for the bounding boxes of the model. x1,y1: top left corner, x2,y2: bottom right corner 
@@ -1131,44 +1164,45 @@ namespace PalletCheck
                     using (Graphics g = Graphics.FromImage(tempBitmap))
                     {
                         g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmapR.Width, croppedBitmapR.Height));
+                        Logger.WriteLine(String.Format("Image updated for {0} (leading)", position.ToString()));
                     }
                     croppedBitmap.Dispose(); // Liberar el anterior
                     croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
 
                     // Draw the segmented objects
                     List<bool[,]> binaryMasks = model.ConvertMasksToBinary(masks, croppedBitmapR.Width, croppedBitmapR.Height, scores.Length);
-                    List<bool[]> binaryMasks2=model.ConvertMasksToBinary2(masks, croppedBitmapR.Width, croppedBitmapR.Height, scores.Length);
-                    
+                    List<bool[]> binaryMasks2 = model.ConvertMasksToBinary2(masks, croppedBitmapR.Width, croppedBitmapR.Height, scores.Length);
+
                     string name = "Leading";
-                    bool img1Exist= false;
-                    bool img2Exist= false;
+                    bool img1Exist = false;
+                    bool img2Exist = false;
                     int upperY1 = 0;
                     int upperY2 = 0;
                     int lowerY1 = 0;
                     int lowerY2 = 0;
 
                     model.SplitBoard2(croppedBitmapR, boxes, scores, binaryMasks, name,
-                      ref img1Exist,ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
+                      ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
 
                     Board H1 = null;
                     Board H2 = null;
-                    
-                    ushort[] Clone =captureBuffers[0].Buf.Clone() as ushort[];
 
-                   CaptureBuffer Clon = new CaptureBuffer
+                    ushort[] Clone = captureBuffers[0].Buf.Clone() as ushort[];
+
+                    CaptureBuffer Clon = new CaptureBuffer
                     {
                         Buf = Clone,
                         PaletteType = CaptureBuffer.PaletteTypes.Gray,
                         Width = croppedBitmap.Width,
                         Height = croppedBitmap.Height,
-                   };
+                    };
 
-                    //Old dataset X crops                  
+                    //Old dataset X crops
                     int X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
                     int X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
                     int ScaleVal = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_ScaleY_Leading);
                     upperY2 = model.ScaleVal(upperY2, 688, ScaleVal);
-                    lowerY1 = model.ScaleVal(lowerY1, 688, ScaleVal); 
+                    lowerY1 = model.ScaleVal(lowerY1, 688, ScaleVal);
 
                     if (img1Exist && img2Exist)
                     {
@@ -1223,7 +1257,7 @@ namespace PalletCheck
                         //No boards found then split the Main ROI at the middle
                         H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
                                 startR, ((startR + endR) / 2), paramStorage);
-                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2 , 1,
+                        H2 = ProbeVerticallyRotate90(captureBuffers[0], "H2", PalletDefect.DefectLocation.T_H2, X1, X2, 1,
                                 ((startR + endR) / 2), endR, paramStorage);
 
                         startY[0] = startR;
@@ -1231,7 +1265,18 @@ namespace PalletCheck
                         startY[1] = ((startR + endR) / 2);
                         endY[1] = endR;
                     }
-                    
+
+                    #endregion
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Top Leading block FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
+
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
+
+                    #region H3 to H7 Calculation
+
                     Board H3 = ProbeVerticallyRotate90(captureBuffers[1], "H3", PalletDefect.DefectLocation.T_H3, X1, X2, 1,
                         (int)(ycs[1] - heights[1] / 2), (int)(ycs[1] + heights[1] / 2), paramStorage);
                     Board H4 = ProbeVerticallyRotate90(captureBuffers[2], "H4", PalletDefect.DefectLocation.T_H4, X1, X2, 1,
@@ -1254,6 +1299,15 @@ namespace PalletCheck
                     startY[6] = (int)(ycs[5] - heights[5] / 2);
                     endY[6] = (int)(ycs[5] + heights[5] / 2);
 
+                    #endregion
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top H3 to H9  -  {0:0.000} sec", AnalysisTotalSec));
+
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
+
+                    #region DeepLearning Trail
                     //define the bitmap
                     bitmap = new Bitmap(W[6], Y[6], PixelFormat.Format8bppIndexed);
                     //Convert the byte array to bitmap
@@ -1266,16 +1320,9 @@ namespace PalletCheck
                     croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat);
                     Bitmap croppedBitmapT = model.ResizeBitmap(croppedBitmap, 2560, 688);
 
-                    //Get Exec time
-                    AnalysisStartTime = DateTime.Now;
-
                     //Process the image for inference
                     imageData = model.ProcessBitmapForInference(croppedBitmapT, croppedBitmapT.Width, croppedBitmapT.Height);
                     results = model.RunInference(imageData, croppedBitmapT.Height, croppedBitmapT.Width);
-
-                    AnalysisStopTime = DateTime.Now;
-                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                    Logger.WriteLine(String.Format("DeepLearning Trailing block FINISHED -  {0:0.000} sec", AnalysisTotalSec));
 
                     //Get the results
                     boxes = results[0];
@@ -1285,7 +1332,8 @@ namespace PalletCheck
 
                     //Vizualice BB Results
                     string TrailingMainImage = "vizDL/TopSplit/Trailing.png";
-                    if (isSaveTopSplitResults) {
+                    if (isSaveTopSplitResults)
+                    {
                         croppedBitmapT.Save(TrailingMainImage, ImageFormat.Png);
                         model.DrawTopBoxes2(TrailingMainImage, boxes, scores, "BB_Trailing.png");
                     }
@@ -1295,6 +1343,7 @@ namespace PalletCheck
                     using (Graphics g = Graphics.FromImage(tempBitmap))
                     {
                         g.DrawImage(croppedBitmap, new Rectangle(0, 0, croppedBitmap.Width, croppedBitmap.Height));
+                        Logger.WriteLine(String.Format("Image updated for {0} (trailing)", position.ToString()));
                     }
                     croppedBitmap.Dispose(); // Liberar el anterior
                     croppedBitmap = tempBitmap; // Usar el nuevo bitmap compatible
@@ -1311,7 +1360,7 @@ namespace PalletCheck
                     lowerY2 = 0;
 
                     model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
-                      ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2,isSaveTopSplitResults);
+                      ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
                     Board H8 = null;
                     Board H9 = null;
 
@@ -1374,7 +1423,7 @@ namespace PalletCheck
 
                         H8 = ProbeVerticallyRotate90(captureBuffers[6], "H8", PalletDefect.DefectLocation.T_H8, X1, X2, 1,
                                 startR, ((startR + endR) / 2), paramStorage);
-                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, X1, X2 , 1,
+                        H9 = ProbeVerticallyRotate90(captureBuffers[6], "H9", PalletDefect.DefectLocation.T_H9, X1, X2, 1,
                                 ((startR + endR) / 2), endR, paramStorage);
 
                         startY[7] = startR;
@@ -1382,6 +1431,14 @@ namespace PalletCheck
                         startY[8] = ((startR + endR) / 2);
                         endY[8] = endR;
                     }
+
+                    #endregion
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Top Trailing block FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
 
                     int numberOfWidths = 9; // Total Board
                     int[] expWidths = new int[numberOfWidths]; // for expected width
@@ -1423,15 +1480,15 @@ namespace PalletCheck
                     H8.YResolution = SourceCB.yScale;
                     H9.YResolution = SourceCB.yScale;
 
-                    List<Board> boardsList = new List<Board>() { H1, H2 ,H3, H4, H5, H6, H7, H8, H9};
+                    List<Board> boardsList = new List<Board>() { H1, H2, H3, H4, H5, H6, H7, H8, H9 };
                     //string palletClass = null;
                     //if (MainWindow.PalletClassifier == 0) { palletClass = "International"; }
-                    
+
                     AssignHBoardsParameters(boardsList, paramStorage);
 
                     H1.startY = startY[0];
                     H1.endY = endY[0];
-                    H2.startY = startY[1];  
+                    H2.startY = startY[1];
                     H2.endY = endY[1];
                     H3.startY = startY[2];
                     H3.endY = endY[2];
@@ -1457,6 +1514,10 @@ namespace PalletCheck
                     BList.Add(H7);
                     BList.Add(H8);
                     BList.Add(H9);
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Calc  -  {0:0.000} sec", AnalysisTotalSec));
                 }
 
                 catch (Exception ex)
@@ -1466,7 +1527,7 @@ namespace PalletCheck
                     MessageBox.Show(ex.Message);
                     Logger.WriteLine("Error in processing boards: " + ex.Message);
                     throw new InvalidOperationException("An error occurred while processing the boards.", ex);
-                }              
+                }
             }
 
             for (int i = 0; i < iCount; i++)
@@ -1507,19 +1568,28 @@ namespace PalletCheck
                 }
             }
 
+            AnalysisPreTotalStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisPreTotalStopTime - AnalysisPreTotalStartTime).TotalSeconds;
+
+            Logger.WriteLine("Pallet::IsolateAndAnalyzeSurfaces tasks IN PROGRESS for " + position.ToString() + "  -  " + AnalysisTotalSec.ToString());
+
             // Analyze the boards using Task instead of Thread
             List<Task> boardTasks = new List<Task>();
+            AnalysisStartTime = DateTime.Now;
 
             for (int i = 0; i < BList.Count; i++)
             {
                 // 为每个板子创建一个Task，并启动ProcessBoard
                 var board = BList[i];
-                boardTasks.Add(Task.Run(() => ProcessBoard(board, paramStorage, i, Pos, position)));            
+                boardTasks.Add(Task.Run(() => ProcessBoard(board, paramStorage, i, Pos, position)));
             }
 
             Task.WaitAll(boardTasks.ToArray());
+            //await Task.WhenAll(boardTasks);
 
-
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine("Pallet::ProcessBoard tasks FINISHED for " + position.ToString() + "  -  " + AnalysisTotalSec.ToString());
             /*if (position == PositionOfPallet.Bottom)
             {
                 List<Task> boardTasks1 = new List<Task>();
@@ -1532,7 +1602,7 @@ namespace PalletCheck
                 }
 
                 Task.WaitAll(boardTasks1.ToArray());
-            }                 */    
+            }                 */
 
             if (isDeepLActive)
             {/*
@@ -1618,7 +1688,7 @@ namespace PalletCheck
         {
             int i = 1;
             foreach (var board in boardsList)
-            {               
+            {
                 board.MinWidthForChunk = paramStorage.GetFloat(String.Format(StringsLocalization.HXMissingChunkMaximumWidth, i));
                 board.MinLengthForChunk = paramStorage.GetFloat(String.Format(StringsLocalization.HXMissingChunkMaximumLength, i));
                 board.MaxAllowable = paramStorage.GetFloat(String.Format(StringsLocalization.HXMaxAllowedMissingWood, i));
@@ -1630,9 +1700,18 @@ namespace PalletCheck
             boardsList[boardsList.Count - 1].MinWidthForChunkAcrossLength = paramStorage.GetFloat(StringsLocalization.H9BoardMinimumWidthAcrossLength);
         }
 
-        private void ProcessBoard(object _B,ParamStorage paramStorage, int i,bool Pos, PositionOfPallet position)
+        private async void ProcessBoard(object _B, ParamStorage paramStorage, int i, bool Pos, PositionOfPallet position)
         {
+            DateTime AnalysisStartTotalTime;
+            DateTime AnalysisStopTotalTime;
+
+            DateTime AnalysisStartTime;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
+
+            AnalysisStartTotalTime = DateTime.Now;
             Board B = (Board)_B;
+            List<Task> boardProcessTasks = new List<Task>();
 
             if (UseBackgroundThread)
             {
@@ -1642,62 +1721,195 @@ namespace PalletCheck
             }
 
             try
-            {         
-                if (position == PositionOfPallet.Top) 
+            {
+                if (position == PositionOfPallet.Top)
                 {
-                    //Find Raised Board for top
-                    FindRaisedBoard(B, paramStorage);
+
+                    List<List<System.Drawing.Point>> closedHoles = null;
+                    bool hasHoles = false;
+
+                    AnalysisStartTime = DateTime.Now;
                     //Finds contourns
                     FindCracks(B, paramStorage);
-                    //Draws contours for analisys
-                    SaveCrackDetectionImage(B, B.BoardName+"Top_Cracks.png");
-                    //Finds cracks and breaks and look for break across the width   
-                    CheckForBreaks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
 
-                    SmoothBinaryCracks(B);
-                    SkeletonizeBufferZhangSuen(B);
-                    SaveCrackDetectionImage(B, B.BoardName + "Schelet.png");
-                    
-                    List<List<System.Drawing.Point>> closedHoles;
-                    bool hasHoles = HasClosedHole(B, out closedHoles,paramStorage);
-                    
+                    boardProcessTasks.Add(Task.Run(() => FindRaisedBoard(B, paramStorage)));
+                    boardProcessTasks.Add(Task.Run(() => CheckForBreaks(B, paramStorage)));
+
+                    Task.WaitAll(boardProcessTasks.ToArray());
+                    //await Task.WhenAll(boardProcessTasks);
+                    AnalysisStartTime = DateTime.Now;
+                    hasHoles = HasClosedHole(B, out closedHoles, paramStorage);
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} HasClosedHole FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+                    /*
                     if (hasHoles)
                     {
-                        SaveClosedHolesImage(B, B.BoardName+"_Puncture.png", closedHoles,paramStorage);                      
+                        AnalysisStopTime = DateTime.Now;
+                        SaveClosedHolesImage(B, B.BoardName + "_Puncture.png", closedHoles, paramStorage);
+                        AnalysisStopTime = DateTime.Now;
+                        AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                        Logger.WriteLine(String.Format("Top Board {0} SaveClosedHolesImage FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
                     }
+                    */
+                    /*
+                    AnalysisStartTime = DateTime.Now;
+                    //Find Raised Board for top
+                    FindRaisedBoard(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} FindRaisedBoard FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
+                    //Finds contourns
+                    FindCracks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
+                    //Draws contours for analisys
+                    SaveCrackDetectionImage(B, B.BoardName+"Top_Cracks.png");
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SaveCrackDetectionImage FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+                    
+                    AnalysisStartTime = DateTime.Now;
+                    //Finds cracks and breaks and look for break across the width   
+                    CheckForBreaks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} CheckForBreaks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
+                    SmoothBinaryCracks(B);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SmoothBinaryCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
+                    SkeletonizeBufferZhangSuen(B);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SkeletonizeBufferZhangSuen FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+                    
+                    AnalysisStartTime = DateTime.Now;
+                    SaveCrackDetectionImage(B, B.BoardName + "Schelet.png");
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} SaveCrackDetectionImage FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
+                    //List<List<System.Drawing.Point>> closedHoles;
+                    hasHoles = HasClosedHole(B, out closedHoles,paramStorage);
+
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Top Board {0} HasClosedHole FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    if (hasHoles)
+                    {
+                        AnalysisStopTime = DateTime.Now;
+                        SaveClosedHolesImage(B, B.BoardName+"_Puncture.png", closedHoles,paramStorage);
+                        AnalysisStopTime = DateTime.Now;
+                        AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                        Logger.WriteLine(String.Format("Top Board {0} SaveClosedHolesImage FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    }
+                    */
                 }
 
                 if (position == PositionOfPallet.Bottom)
                 {
-                    //Find Raised Board for top
-                    FindRaisedBoard(B, paramStorage);
+                    AnalysisStartTime = DateTime.Now;
                     //Finds contourns
                     FindCracks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    boardProcessTasks.Add(Task.Run(() => FindRaisedBoard(B, paramStorage)));
+                    boardProcessTasks.Add(Task.Run(() => CheckForBreaks(B, paramStorage)));
+                    boardProcessTasks.Add(Task.Run(() => CheckButtedJoint(B, paramStorage)));
+
+                    Task.WaitAll(boardProcessTasks.ToArray());
+                    //await Task.WhenAll(boardProcessTasks);
+
+                    /*
+                    AnalysisStartTime = DateTime.Now;
+                    //Find Raised Board for top
+                    FindRaisedBoard(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} FindRaisedBoard FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
+                    //Finds contourns
+                    FindCracks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
                     //Draws contours for analisys
-                    //SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");           
+                    //SaveCrackDetectionImage(B, B.BoardName + "Bottom_Cracks.png");
+                    AnalysisStartTime = DateTime.Now;
                     //Finds cracks and breaks and look for break across the width   
                     CheckForBreaks(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} CheckForBreaks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                    AnalysisStartTime = DateTime.Now;
                     //Check for less than 3 nails securing the boards
                     CheckButtedJoint(B, paramStorage);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("Bottom Board {0} CheckButtedJoint FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+                    */
                 }
 
+                AnalysisStartTime = DateTime.Now;
                 //Calculate missing wood
-                CalculateMissingWood(B, paramStorage);                
+                CalculateMissingWood(B, paramStorage);
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("CalculateMissingWood {0} FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                AnalysisStartTime = DateTime.Now;
                 //Check for missing wood across the length of the board
-                CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength),true, true);
+                CheckNarrowBoardHUB(paramStorage, B, (float)(B.MinWidthForChunkAcrossLength), (float)(B.ExpLength), true, true);
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("CheckNarrowBoardHUB {0} FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
                 //Check for missing wood less than 1/2 its width at one point of the board 
                 //CheckNarrowBoardHUB(paramStorage, B, (float)(B.ExpWidth/2), (float)(B.ExpLength*0.1),false ,true);
+
+                AnalysisStartTime = DateTime.Now;
                 //Check for RaisedNails 
-                if (!isDeepLActive) {FindRaisedNails(B, paramStorage);}
-                else{/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
+                if (!isDeepLActive) { FindRaisedNails(B, paramStorage); }
+                else {/*FindRaisedNailsDL(B, paramStorage,defectRNWHCO, i, Pos);*/}
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("FindRaisedNails FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
             }
+
 
             catch (Exception E)
             {
-                Logger.WriteException(E);            
+                Logger.WriteException(E);
                 AddDefect(B, PalletDefect.DefectType.board_segmentation_error, "Exception thrown in ProcessBoard()");
                 return;
             }
+
+            AnalysisStopTotalTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTotalTime - AnalysisStartTotalTime).TotalSeconds;
+            Logger.WriteLine(String.Format("Board Analysis FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
 
         //=====================================================================
@@ -1727,64 +1939,73 @@ namespace PalletCheck
         }
         private void SaveCrackDetectionImage(Board B, string filename)
         {
-            if(B.CrackCB!=null ) { 
-            int width = B.CrackCB.Width;
-            int height = B.CrackCB.Height;
+            DateTime AnalysisStartTime = DateTime.Now;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
 
-            Bitmap img = new Bitmap(width, height);
-
-            // Encuentra el valor máximo para normalizar el buffer
-            UInt16 maxVal = 0;
-            for (int i = 0; i < width * height; i++)
+            if (B.CrackCB != null)
             {
-                if (B.CrackCB.Buf[i] > maxVal)
-                    maxVal = B.CrackCB.Buf[i];
-            }
-            if (maxVal == 0) maxVal = 1; // evitar división por cero
+                int width = B.CrackCB.Width;
+                int height = B.CrackCB.Height;
 
-            using (Graphics g = Graphics.FromImage(img))
-            {
-                g.Clear(Color.White);
+                Bitmap img = new Bitmap(width, height);
 
-                // Pintar píxeles con grietas (intensidad normalizada)
-                for (int y = 0; y < height; y++)
+                // Encuentra el valor máximo para normalizar el buffer
+                UInt16 maxVal = 0;
+                for (int i = 0; i < width * height; i++)
                 {
-                    for (int x = 0; x < width; x++)
+                    if (B.CrackCB.Buf[i] > maxVal)
+                        maxVal = B.CrackCB.Buf[i];
+                }
+                if (maxVal == 0) maxVal = 1; // evitar división por cero
+
+                using (Graphics g = Graphics.FromImage(img))
+                {
+                    g.Clear(Color.White);
+
+                    // Pintar píxeles con grietas (intensidad normalizada)
+                    for (int y = 0; y < height; y++)
                     {
-                        UInt16 val = B.CrackCB.Buf[y * width + x];
-                        if (val > 0)
+                        for (int x = 0; x < width; x++)
                         {
-                            // Normalizar a 0-255 para intensidad
-                            int intensity = (int)(255 * val / maxVal);
-                            // Color rojo con intensidad según valor
-                            Color c = Color.FromArgb(intensity, 0, 0);
-                            img.SetPixel(x, y, c);
+                            UInt16 val = B.CrackCB.Buf[y * width + x];
+                            if (val > 0)
+                            {
+                                // Normalizar a 0-255 para intensidad
+                                int intensity = (int)(255 * val / maxVal);
+                                // Color rojo con intensidad según valor
+                                Color c = Color.FromArgb(intensity, 0, 0);
+                                img.SetPixel(x, y, c);
+                            }
+                        }
+                    }
+
+                    // Opcional: dibujar bordes de bloques detectados en CrackTracker
+                    int blockSize = B.CrackBlockSize;
+                    int ny = B.CrackTracker.GetLength(0);
+                    int nx = B.CrackTracker.GetLength(1);
+                    Pen blockPen = new Pen(Color.Blue, 1);
+
+                    for (int by = 0; by < ny; by++)
+                    {
+                        for (int bx = 0; bx < nx; bx++)
+                        {
+                            if (B.CrackTracker[by, bx] == 1)
+                            {
+                                int rx = bx * blockSize;
+                                int ry = by * blockSize;
+                                g.DrawRectangle(blockPen, rx, ry, blockSize, blockSize);
+                            }
                         }
                     }
                 }
 
-                // Opcional: dibujar bordes de bloques detectados en CrackTracker
-                int blockSize = B.CrackBlockSize;
-                int ny = B.CrackTracker.GetLength(0);
-                int nx = B.CrackTracker.GetLength(1);
-                Pen blockPen = new Pen(Color.Blue, 1);
-
-                for (int by = 0; by < ny; by++)
-                {
-                    for (int bx = 0; bx < nx; bx++)
-                    {
-                        if (B.CrackTracker[by, bx] == 1)
-                        {
-                            int rx = bx * blockSize;
-                            int ry = by * blockSize;
-                            g.DrawRectangle(blockPen, rx, ry, blockSize, blockSize);
-                        }
-                    }
-                }
+                img.Save(filename);
             }
 
-            img.Save(filename);
-            }
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("SaveCrackDetectionImage FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
         private void DrawContours1(Board B, string filename)
         {
@@ -1827,7 +2048,7 @@ namespace PalletCheck
             img.Save(filename);
             // Console.WriteLine($"Imagen de contornos guardada como {filename}");
         }
-        private void CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float WoodLengthIn,bool acrossLength, bool ExcludeEnds = false)
+        private void CheckNarrowBoardHUB(ParamStorage paramStorage, Board B, float FailWidIn, float WoodLengthIn, bool acrossLength, bool ExcludeEnds = false)
         {
             if (FailWidIn != 0)
             {
@@ -1898,8 +2119,8 @@ namespace PalletCheck
                     // Jack Note: Calculate the measured length in inches for vertical orientation
                     MissingWoodLength = nBadEdges / PPIY;
                 }
-                
-                
+
+
                 MissingWoodLength = MissingWoodLength + (float)(3);
 
                 if (MissingWoodLength >= WoodLengthIn)
@@ -1909,21 +2130,22 @@ namespace PalletCheck
                         AddDefect(B, PalletDefect.DefectType.missing_wood_width_across_length, "Missing chunk width <" + B.MinWidthForChunkAcrossLength + "(in) Across the lengh ");
 
                     }
-                    else {
+                    else
+                    {
                         AddDefect(B, PalletDefect.DefectType.missing_wood_width_at_one_point, " Board exhibits material loss exceeding 50% of its width at one or more points along its length.");
                     }
-                   
+
                     SetDefectMarker(B);
-                }                             
+                }
             }
         }
 
-       
 
-        
+
+
 
         // Jack Note: Count the Number of the distance between the Edge0 and Edge1 < FailWidth
-        private bool CheckNarrowBoard(ParamStorage paramStorage,Board B, float FailWidIn, float MinMissingWoodLengthIn, bool ExcludeEnds = false)
+        private bool CheckNarrowBoard(ParamStorage paramStorage, Board B, float FailWidIn, float MinMissingWoodLengthIn, bool ExcludeEnds = false)
         {
             // Jack Note: Initialize variables for pixels per inch (PPI) and measured length
             float PPIX;
@@ -1948,7 +2170,7 @@ namespace PalletCheck
             if (w > h)
             {
                 // Jack Note: Calculate the fail width in pixels for horizontal orientation
-                int FailWid = (int)(FailWidIn* PPIY);
+                int FailWid = (int)(FailWidIn * PPIY);
 
                 // Jack Note: Iterate through the edges and count bad edges
                 for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
@@ -1967,7 +2189,7 @@ namespace PalletCheck
             else
             {
                 // Jack Note: Calculate the fail width in pixels for vertical orientation
-                int FailWid = (int)(FailWidIn* PPIX);
+                int FailWid = (int)(FailWidIn * PPIX);
 
                 // Jack Note: Iterate through the edges and count bad edges
                 for (int i = Exclusion; i < B.Edges[0].Count - Exclusion; i++)
@@ -1990,7 +2212,7 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        private void FindCracks(Board B,ParamStorage paramStorage)
+        private void FindCracks(Board B, ParamStorage paramStorage)
         {
             PalletPoint P1 = FindBoardMinXY(B);
             PalletPoint P2 = FindBoardMaxXY(B);
@@ -2085,10 +2307,10 @@ namespace PalletCheck
             //+----------------------------------+
             //                                    P2
 
-           NullifyNonROIAreas(B, paramStorage);
+            NullifyNonROIAreas(B, paramStorage);
             // Remove speckle
             // Jack Note: Filter
-            DeNoiseInPlace(B.CrackCB,paramStorage);
+            DeNoiseInPlace(B.CrackCB, paramStorage);
 
             // Jack Note: Set the edge to zero
             for (int y = P1.Y; y <= P2.Y; y++)
@@ -2258,7 +2480,7 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        void NullifyNonROIAreas(Board B,ParamStorage paramStorage)
+        void NullifyNonROIAreas(Board B, ParamStorage paramStorage)
         {
             float EdgeWidH = paramStorage.GetFloat(StringsLocalization.HBoardEdgeCrackExclusionZonePercentage);
             float EdgeWidV = paramStorage.GetFloat(StringsLocalization.VBoardEdgeCrackExclusionZonePercentage);
@@ -2499,8 +2721,11 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        private void CheckForBreaks(Board B,ParamStorage paramStorage)
+        private void CheckForBreaks(Board B, ParamStorage paramStorage)
         {
+            DateTime AnalysisStartTime = DateTime.Now;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
 
             // Jack Note: Check if there are enough edges detected to proceed
             if (B.Edges[0].Count < 5)
@@ -2531,9 +2756,9 @@ namespace PalletCheck
                 if (MeasLen < MinLen)
                 {
                     //  Mark the board as too short and set defect marker
-                   // AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.XResolution)).ToString() +
-                   //     "(mm) shorter than " + ((int)(MinLen * B.XResolution)).ToString() + "(mm) (" + BoardLenPerc100.ToString() + "% of the Lenth)");
-                   // SetDefectMarker(B);
+                    // AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.XResolution)).ToString() +
+                    //     "(mm) shorter than " + ((int)(MinLen * B.XResolution)).ToString() + "(mm) (" + BoardLenPerc100.ToString() + "% of the Lenth)");
+                    // SetDefectMarker(B);
                     return;
                 }
             }
@@ -2551,13 +2776,16 @@ namespace PalletCheck
                 if (MeasLen < MinLen)
                 {
                     //  Mark the board as too short and set defect marker
-                   // AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.YResolution)).ToString() + 
-                   //     "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Length)");
-                  //  SetDefectMarker(B);
+                    // AddDefect(B, PalletDefect.DefectType.board_too_short, "Board len " + ((int)(MeasLen * B.YResolution)).ToString() + 
+                    //     "(mm) shorter than " + ((int)(MinLen * B.YResolution)).ToString()+ "(mm) (" + BoardLenPerc100.ToString() + "% of the Length)");
+                    //  SetDefectMarker(B);
                     return;
                 }
             }
 
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("CheckForBreaks FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
         public static double PixelsToSquareInches(int pixelCount, double mmPerPixelX, double mmPerPixelY)
         {
@@ -2577,6 +2805,10 @@ namespace PalletCheck
         }
         private void SmoothBinaryCracks(Board B)
         {
+            DateTime AnalysisStartTime = DateTime.Now;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
+
             int width = B.CrackCB.Width;
             int height = B.CrackCB.Height;
             UInt16[] buf = B.CrackCB.Buf;
@@ -2642,10 +2874,18 @@ namespace PalletCheck
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
                     B.CrackCB.Buf[y * width + x] = (temp[y, x] == 1) ? (UInt16)255 : (UInt16)0;
+
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("SmoothBinaryCracks FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
 
         public void SkeletonizeBufferZhangSuen(Board B)
         {
+            DateTime AnalysisStartTime = DateTime.Now;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
+
             int width = B.CrackCB.Width;
             int height = B.CrackCB.Height;
             UInt16[] originalBuf = B.CrackCB.Buf;
@@ -2765,6 +3005,10 @@ namespace PalletCheck
                     B.CrackCB.Buf[y * width + x] = (bin[y, x] == 1) ? (UInt16)255 : (UInt16)0;
                 }
             }
+
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("SkeletonizeBufferZhangSuen FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
 
 
@@ -2782,7 +3026,7 @@ namespace PalletCheck
             int[] dx = { -1, 0, 1, 0, -1, -1, 1, 1 };
             int[] dy = { 0, -1, 0, 1, -1, 1, -1, 1 };
 
-       
+
             int minX = B.Edges.SelectMany(e => e).Min(p => p.X) + margin;
             int maxX = B.Edges.SelectMany(e => e).Max(p => p.X) - margin;
             int minY = B.Edges.SelectMany(e => e).Min(p => p.Y) + margin;
@@ -2855,7 +3099,8 @@ namespace PalletCheck
                                 continue;
                             }
 
-                            else {
+                            else
+                            {
                                 holes.Add(contour);
 
 
@@ -2919,7 +3164,7 @@ namespace PalletCheck
             for (int i = 0; i < width * height; i++)
                 B.CrackCB.Buf[i] = (thinnedBuf[i] == 1) ? (UInt16)255 : (UInt16)0; // o 1 si usas valores binarios
         }
- 
+
 
         public static void DetectAndSaveClosedContours(Bitmap inputImg, string outputFilename)
         {
@@ -3012,7 +3257,7 @@ namespace PalletCheck
             double MMPerPixelX = paramStorage.GetFloat(StringsLocalization.MMPerPixelX);
             double MMPerPixelY = paramStorage.GetFloat(StringsLocalization.MMPerPixelY);
             double areaThreshold = paramStorage.GetFloat(StringsLocalization.PunctureMaxAreaIn2);
-            Bitmap img = new Bitmap(width, height); 
+            Bitmap img = new Bitmap(width, height);
 
             // 1. Dibujar los contornos en rojo sobre fondo blanco
             using (Graphics g = Graphics.FromImage(img))
@@ -3174,7 +3419,7 @@ namespace PalletCheck
                 using (Graphics g = Graphics.FromImage(img))
                 {
                     g.Clear(Color.White);
-                    foreach (System.Drawing.Point  pt in largestContour)
+                    foreach (System.Drawing.Point pt in largestContour)
                     {
                         img.SetPixel(pt.X, pt.Y, Color.Red);
                     }
@@ -3242,12 +3487,12 @@ namespace PalletCheck
 
             return areas;
         }
-        
+
         void IsCrackAClosedShape(Board B, ParamStorage paramStorage)
         {
             int w = B.CrackTracker.GetLength(1);
             int h = B.CrackTracker.GetLength(0);
-            bool fail= false;
+            bool fail = false;
 
             Dictionary<int, List<System.Windows.Point>> crackPoints = new Dictionary<int, List<System.Windows.Point>>();
 
@@ -3303,13 +3548,13 @@ namespace PalletCheck
                     double area = points.Count;
 
                     // Circularidad = 4π * area / (perímetro²)
-                    
-                    
-                   
+
+
+
                     double areamm2 = area * B.XResolution * B.YResolution;
 
                     //if ((circularity > 0.5 || areamm2 > areaTresholdmm2) && fail == false)
-                    if ((areamm2>1000))
+                    if ((areamm2 > 1000))
                     { //perfect circle hhas 5, then 0.5 is very permisive
 
                         //AddDefect(B, PalletDefect.DefectType.puncture, $"Circular crack/hole detected. Circularity:{circularity:F2}");
@@ -3329,7 +3574,7 @@ namespace PalletCheck
             return Math.Sqrt(dx * dx + dy * dy);
         }
         //=====================================================================
-        private void CalculateMissingWood(Board B,ParamStorage paramStorage)
+        private void CalculateMissingWood(Board B, ParamStorage paramStorage)
         {
 
             // Jack Note: Initialize variables for total area and capture buffer width
@@ -3405,6 +3650,9 @@ namespace PalletCheck
         }
         private void FindRaisedBoard(Board B, ParamStorage paramStorage)
         {
+            DateTime AnalysisStartTime = DateTime.Now;
+            DateTime AnalysisStopTime;
+            double AnalysisTotalSec;
             int CBW = B.CB.Width;
 
             int RBTestVal = (int)(1000 + paramStorage.GetPixZ(StringsLocalization.RaisedBoardMaximumHeight));
@@ -3476,6 +3724,10 @@ namespace PalletCheck
                     SetDefectMarker(maxX - 100, (minY + maxY) / 2, 100);  // centro del margen derecho
                 }
             }
+
+            AnalysisStopTime = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+            Logger.WriteLine(String.Format("FindRaisedBoard FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
         }
 
         //=====================================================================
@@ -3532,7 +3784,7 @@ namespace PalletCheck
                 if (((float)RBCount / RBTotal) > RBPercentage)
                 {
                     AddDefect(B, PalletDefect.DefectType.raised_board, "Left side of board raised");
-                    SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y+B.BoundsP2.Y)/2), 100);
+                    SetDefectMarker(B.BoundsP1.X, ((B.BoundsP1.Y + B.BoundsP2.Y) / 2), 100);
 
                     //SetDefectMarker(B);
                 }
@@ -3578,7 +3830,7 @@ namespace PalletCheck
 
         //=====================================================================
 
-        private bool ConfirmItIsANail(Board B, int CX, int CY,ParamStorage paramStorage)
+        private bool ConfirmItIsANail(Board B, int CX, int CY, ParamStorage paramStorage)
         {
             Logger.WriteLine(String.Format("ConfirmItIsANail  X:{0}  Y:{1}", CX, CY));
 
@@ -3734,7 +3986,8 @@ namespace PalletCheck
         }
 
         //=====================================================================
-        private void FindRaisedNailsDL(Board B, ParamStorage paramStorage, bool defecActivated, int i,bool Pos) {
+        private void FindRaisedNailsDL(Board B, ParamStorage paramStorage, bool defecActivated, int i, bool Pos)
+        {
 
             DateTime AnalysisStartTime;
             DateTime AnalysisStopTime;
@@ -3742,27 +3995,29 @@ namespace PalletCheck
             /*inference---------------------------------------------------------------------------------------------------------------------------------*/
             int widthC = B.CB.Width;
             int heightC = B.CB.Height;
-           
+
             Bitmap bitmapB = new Bitmap(widthC, heightC, PixelFormat.Format8bppIndexed);
             UShortArray2Bitmap(B.CB.Buf, widthC, heightC, bitmapB);
-            Rectangle cropRect  = new Rectangle(0, 0, widthC, heightC);
+            Rectangle cropRect = new Rectangle(0, 0, widthC, heightC);
             if (Pos)
             {
-                 cropRect = new Rectangle(700, B.startY, 2800, B.endY - B.startY);
+                cropRect = new Rectangle(700, B.startY, 2800, B.endY - B.startY);
             }
-            else {
-                 cropRect = new Rectangle(B.startX, B.startY, B.endX-B.startX, B.endY - B.startY);
+            else
+            {
+                cropRect = new Rectangle(B.startX, B.startY, B.endX - B.startX, B.endY - B.startY);
             }
-            
+
             Bitmap croppedBitmap = bitmapB.Clone(cropRect, bitmapB.PixelFormat);
             Bitmap croppedBitmapR = model.ResizeBitmap(croppedBitmap, 1350, 150);
             //need to crop it before apply rezise
             if (Pos)
             {
-               // croppedBitmapR.Save($"Top{i}.png");
+                // croppedBitmapR.Save($"Top{i}.png");
             }
-            else {
-               // croppedBitmapR.Save($"Bottom{i}.png");
+            else
+            {
+                // croppedBitmapR.Save($"Bottom{i}.png");
             }
 
             //Get Exec time
@@ -3773,7 +4028,7 @@ namespace PalletCheck
 
             AnalysisStopTime = DateTime.Now;
             AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-            Logger.WriteLine(String.Format("DeepLearning FindNails FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+            Logger.WriteLine(String.Format("DeepLearning FindNails FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
 
             //Get the results
             float[] boxesTop = resultsTop[0];
@@ -3833,7 +4088,7 @@ namespace PalletCheck
 
 
         }
-        private void FindRaisedNails(Board B,ParamStorage paramStorage)
+        private void FindRaisedNails(Board B, ParamStorage paramStorage)
         {
             // Jack Note: Check if there are enough edges detected to proceed
             double AverageDelta = 0;
@@ -3943,20 +4198,20 @@ namespace PalletCheck
                         }
                     }
 
-                    if (!foundExisting && ConfirmItIsANail(B, P.X, P.Y,paramStorage))
+                    if (!foundExisting && ConfirmItIsANail(B, P.X, P.Y, paramStorage))
                     {
                         B.Nails.Add(P);
                         AddDefect(B, PalletDefect.DefectType.raised_nail,
-                      $"Raised Nail > {MNH}mm, Height: {Math.Round( AverageDelta,2)}mm");
+                      $"Raised Nail > {MNH}mm, Height: {Math.Round(AverageDelta, 2)}mm");
 
-                        SetDefectMarker(P.X, P.Y, 30);                      
+                        SetDefectMarker(P.X, P.Y, 30);
                     }
                 }
             }
         }
 
         //=====================================================================
-       public PalletDefect AddDefect(Board B, PalletDefect.DefectType type, string Comment)
+        public PalletDefect AddDefect(Board B, PalletDefect.DefectType type, string Comment)
         {
             if (B == null)
             {
@@ -4009,7 +4264,7 @@ namespace PalletCheck
                 PalletDefect PD = AllDefects[AllDefects.Count - 1];
                 if (Tag == "") Tag = PD.Code;
                 PD.SetCircleMarker(X, Y, R, Tag);
-                
+
             }
         }
 
@@ -4143,7 +4398,7 @@ namespace PalletCheck
                 float widthThresholdMultiplier = 1.3f, // 可配置的宽度阈值倍数
                 int edgeTrimLimit = 300,              // 可配置的边缘点限制
                 int minSpanDifference = 20  // 可配置的最小跨度差
-)               
+)
         {
             UInt16[] buf = sourceCB.Buf;
             int cbWidth = sourceCB.Width;
@@ -4274,7 +4529,7 @@ namespace PalletCheck
 
 
         //=====================================================================
-        Board ProbeVertically(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartCol, int EndCol, int Step, int StartRow, int EndRow,ParamStorage paramStorage)
+        Board ProbeVertically(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartCol, int EndCol, int Step, int StartRow, int EndRow, ParamStorage paramStorage)
         {
             UInt16[] Buf = SourceCB.Buf;
             List<PalletPoint> P = new List<PalletPoint>();
@@ -4603,7 +4858,7 @@ namespace PalletCheck
             return -1;
         }
 
-        Board ProbeHorizontallyRotate90(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartRow, int EndRow, int Step, int StartCol, int EndCol,ParamStorage paramStorage)
+        Board ProbeHorizontallyRotate90(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartRow, int EndRow, int Step, int StartCol, int EndCol, ParamStorage paramStorage)
         {
             UInt16[] Buf = SourceCB.Buf;
             List<PalletPoint> P = new List<PalletPoint>();
@@ -4611,9 +4866,9 @@ namespace PalletCheck
 
             int ExpLen = paramStorage.GetPixY(StringsLocalization.VBoardLength_in);
             int ExpWid = paramStorage.GetPixX(StringsLocalization.VBoardWidth_in);
-            
-           //int ExpLen = paramStorage.GetInt("Short Board Length");
-           //int ExpWid = paramStorage.GetInt("Board Width X");   // Adjusted for horizontal scanning
+
+            //int ExpLen = paramStorage.GetInt("Short Board Length");
+            //int ExpWid = paramStorage.GetInt("Board Width X");   // Adjusted for horizontal scanning
 
             Board B = new Board(Name, Location, true, ExpLen, ExpWid);
 
@@ -4721,7 +4976,7 @@ namespace PalletCheck
                     }
                 }
 
-                
+
                 // Jack Note: Calculate and handle slivers on the bottom side
                 avgX0 = 0;
                 avgX1 = 0;
@@ -4956,15 +5211,18 @@ namespace PalletCheck
             return -1;
         }
 
-        public void CheckButtedJoint(Board B, ParamStorage paramStorage) 
+        public void CheckButtedJoint(Board B, ParamStorage paramStorage)
         {
+            DateTime AnalysisStartTimeTotal;
+            DateTime AnalysisStopTimeTotal;
             DateTime AnalysisStartTime;
             DateTime AnalysisStopTime;
             double AnalysisTotalSec;
-            int index = 0;   
+            int index = 0;
+            AnalysisStartTimeTotal = DateTime.Now;
 
             // A pair of butted joint regions are analyzed per vertical board so image nubmer (index) is defined according to the board inspected
-            if (B.BoardName == "V1") {  index = 1; }        // V1: 1, 4
+            if (B.BoardName == "V1") { index = 1; }        // V1: 1, 4
             else if (B.BoardName == "V2") { index = 2; }    // V2: 2, 5
             else if (B.BoardName == "V3") { index = 3; }    // V3: 3, 6
             else { return; }
@@ -4974,34 +5232,63 @@ namespace PalletCheck
             {
                 string imageName = "buttedJoint" + i;
                 float[] byteArrayJoint1 = MainWindow._envBottom.GetImageBuffer(imageName)._range; // Get the image  
+                byte[] byteArrayBottom = MainWindow._envBottom.GetImageBuffer(imageName)._intensity;
                 int width = MainWindow._envBottom.GetImageBuffer(imageName).Info.Width;
                 int height = MainWindow._envBottom.GetImageBuffer(imageName).Info.Height;
+                Bitmap bitmapBottom = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
                 //Get Exec time
                 AnalysisStartTime = DateTime.Now;
 
-                Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
-                Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
-                Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format24bppRgb);
 
+                Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
+                //Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
+                //Bitmap resizedJoint = model.ResizeBitmap(joint, width/2, height/2);
+                Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+
+
+                /*
+                Bitmap joint = new Bitmap("VizDL/ButtedJointImages/" + imageName + ".png");
+                //Bitmap resizedJoint = model.ResizeBitmap(joint, 1009, 1450);
+                Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap gray = new Bitmap(joint.Width, joint.Height, PixelFormat.Format24bppRgb);
+                */
+                /*
+                //Convert the byte array to bitmap
+                ByteArray2bitmap(byteArrayBottom, width, height, bitmapBottom);
+                Bitmap resizedJoint = model.ResizeBitmap(bitmapBottom, 1009, 1450);
+                Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format24bppRgb);
+                //Bitmap gray = new Bitmap(resizedJoint.Width, resizedJoint.Height, PixelFormat.Format8bppIndexed);
+                */
                 AnalysisStopTime = DateTime.Now;
                 AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                Logger.WriteLine(String.Format("DeepLearning Buttedjoint resize image FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint resize image FINISHED {0}:{1}  -  {2:0.000} sec", B.BoardName, imageName, AnalysisTotalSec));
 
                 using (Graphics g = Graphics.FromImage(gray))
                 {
-                    g.DrawImage(resizedJoint, 0, 0);
+                    //g.DrawImage(resizedJoint, 0, 0);
+                    g.DrawImage(joint, 0, 0);
+                    Logger.WriteLine(String.Format("Image updated for {0} (buttedJoint)", B.BoardName));
                 }
+
                 //Get Exec time
                 AnalysisStartTime = DateTime.Now;
 
                 //Process the image for inference
                 float[] imageData1 = model.ProcessBitmapForInference(gray, gray.Width, gray.Height);
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Process Image FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
                 float[][] results = model.RunInferenceButtedJoint(imageData1, gray.Height, gray.Width);
 
                 AnalysisStopTime = DateTime.Now;
                 AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
-                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Analysis FINISHED -  {0:0.000} sec", AnalysisTotalSec));
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint Analysis FINISHED {0}:{1}  -  {2:0.000} sec", B.BoardName, imageName, AnalysisTotalSec));
 
                 //Get the results
                 float[] boxes = results[0];     //Coordinates for the bounding boxes of the model. x1,y1: top left corner, x2,y2: bottom right corner 
@@ -5012,11 +5299,18 @@ namespace PalletCheck
                 //Save the results to visualize them
                 try
                 {
+                    //Get Exec time
+                    AnalysisStartTime = DateTime.Now;
                     string resultImageName = "VizDL/ButtedJointResults/" + imageName + ".png";
-                    resizedJoint.Save(resultImageName, ImageFormat.Png);
-                    resizedJoint.Dispose();
+                    joint.Save(resultImageName, ImageFormat.Png);
+                    joint.Dispose();
+                    //resizedJoint.Save(resultImageName, ImageFormat.Png);
+                    //resizedJoint.Dispose();
                     string newimageName = "VizDL/ButtedJointResults/results_" + imageName + ".png";
                     model.DrawBoxes(resultImageName, boxes, scores, newimageName);
+                    AnalysisStopTime = DateTime.Now;
+                    AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                    Logger.WriteLine(String.Format("DeepLearning Buttedjoint Draw Boxes FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
                 }
 
                 catch (Exception e)
@@ -5030,24 +5324,35 @@ namespace PalletCheck
                 int securedNails = 0;
                 int centroidsIndex = 0;
 
+                //Get Exec time
+                AnalysisStartTime = DateTime.Now;
+
                 Centroids = model.getCentroids4(boxes, scores, threshold); //Centroids[0] = x1, Centroids[1] = y1, Centroids[2] = x2 ...
 
-                for (int j = 0; j < Centroids.Length / 2; j ++)
+                for (int j = 0; j < Centroids.Length / 2; j++)
                 {
                     if (!model.IsMajorityNaN(Centroids[centroidsIndex], Centroids[centroidsIndex + 1], 20, width, height, byteArrayJoint1))
                     {
-                        securedNails++;                       
+                        securedNails++;
                     }
                     centroidsIndex += 2;
                 }
+
+                AnalysisStopTime = DateTime.Now;
+                AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
+                Logger.WriteLine(String.Format("DeepLearning Buttedjoint getCentroids4 FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
 
                 if (securedNails < 3)
                 {
                     AddDefect(B, PalletDefect.DefectType.buttedJoint, "Butted Joint With Less Than 3 Nails");
                 }
-                
+
             }
-           
+
+            AnalysisStopTimeTotal = DateTime.Now;
+            AnalysisTotalSec = (AnalysisStopTimeTotal - AnalysisStartTimeTotal).TotalSeconds;
+            Logger.WriteLine(String.Format("DeepLearning Buttedjoint total FINISHED {0}  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
+
         }
 
         public void RetrieveButtedJointImages()
@@ -5264,7 +5569,7 @@ namespace PalletCheck
             } // for-iterations
         } // Start
 
-        Board ProbeHorizontally(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartRow, int EndRow, int Step, int StartCol, int EndCol,ParamStorage paramStorage)
+        Board ProbeHorizontally(CaptureBuffer SourceCB, string Name, PalletDefect.DefectLocation Location, int StartRow, int EndRow, int Step, int StartCol, int EndCol, ParamStorage paramStorage)
         {
             UInt16[] Buf = SourceCB.Buf;
             int CBW = SourceCB.Width;

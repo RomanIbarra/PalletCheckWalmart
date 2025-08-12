@@ -382,6 +382,7 @@ namespace PalletCheck
             {
                 KillThread = false;
                 WatchdogThread = new Thread(new ThreadStart(WatchdogThreadFunc));
+                WatchdogThread.Name = "Watchdog Thread";
                 WatchdogThread.Start();
             }
         }
