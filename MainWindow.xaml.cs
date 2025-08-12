@@ -552,7 +552,7 @@ namespace PalletCheck
             ClearAnalysisResults(PositionOfPallet.Top);
             //ProgressBar_Clear();
 
-            PProcessorTop = new PalletProcessor(7, 7);
+            PProcessorTop = new PalletProcessor(9, 9);
             PProcessorBottom = new PalletProcessor(5, 5);
 
 
@@ -1521,11 +1521,12 @@ namespace PalletCheck
             //SendPLCTotalResult(P);
 
             UpdateUIWithPalletResults(P, position);
+            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete " + position.ToString());
         }
 
         private void Pallet_OnProcessMultiplePalletAnalysisComplete(Pallet P, PositionOfPallet position)
         {
-            Logger.WriteLine("Pallet_OnProcessMultiplePalletAnalysisComplete");
+            Logger.WriteLine("Pallet_OnProcessMultiplePalletAnalysisComplete " + position.ToString());
 
             //ProcessRecordingFinishedPalletCount += 1;
             //ProgressBar_SetText(string.Format("Processing Recording... Finished {0} of {1}", ProcessRecordingFinishedPalletCount, ProcessRecordingTotalPalletCount));
@@ -1555,7 +1556,7 @@ namespace PalletCheck
             //SendPLCTotalResult(P);
             UpdateUIWithPalletResults(P, position);
 
-            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete");
+            Logger.WriteLine("Pallet_OnLivePalletAnalysisComplete Complete " + position.ToString());
             //Logger.WriteBorder("PALLET COMPLETE: " + P.Filename);
 
         }
@@ -2245,7 +2246,7 @@ namespace PalletCheck
                 SaveDataToFile(string.Join(",", finalString));
                 
             });
-            lock (LockObjectCombine)
+            //lock (LockObjectCombine)
             {
                 CombinedBoards.Clear();
                 CombinedDefects.Clear();

@@ -67,6 +67,7 @@ namespace PalletCheck
             {
                 KillThread = false;
                 ListenerThread = new Thread(new ThreadStart(ListenerThreadFunc));
+                ListenerThread.Name = "Server Thread";
                 ListenerThread.Start();
             }
         }

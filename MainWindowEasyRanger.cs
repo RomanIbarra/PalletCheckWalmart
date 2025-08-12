@@ -356,7 +356,7 @@ namespace PalletCheck
                             viewer.DrawText("MyText", green);
                         }*/
 
-                        lock (LockObjectCombine)
+                        //lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
@@ -578,7 +578,7 @@ namespace PalletCheck
 
                         env.SetText("MyText", textArray, xArray, yArray, sizeArray);
 
-                        lock (LockObjectCombine)
+                        //lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);

@@ -189,12 +189,12 @@
     <Compile Include="MainWindowEasyRanger.cs" />
     <Compile Include="MainWindowNotUsed.cs" />
     <Compile Include="MainWindowOther.cs" />
+    <Compile Include="Pallet.cs" />
     <Compile Include="PalletDefect.cs" />
     <Compile Include="PalletEasyRanger.cs" />
     <Compile Include="PLCComms.cs" />
     <Compile Include="Benchmark.cs" />
     <Compile Include="InspectionReport.cs" />
-    <Compile Include="Pallet.cs" />
     <Compile Include="ParamConfig.cs">
       <SubType>Form</SubType>
     </Compile>
