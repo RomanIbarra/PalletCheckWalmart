@@ -66,10 +66,11 @@
                     <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Column="1" Orientation="Horizontal" OpacityMask="Black" >
+                    <Button x:Name="btnEnableDeepLearning"  Click="btnEnableDeepLearning_Click" Margin="00,10,0,0"  Content="DeepL ✓" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Center" FontSize="12" Width="60" OpacityMask="Black"/>
                     <Button x:Name="btnSetting_TopInternational"  Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="International" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="100" OpacityMask="Black"/>
                     <Button x:Name="btnLoad_Top" Style="{StaticResource Transparent3DButtonStyle}" Click="Load_Top_Click" Margin="10,10,0,0"   IsEnabled="False"  Content="Process Top" VerticalAlignment="Top" FontSize="15" Width="100" OpacityMask="Black"/>
-                    <Button x:Name="btnSetting_Top"  Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="Setting Top" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
-                    <Button x:Name="btnShow_Top"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />
+                    <Button x:Name="btnSetting_Top"  Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="Setting Top" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="80" OpacityMask="Black"/>
+                    <Button x:Name="btnShow_Top"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="70" />
                 </StackPanel>
                 <control:View2DControl x:Name="ViewerTop" Grid.Row="0" Grid.Column="0"  Margin="5,40,5,5" Grid.ColumnSpan="2" BorderBrush="#FF9E3232" ShowRangeButton="Collapsed" ShowScaleButton="Collapsed" ShowColorMapDropDown="Collapsed" ShowTrueAspectRatio="Collapsed">
                     <control:View2DControl.Background>
