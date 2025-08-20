@@ -1,3 +1,5 @@
+//#define UseDeeplearningonTop
+
 using System.Windows;
 using System;
 using System.Collections.Generic;
@@ -14,10 +16,11 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
 using System.Windows.Media.Imaging;
 using System.Xml.Schema;
+using static System.Windows.Forms.AxHost;
 
 namespace PalletCheck
 {
-
+    
     public struct PalletPoint
     {
         public int X;
@@ -816,6 +819,42 @@ namespace PalletCheck
             DateTime AnalysisPreTotalStartTime = DateTime.Now;
             DateTime AnalysisPreTotalStopTime;
 
+            RoiType[] roiTypes = new RoiType[9];
+            int[] widths = new int[9];
+            int[] heights = new int[9];
+            float[] xcs = new float[9];
+            float[] ycs = new float[9];
+            float[] rotations = new float[9];
+            List<CaptureBuffer> captureBuffers = new List<CaptureBuffer>();
+            List<byte[]> bytesIntensity = new List<byte[]>();
+            List<int> W = new List<int>();
+            List<int> Y = new List<int>();
+            string boardName;
+            float[] floatArray;
+            byte[] byteArray;
+            ushort[] ushortArray;
+            ushort[] ushortArrayRef;
+            List<Board> boardsList;
+            Board H1 = null;
+            Board H2 = null;
+            Board H3 = null;
+            Board H4 = null;
+            Board H5 = null;
+            Board H6 = null;
+            Board H7 = null;
+            Board H8 = null;
+            Board H9 = null;
+
+            Board V1 = null;
+            Board V2 = null;
+            Board V3 = null;
+
+            int ExpLen = 0;
+            int ExpWid = 0;
+            double[] dHeight;
+            int[] wUnsortedHeights;
+
+
             Logger.WriteLine("Pallet::IsolateAndAnalyzeSurfaces START for " + position.ToString());
 
             int nRows = SourceCB.Height;
@@ -889,11 +928,11 @@ namespace PalletCheck
                 int ExpWidV = (int)MainWindow.GetParamStorage(position).GetPixX(StringsLocalization.VBoardWidth_in);
                 int ExpLengthV = (int)MainWindow.GetParamStorage(position).GetPixY(StringsLocalization.VBoardLength_in);
 
-                Board V1 = ProbeHorizontallyRotate90(ProbeCB, "V1", PalletDefect.DefectLocation.B_V1, StartY, EndY, 1, StartX1, EndX1, paramStorage);
-                Board V2 = ProbeHorizontallyRotate90(ProbeCB, "V2", PalletDefect.DefectLocation.B_V2, StartY, EndY, 1, StartX2, EndX2, paramStorage);
-                Board V3 = ProbeHorizontallyRotate90(ProbeCB, "V3", PalletDefect.DefectLocation.B_V3, StartY, EndY, 1, StartX3, EndX3, paramStorage);
-                Board H1 = ProbeVerticallyRotate90(ProbeCB, "H1", PalletDefect.DefectLocation.B_H1, StartX1, EndX3, 1, TopY - 20, TopY + 330, paramStorage);
-                Board H2 = ProbeVerticallyRotate90(ProbeCB, "H2", PalletDefect.DefectLocation.B_H2, StartX1, EndX3, 1, BottomY + 20, BottomY - 300, paramStorage);
+                V1 = ProbeHorizontallyRotate90(ProbeCB, "V1", PalletDefect.DefectLocation.B_V1, StartY, EndY, 1, StartX1, EndX1, paramStorage);
+                V2 = ProbeHorizontallyRotate90(ProbeCB, "V2", PalletDefect.DefectLocation.B_V2, StartY, EndY, 1, StartX2, EndX2, paramStorage);
+                V3 = ProbeHorizontallyRotate90(ProbeCB, "V3", PalletDefect.DefectLocation.B_V3, StartY, EndY, 1, StartX3, EndX3, paramStorage);
+                H1 = ProbeVerticallyRotate90(ProbeCB, "H1", PalletDefect.DefectLocation.B_H1, StartX1, EndX3, 1, TopY - 20, TopY + 330, paramStorage);
+                H2 = ProbeVerticallyRotate90(ProbeCB, "H2", PalletDefect.DefectLocation.B_H2, StartX1, EndX3, 1, BottomY + 20, BottomY - 300, paramStorage);
 
                 V1.startX = StartX1;
                 V1.endX = EndX1;
@@ -1006,10 +1045,11 @@ namespace PalletCheck
 
                 if (!isDeepLActive)
                 {
-
                     #region DeepLearning Classifier
                     AnalysisStartTime = DateTime.Now;
+#if UseDeeplearningonTop
                     /*Classifier inference---------------------------------------------------------------------------------------------------------------------------------*/
+
                     int widthC = MainWindow._envTop.GetImageBuffer("ResizedImg").Info.Width;
                     int heightC = MainWindow._envTop.GetImageBuffer("ResizedImg").Info.Height;
                     byte[] byteArrayTop = MainWindow._envTop.GetImageBuffer("ResizedImg")._intensity;//Resized on Easy Ranger from FilteredImage
@@ -1038,44 +1078,43 @@ namespace PalletCheck
                     float[] imageDataClass = model.ProcessBitmapForInference(bitmapTop, bitmapTop.Width, bitmapTop.Height);
                     int resultClass = model.RunInferenceClassifier(imageDataClass, bitmapTop.Height, bitmapTop.Width);
                     PalletClassifier = resultClass; // 0 = International, 1 = Standard
+                    
+#else
+                    PalletClassifier = MainWindow._envTop.GetInteger("OutputClass", 0);
+
+#endif
                     paramStorage = PalletClassifier == 1 ? GetParamStorage(PositionOfPallet.Top) : GetParamStorage(PositionOfPallet.TopInternational);
                     AnalysisStopTime = DateTime.Now;
                     AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
                     Logger.WriteLine(String.Format("DeepLearning Top Classifier FINISHED, {0} -  {1:0.000} sec", PalletClassifier, AnalysisTotalSec));
-                    #endregion
+#endregion
                 }
 
-                RoiType[] roiTypes = new RoiType[7];
-                int[] widths = new int[7];
-                int[] heights = new int[7];
-                float[] xcs = new float[7];
-                float[] ycs = new float[7];
-                float[] rotations = new float[7];
-
                 AnalysisStartTime = DateTime.Now;
-
+                //byte[] byteArray = MainWindow._envTop.GetImageBuffer("FilteredImage")._intensity;
+#if UseDeeplearningonTop
                 for (int i = 0; i < 7; i++)
                 {
                     MainWindow._envTop.GetRegionType("PalletRegions", ref roiTypes[i], ref widths[i], ref heights[i], ref xcs[i], ref ycs[i], ref rotations[i], i);
                 }
 
                 iCount = 9;
-                List<CaptureBuffer> captureBuffers = new List<CaptureBuffer>();
-                List<byte[]> bytesIntensity = new List<byte[]>();
-                List<int> W = new List<int>();
-                List<int> Y = new List<int>();
+                captureBuffers = new List<CaptureBuffer>();
+                bytesIntensity = new List<byte[]>();
+                W = new List<int>();
+                Y = new List<int>();
 
                 for (int boardIndex = 0; boardIndex < 7; boardIndex++)
                 {
-                    string boardName = $"Board_{boardIndex}";
-                    float[] floatArray = MainWindow._envTop.GetImageBuffer(boardName)._range;
-                    byte[] byteArray = MainWindow._envTop.GetImageBuffer(boardName)._intensity;
+                    boardName = $"Board_{boardIndex}";
+                    floatArray = MainWindow._envTop.GetImageBuffer(boardName)._range;
+                    byteArray = MainWindow._envTop.GetImageBuffer(boardName)._intensity;
                     bytesIntensity.Add(byteArray);
                     W.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Width);
                     Y.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Height);
 
                     //Convert Range to ushort 
-                    ushort[] ushortArray = new ushort[floatArray.Length];
+                    ushortArray = new ushort[floatArray.Length];
 
                     for (int i = 0; i < floatArray.Length; i++)
                     {
@@ -1083,7 +1122,7 @@ namespace PalletCheck
                     }
 
                     //Convert Reflectance to ushort
-                    ushort[] ushortArrayRef = new ushort[byteArray.Length];
+                    ushortArrayRef = new ushort[byteArray.Length];
 
                     for (int i = 0; i < ushortArrayRef.Length; i++)
                     {
@@ -1111,6 +1150,73 @@ namespace PalletCheck
 
                     };
                 }
+#else
+               
+                //
+                for (int boardIndex = 0; boardIndex < 9; boardIndex++)
+                {
+                    MainWindow._envTop.GetRegionType("PalletRegions", ref roiTypes[boardIndex], ref widths[boardIndex], ref heights[boardIndex], ref xcs[boardIndex], ref ycs[boardIndex], ref rotations[boardIndex], boardIndex);
+                    boardName = $"H{boardIndex + 1}_Board";
+                    floatArray = MainWindow._envTop.GetImageBuffer(boardName)._range;
+                    byteArray = MainWindow._envTop.GetImageBuffer(boardName)._intensity;
+                    bytesIntensity.Add(byteArray);
+                    W.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Width);
+                    Y.Add(MainWindow._envTop.GetImageBuffer(boardName).Info.Height);
+
+                    //Convert Range to ushort 
+                    ushortArray = new ushort[floatArray.Length];
+
+                    for (int i = 0; i < floatArray.Length; i++)
+                    {
+                        ushortArray[i] = (ushort)(floatArray[i] + 1000);
+                    }
+
+                    //Convert Reflectance to ushort
+                    ushortArrayRef = new ushort[byteArray.Length];
+
+                    for (int i = 0; i < ushortArrayRef.Length; i++)
+                    {
+                        ushortArrayRef[i] = byteArray[i];
+                    }
+
+                    // Creating and Storing a CaptureBuffer Range
+                    CaptureBuffer captureBuffer = new CaptureBuffer
+                    {
+                        Buf = ushortArray
+
+                    };
+
+                    captureBuffer.Width = MainWindow._envTop.GetImageBuffer(boardName).Info.Width;
+                    captureBuffer.Height = MainWindow._envTop.GetImageBuffer(boardName).Info.Height;
+                    captureBuffers.Add(captureBuffer);
+
+                    //Capture Buffer Reflectance        
+                    CaptureBuffer ReflBuf = new CaptureBuffer
+                    {
+                        Buf = ushortArrayRef,
+                        PaletteType = CaptureBuffer.PaletteTypes.Gray,
+                        Width = MainWindow._envTop.GetImageBuffer(boardName).Info.Width,
+                        Height = MainWindow._envTop.GetImageBuffer(boardName).Info.Height,
+
+                    };
+                }
+
+                dHeight = MainWindow._envTop.GetDouble("PalletHeights");
+                wUnsortedHeights = new int[dHeight.Length];
+                for (int Cntr = 0; Cntr < dHeight.Length; Cntr++)
+                {
+                    wUnsortedHeights[Cntr] = (int)dHeight[Cntr];
+                }
+                heights[4] = wUnsortedHeights[0];//H5
+                heights[3] = wUnsortedHeights[1];//H4
+                heights[2] = wUnsortedHeights[2];//H3
+                heights[1] = wUnsortedHeights[3];//H2
+                heights[0] = wUnsortedHeights[4];//H1
+                heights[5] = wUnsortedHeights[5];//H6
+                heights[6] = wUnsortedHeights[6];//H7
+                heights[7] = wUnsortedHeights[7];//H8
+                heights[8] = wUnsortedHeights[8];//H9
+#endif
                 AnalysisStopTime = DateTime.Now;
                 AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
                 Logger.WriteLine(String.Format("Top board calculation  -  {0:0.000} sec", AnalysisTotalSec));
@@ -1119,7 +1225,9 @@ namespace PalletCheck
                 {
                     //Get Exec time
                     AnalysisStartTime = DateTime.Now;
-
+                    ExpLen = paramStorage.GetInt("Long Board Length");
+                    ExpWid = paramStorage.GetInt("Board Width Y Left");
+#if UseDeeplearningonTop
                     #region DeepLearning Leading
                     //Leading split inference
                     Bitmap bitmap = new Bitmap(W[0], Y[0], PixelFormat.Format8bppIndexed);
@@ -1184,8 +1292,8 @@ namespace PalletCheck
                     model.SplitBoard2(croppedBitmapR, boxes, scores, binaryMasks, name,
                       ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
 
-                    Board H1 = null;
-                    Board H2 = null;
+                    H1 = null;
+                    H2 = null;
 
                     ushort[] Clone = captureBuffers[0].Buf.Clone() as ushort[];
 
@@ -1267,7 +1375,18 @@ namespace PalletCheck
                     }
 
                     #endregion
+#else
+                    int X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
+                    int X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
+                    int startR = (int)(ycs[0] - heights[0]);
+                    int endR = (int)(ycs[0] + heights[0]);
 
+                    H1 = ProbeVerticallyRotate90(captureBuffers[0], "H1", PalletDefect.DefectLocation.T_H1, X1, X2, 1,
+                          (int)(ycs[0] - heights[0] / 2), (int)(ycs[0] + heights[0] / 2), paramStorage);
+                    //captureBuffers[0].SaveImage("H1.png");
+                    H2 = ProbeVerticallyRotate90(captureBuffers[1], "H2", PalletDefect.DefectLocation.T_H2, X1, X2, 1,
+                           (int)(ycs[1] - heights[1] / 2), (int)(ycs[1] + heights[1] / 2), paramStorage);
+#endif
                     AnalysisStopTime = DateTime.Now;
                     AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
                     Logger.WriteLine(String.Format("DeepLearning Top Leading block FINISHED  -  {0:0.000} sec", AnalysisTotalSec));
@@ -1276,17 +1395,16 @@ namespace PalletCheck
                     AnalysisStartTime = DateTime.Now;
 
                     #region H3 to H7 Calculation
-
-                    Board H3 = ProbeVerticallyRotate90(captureBuffers[1], "H3", PalletDefect.DefectLocation.T_H3, X1, X2, 1,
-                        (int)(ycs[1] - heights[1] / 2), (int)(ycs[1] + heights[1] / 2), paramStorage);
-                    Board H4 = ProbeVerticallyRotate90(captureBuffers[2], "H4", PalletDefect.DefectLocation.T_H4, X1, X2, 1,
+                    H3 = ProbeVerticallyRotate90(captureBuffers[2], "H3", PalletDefect.DefectLocation.T_H3, X1, X2, 1,
                         (int)(ycs[2] - heights[2] / 2), (int)(ycs[2] + heights[2] / 2), paramStorage);
-                    Board H5 = ProbeVerticallyRotate90(captureBuffers[3], "H5", PalletDefect.DefectLocation.T_H5, X1, X2, 1,
+                    H4 = ProbeVerticallyRotate90(captureBuffers[3], "H4", PalletDefect.DefectLocation.T_H4, X1, X2, 1,
                         (int)(ycs[3] - heights[3] / 2), (int)(ycs[3] + heights[3] / 2), paramStorage);
-                    Board H6 = ProbeVerticallyRotate90(captureBuffers[4], "H6", PalletDefect.DefectLocation.T_H6, X1, X2, 1,
+                    H5 = ProbeVerticallyRotate90(captureBuffers[4], "H5", PalletDefect.DefectLocation.T_H5, X1, X2, 1,
                         (int)(ycs[4] - heights[4] / 2), (int)(ycs[4] + heights[4] / 2), paramStorage);
-                    Board H7 = ProbeVerticallyRotate90(captureBuffers[5], "H7", PalletDefect.DefectLocation.T_H7, X1, X2, 1,
+                    H6 = ProbeVerticallyRotate90(captureBuffers[5], "H6", PalletDefect.DefectLocation.T_H6, X1, X2, 1,
                         (int)(ycs[5] - heights[5] / 2), (int)(ycs[5] + heights[5] / 2), paramStorage);
+                    H7 = ProbeVerticallyRotate90(captureBuffers[6], "H7", PalletDefect.DefectLocation.T_H7, X1, X2, 1,
+                        (int)(ycs[6] - heights[6] / 2), (int)(ycs[6] + heights[6] / 2), paramStorage);
 
                     startY[2] = (int)(ycs[1] - heights[1] / 2);
                     endY[2] = (int)(ycs[1] + heights[1] / 2);
@@ -1308,6 +1426,7 @@ namespace PalletCheck
                     AnalysisStartTime = DateTime.Now;
 
                     #region DeepLearning Trail
+#if UseDeeplearningonTop
                     //define the bitmap
                     bitmap = new Bitmap(W[6], Y[6], PixelFormat.Format8bppIndexed);
                     //Convert the byte array to bitmap
@@ -1361,9 +1480,7 @@ namespace PalletCheck
 
                     model.SplitBoard2(croppedBitmap, boxes, scores, binaryMasks, name,
                       ref img1Exist, ref img2Exist, ref upperY1, ref upperY2, ref lowerY1, ref lowerY2, isSaveTopSplitResults);
-                    Board H8 = null;
-                    Board H9 = null;
-
+                    
                     ushort[] Clone2 = captureBuffers[6].Buf.Clone() as ushort[];
 
                     CaptureBuffer Clon2 = new CaptureBuffer
@@ -1431,6 +1548,19 @@ namespace PalletCheck
                         startY[8] = ((startR + endR) / 2);
                         endY[8] = endR;
                     }
+#else
+                    X1 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_StartX);
+                    X2 = MainWindow.GetParamStorage(position).GetInt(StringsLocalization.SplitDL_EndX);
+                    //int startR = (int)(ycs[0] - heights[0]);
+                    //int endR = (int)(ycs[0] + heights[0]);
+
+                    //Both images exist Upper Y took into account
+                    H8 = ProbeVerticallyRotate90(captureBuffers[7], "H8", PalletDefect.DefectLocation.T_H8, X1, X2, 1,
+                          (int)(ycs[7] - heights[7] / 2), (int)(ycs[7] + heights[7] / 2), paramStorage);
+                    //captureBuffers[0].SaveImage("H1.png");
+                    H9 = ProbeVerticallyRotate90(captureBuffers[8], "H9", PalletDefect.DefectLocation.T_H9, X1, X2, 1,
+                           (int)(ycs[8] - heights[8] / 2), (int)(ycs[8] + heights[8] / 2), paramStorage);
+#endif
 
                     #endregion
 
@@ -1480,10 +1610,11 @@ namespace PalletCheck
                     H8.YResolution = SourceCB.yScale;
                     H9.YResolution = SourceCB.yScale;
 
-                    List<Board> boardsList = new List<Board>() { H1, H2, H3, H4, H5, H6, H7, H8, H9 };
+                    boardsList = new List<Board>() { H1, H2, H3, H4, H5, H6, H7, H8, H9 };
                     //string palletClass = null;
                     //if (MainWindow.PalletClassifier == 0) { palletClass = "International"; }
-
+                    
+                    //Adds the min/max and expected parameters into the boards
                     AssignHBoardsParameters(boardsList, paramStorage);
 
                     H1.startY = startY[0];
@@ -1700,7 +1831,7 @@ namespace PalletCheck
             boardsList[boardsList.Count - 1].MinWidthForChunkAcrossLength = paramStorage.GetFloat(StringsLocalization.H9BoardMinimumWidthAcrossLength);
         }
 
-        private async void ProcessBoard(object _B, ParamStorage paramStorage, int i, bool Pos, PositionOfPallet position)
+        private void ProcessBoard(object _B, ParamStorage paramStorage, int i, bool Pos, PositionOfPallet position)
         {
             DateTime AnalysisStartTotalTime;
             DateTime AnalysisStopTotalTime;
@@ -1835,7 +1966,8 @@ namespace PalletCheck
 
                     boardProcessTasks.Add(Task.Run(() => FindRaisedBoard(B, paramStorage)));
                     boardProcessTasks.Add(Task.Run(() => CheckForBreaks(B, paramStorage)));
-                    boardProcessTasks.Add(Task.Run(() => CheckButtedJoint(B, paramStorage)));
+                    if(isDeepLActiveTop)
+                        boardProcessTasks.Add(Task.Run(() => CheckButtedJoint(B, paramStorage)));
 
                     Task.WaitAll(boardProcessTasks.ToArray());
                     //await Task.WhenAll(boardProcessTasks);

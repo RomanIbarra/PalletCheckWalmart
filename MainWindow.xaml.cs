@@ -98,6 +98,9 @@ namespace PalletCheck
         /*Deep Learning activaion for Right and Left*/
         public static bool isDeepLActive = false;
 
+        /*Deep Learning activaion for Top*/
+        public static bool isDeepLActiveTop = true;
+
         /*Pallet Classifier*/
         public static int PalletClassifier = 5;
 
@@ -2350,6 +2353,19 @@ namespace PalletCheck
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
-        
+
+        private void btnEnableDeepLearning_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                isDeepLActiveTop = !isDeepLActiveTop; // Cambia el estado al presionar
+                btnEnableDeepLearning.Content = isDeepLActiveTop ? "DeepL ✓" : "DeepL"; // Cambia el texto del botón
+                Console.WriteLine($"DeepLTop Activo: {isDeepLActiveTop}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
     }
 }
