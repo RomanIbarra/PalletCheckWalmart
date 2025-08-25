@@ -1866,11 +1866,15 @@ namespace PalletCheck
                     AnalysisTotalSec = (AnalysisStopTime - AnalysisStartTime).TotalSeconds;
                     Logger.WriteLine(String.Format("Top Board {0} FindCracks FINISHED  -  {1:0.000} sec", B.BoardName, AnalysisTotalSec));
 
-                    boardProcessTasks.Add(Task.Run(() => FindRaisedBoard(B, paramStorage)));
-                    boardProcessTasks.Add(Task.Run(() => CheckForBreaks(B, paramStorage)));
+                    if (B.Edges[0].Count > 0 && B.Edges[1].Count > 0) // If there are both edges present in the board, perform the inspections
+                    {
+                        boardProcessTasks.Add(Task.Run(() => FindRaisedBoard(B, paramStorage)));
+                        boardProcessTasks.Add(Task.Run(() => CheckForBreaks(B, paramStorage)));
 
-                    Task.WaitAll(boardProcessTasks.ToArray());
-                    //await Task.WhenAll(boardProcessTasks);
+                        Task.WaitAll(boardProcessTasks.ToArray());
+                        //await Task.WhenAll(boardProcessTasks);
+                    }
+
                     AnalysisStartTime = DateTime.Now;
                     hasHoles = HasClosedHole(B, out closedHoles, paramStorage);
 

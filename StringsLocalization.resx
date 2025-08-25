@@ -406,4 +406,16 @@
   <data name="MarginForPuncturePx" xml:space="preserve">
     <value>MarginForPuncturePx</value>
   </data>
+  <data name="TCPServerIP" xml:space="preserve">
+    <value>TCPServerIP</value>
+  </data>
+  <data name="TCPServerPortForShortResult" xml:space="preserve">
+    <value>TCPServerPortForShortResult</value>
+  </data>
+  <data name="TCPServerPort" xml:space="preserve">
+    <value>TCPServerPort</value>
+  </data>
+  <data name="Server" xml:space="preserve">
+    <value>Server</value>
+  </data>
 </root>

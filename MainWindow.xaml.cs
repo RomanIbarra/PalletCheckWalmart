@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Emgu.CV.Linemod;
+using Microsoft.Win32;
 using PalletCheck.Controls;
 using Sick.EasyRanger;
 using Sick.EasyRanger.Base;
@@ -7,10 +8,12 @@ using Sick.StreamUI.ImageFormat;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,6 +66,8 @@ namespace PalletCheck
         public static ParamStorage ParamStorageFront { get; set; } = new ParamStorage("Front");
         public static ParamStorage ParamStorageBack { get; set; } = new ParamStorage("Back");
 
+        public static bool tcpCrackExists = false;
+
         string _FilenameDateTime { get; set; }
         string _DirectoryDateHour { get; set; }
 
@@ -93,8 +98,6 @@ namespace PalletCheck
         /*Save resutls for Back*/
         public static bool isSaveBackResults = false;
 
-
-
         /*Deep Learning activaion for Right and Left*/
         public static bool isDeepLActive = false;
 
@@ -104,6 +107,7 @@ namespace PalletCheck
         /*Pallet Classifier*/
         public static int PalletClassifier = 5;
 
+        public static List<RemoteCameraCrackDetection> remoteCameraCrackDetectionList = new List<RemoteCameraCrackDetection>();
 
         public static ParamStorage GetParamStorage(PositionOfPallet position)
         {
@@ -368,13 +372,11 @@ namespace PalletCheck
                 }
             }
 
-
             Trace.WriteLine("MainWindow");
             Singleton = this;
 
             // Global exception handling  
             AppDomain.CurrentDomain.UnhandledException += (sender, args) => CurrentDomainOnUnhandledException(args);
-
 
             // Setup root directories
             RootDir = Environment.GetEnvironmentVariable("SICK_PALLETCHECK_ROOT_DIR");
@@ -426,6 +428,7 @@ namespace PalletCheck
 
 
             InitializeComponent();
+
             Instance = this;       
             for (int i = 0; i < 8; i++)
             {
@@ -439,8 +442,13 @@ namespace PalletCheck
                 indicator.Fill = Brushes.Yellow; // Green indicates the camera has started
 
             }
-            //MainWindow.Icon = BitmapFrame.Create(Application.GetResourceStream(new Uri("LiveJewel.png", UriKind.RelativeOrAbsolute)).Stream);
+
+            // Subscribe to the singleton
+            ButtonChanger.Instance.BackgroundChanged += OnBackgroundChanged;
+            ButtonChanger.Instance.ButtonEnableChanged += OnButtonEnable;
         }
+            
+        
 
         private static void CurrentDomainOnUnhandledException(UnhandledExceptionEventArgs args)
         {
@@ -528,25 +536,31 @@ namespace PalletCheck
                 throw;
             }
             
-
             // Open PLC connection port
-            int Port = ParamStorageGeneral.GetInt("TCP Server Port");
-            int PortShort = ParamStorageGeneral.GetInt("TCP Server Port For Short Result");
-            string IP = ParamStorageGeneral.GetString("TCP Server IP");
-            bool isServer = Convert.ToBoolean(ParamStorageGeneral.GetInt("Server"));
+            int Port = ParamStorageGeneral.GetInt(StringsLocalization.TCPServerPort);
+            int PortShort = ParamStorageGeneral.GetInt(StringsLocalization.TCPServerPortForShortResult);
+            string IP = ParamStorageGeneral.GetString(StringsLocalization.TCPServerIP);
+            bool isServer = Convert.ToBoolean(ParamStorageGeneral.GetInt(StringsLocalization.Server));
             PLC = new PLCComms(IP, Port, isServer);
             PLC.Start();
             PLCShort = new PLCComms(IP, PortShort, isServer);
             PLCShort.Start();
+            
+            PLCComms Cam1 = new PLCComms(IP, 1121);
+            PLCComms Cam2 = new PLCComms(IP, 1122);
+            PLCComms Cam3 = new PLCComms(IP, 1123);
+            
+            Cam1.Listen();
+            Cam2.Listen();
+            Cam3.Listen();
 
-            Storage = new StorageWatchdog();
+            Storage = new StorageWatchdog(); //Watchdog for Recordings folder 
             Storage.Start();
 
             System.Windows.Forms.Timer T = new System.Windows.Forms.Timer();
             T.Interval = 1000;
             T.Tick += TimerUpdate500ms;
             T.Start();
-
 
             System.Windows.Forms.Timer T2 = new System.Windows.Forms.Timer();
             T2.Interval = 5000;
@@ -558,7 +572,6 @@ namespace PalletCheck
             PProcessorTop = new PalletProcessor(9, 9);
             PProcessorBottom = new PalletProcessor(5, 5);
 
-
             ParamStorageGeneral.HasChangedSinceLastSave = false;
             SaveSettingsButtonBrush = btnSettingsControl.Background;
             System.Windows.Forms.Timer T3 = new System.Windows.Forms.Timer();
@@ -567,9 +580,6 @@ namespace PalletCheck
             T3.Start();
 
             Singleton = this;
-
-
-
             _discovery = CameraDiscovery.CreateFromProducerFile("SICKGigEVisionTL.cti");
 
             // Read the number of cameras from the configuration file
@@ -598,6 +608,33 @@ namespace PalletCheck
         {
             stopwatchProcess.Reset();
             stopwatchProcess.Start();
+
+            btnCrack.IsEnabled = false;
+            btnCrack.Background = Brushes.LightGreen;
+
+            StorageWatchdog.crackImagesList.Clear();
+            foreach (FileInfo file in new DirectoryInfo("C:\\PalletCheck\\CrackWatchFolder").GetFiles())
+            {
+                file.Delete();
+            }
+
+            /*ClearAnalysisResults(PositionOfPallet.Top);
+            ClearAnalysisResults(PositionOfPallet.Bottom);
+            ClearAnalysisResults(PositionOfPallet.Left);
+            ClearAnalysisResults(PositionOfPallet.Right);
+            ClearAnalysisResults(PositionOfPallet.Front);
+            ClearAnalysisResults(PositionOfPallet.Back);
+            ViewerTop.ClearAll();
+            ViewerBottom.ClearAll();
+            ViewerLeft.ClearAll();
+            ViewerRight.ClearAll();  
+            ViewerFront.ClearAll();
+            ViewerBack.ClearAll();
+            
+            Application.Current.Dispatcher.Invoke(
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(delegate { }));*/
+
             UpdateTextBlock(LogText, "Top New Frame", MessageState.Normal);
             UpdateTextBlock(PalletName0, "▲");
             //_FilenameDateTime
@@ -1117,9 +1154,7 @@ namespace PalletCheck
             //P.NotLive = true;
             PProcessorTop.ProcessPalletHighPriority(P, Pallet_OnProcessSinglePalletAnalysisComplete, position);
             //PProcessor.ProcessPalletHighPriority(P, Pallet_OnLivePalletAnalysisComplete);
-
         }
-
 
         public Pallet CreateTopPallet()
         {
@@ -1312,6 +1347,7 @@ namespace PalletCheck
 
             string selectedFile = OFD.FileName;
             string directory = System.IO.Path.GetDirectoryName(selectedFile);
+
             string fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);           
             string baseName = fileName.Substring(0, fileName.LastIndexOf('_') + 1);
             UpdateTextBlock(ModeStatus, "Loading: " + fileName.Substring(0, fileName.LastIndexOf('_')));
@@ -1376,6 +1412,13 @@ namespace PalletCheck
                 {
                     ProcessFrameForCameraBackCallback(GrabResult.CreateWithFrame(IFrame.Load(file7)));
                     Logger.WriteLine("Loaded file7");
+                }
+
+                List<string> jpgFiles = Directory.GetFiles(directory, "*.jpg").ToList();
+                if (jpgFiles.Any())
+                {
+                    tcpCrackExists = true;
+                    StorageWatchdog.crackImagesList = jpgFiles;
                 }
 
                 Logger.WriteLine("Load Offline Images Completed");
@@ -2043,9 +2086,24 @@ namespace PalletCheck
 
             //LoadAndProcessCaptureFileFrame(PositionOfPallet.Top, PalletName0);
         }
+        private void Load_Crack_Click(object sender, RoutedEventArgs e)
+        {
+            foreach(var item in StorageWatchdog.crackImagesList)    // Dictionary. Key: name; Value: fullPath
+            {
+                try
+                {
+                    var imgWindow = new ImageWindow(item);
+                    imgWindow.Title = System.IO.Path.GetFileName(item);
+                    imgWindow.Show();
+                }
+                catch (Exception) 
+                {
+                    MessageBox.Show("Image not found.");
+                }
+            }
+        }
         private void Load_Bottom_Click(object sender, RoutedEventArgs e)
         {
-
             SetLoadFlags(1,2,3);
             LoadAndProcessCapture6FileFrame();
         }
@@ -2181,6 +2239,8 @@ namespace PalletCheck
                 {
                     isSaveFrames = true;
                 }
+
+                remoteCameraCrackDetectionList.Clear();
             }
         }
 
@@ -2209,8 +2269,6 @@ namespace PalletCheck
                 if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
                 if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
             });
-          //  if (PalletClassifier == 0) PalletType.Text = "Pallet Class: International";
-          //  if (PalletClassifier == 1) PalletType.Text = "Pallet Class: Standard";
 
             // Save Results To CSV File
             Application.Current.Dispatcher.Invoke(() =>
@@ -2228,12 +2286,17 @@ namespace PalletCheck
                 UpdateProductivityStats(finalResult == InspectionResult.PASS);
                 defectTable.Items.Clear();
 
+                if (tcpCrackExists)
+                {
+                    InsertCrackDefect();
+                }
+
                 // Prepare string[] to save results in CSV
                 string[] reportHeader = Enum.GetNames(typeof(DefectReport));
                 string[] finalString = new string[Enum.GetNames(typeof(DefectReport)).Length];
 
                 finalString[0] = Pallet.folderName;
-                finalString[1] = finalResult.ToString();
+                finalString[1] = finalResult.ToString();         
 
                 foreach (var defect in Pallet.CombinedDefects ?? new List<PalletDefect>())
                 {        
@@ -2367,5 +2430,52 @@ namespace PalletCheck
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+
+        public void InsertCrackDefect()
+         {
+            if (remoteCameraCrackDetectionList.Count > 0)
+            {
+                foreach (var detection in remoteCameraCrackDetectionList)
+                {
+                    PalletDefect df = new PalletDefect(detection.location, DefectType.crack_support_board, "Support Board Crack");
+                    Pallet.CombinedDefects.Add(df);
+                }
+            }
+
+            else // Runnin with recordings
+            {
+                foreach (var item in StorageWatchdog.crackImagesList)
+                {
+                    string imageName = System.IO.Path.GetFileNameWithoutExtension(item);//
+                    string loc = imageName.Substring(imageName.Length - 5);
+                    DefectLocation location = (DefectLocation)Enum.Parse(typeof(DefectLocation), loc);
+
+                    PalletDefect df = new PalletDefect(location, DefectType.crack_support_board, "Support Board Crack");
+                    Pallet.CombinedDefects.Add(df);
+                }
+            }
+            
+            btnCrack.Background = Brushes.Red;
+            btnCrack.IsEnabled = true;
+            tcpCrackExists = false;
+        }
+
+        private void OnBackgroundChanged(Brush newBrush)
+        {
+            // Ensure we’re on UI thread
+            Dispatcher.Invoke(() =>
+            {
+                btnCrack.Background = newBrush;
+            });
+        }
+
+        private void OnButtonEnable(bool isEnable)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                btnCrack.IsEnabled = true;
+            });
+        }
+
     }
 }

@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows.Media;
 
 namespace PalletCheck
 {
@@ -17,10 +14,13 @@ namespace PalletCheck
         public bool KillThread = false;
         public static List<string> DoNotDeleteDirs = new List<string>();
         ParamStorage ParamStorageGeneral = MainWindow.ParamStorageGeneral;
+        public static List<String> crackImagesList = new List<string>();
+        private string _crackImageName = null;
+        private FileSystemWatcher watcher;
+
         public StorageWatchdog()
         {
         }
-
 
         public static void AddDoNotDeleteDirs(string dir)
         {
@@ -77,15 +77,10 @@ namespace PalletCheck
             return currentDirectory;
         }
 
-
-
         public static FolderSizeInfo GetDirectorySize(string rootPath)
         {
             return GetDirectorySizeRecursive(new DirectoryInfo(rootPath));
         }
-
-
-
 
         public class FolderSizeInfo
         {
@@ -101,8 +96,6 @@ namespace PalletCheck
             public List<FileInfo> FilesWithChildren { get; set; }
             public List<DirectoryInfo> AllDirectories { get; set; }
         }
-
-
         //================================================================================================================
 
         static void DeleteEmptyDirs(string dir)
@@ -140,7 +133,6 @@ namespace PalletCheck
         }
 
         //================================================================================================================
-
         public void EnforceStorageSize(string path, string settingsStr, double maxMB)
         {
             
@@ -234,9 +226,6 @@ namespace PalletCheck
             EnforceStorageSize(MainWindow.ExceptionsRootDir, "Exceptions Dir Max (MB)", 1000);
             Logger.WriteLine("");
         }
-
-
-
         //================================================================================================================
 
         public string GetStorageReportString(bool doLogging, string path, string title, string budgetName)
@@ -310,7 +299,6 @@ namespace PalletCheck
             }
         }
 
-
         public void WatchdogThreadFunc()
         {
             string RootDir = MainWindow.RecordingRootDir;
@@ -325,7 +313,6 @@ namespace PalletCheck
 
             while (!KillThread)
             {
-
                 Thread.Sleep(1000);
 
                 if (DateTime.Now >= NextEnforceStorageDT)
@@ -341,7 +328,6 @@ namespace PalletCheck
                     NextUpdateStatusDT = DateTime.Now.AddMinutes(15);
                     UpdateStorageStatus(true);
                 }
-
 
                 //int MaxDirs = ParamStorage.GetInt("Max Recording Directories");
 
@@ -394,6 +380,46 @@ namespace PalletCheck
             {
                 KillThread = true;
             }
+        }
+
+        public void WatchFolder(string imageName)
+        {
+            _crackImageName = imageName;     
+            string watchPath = "C:\\PalletCheck\\CrackWatchFolder"; // Replace this in the future
+
+            if (!Directory.Exists(watchPath)) // Make sure path exists
+            {
+                Directory.CreateDirectory(watchPath);
+            }
+
+            watcher = new FileSystemWatcher
+            {
+                Path = watchPath,
+                Filter = "*.jpg",
+                NotifyFilter = NotifyFilters.FileName
+                         | NotifyFilters.DirectoryName
+                         | NotifyFilters.LastWrite
+                         | NotifyFilters.CreationTime
+            };
+
+            watcher.EnableRaisingEvents = true;
+            watcher.Created += OnCreated;  
+        }
+
+        private void OnCreated(object sender, FileSystemEventArgs e)
+        {
+            if (string.Equals(Path.GetFileName(e.Name), _crackImageName, StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.WriteLine($"Crack Image received: {e.FullPath}");
+                crackImagesList.Add(e.FullPath);
+                //ButtonChanger.Instance.EnableButton(true);
+
+                // Stop the watcher and clean up
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+                watcher = null;
+            }
+            
         }
 
     }

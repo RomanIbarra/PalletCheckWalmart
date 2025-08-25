@@ -1,9 +1,4 @@
-﻿#define NEW_DATASET
-
-
-
-
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,8 +75,7 @@ namespace PalletCheck
                 SickFrames[i] = Frame.Create();
             }
 
-            // EasyRanger
-            
+            // EasyRanger        
             _envTop = new ProcessingEnvironment();
             _envBottom = new ProcessingEnvironment();
             _envLeft = new ProcessingEnvironment();
@@ -91,15 +85,8 @@ namespace PalletCheck
             
             _envTop.Load(RootDir + "/EasyRangerEnvironments/Top.env");
             _envBottom.Load(RootDir + "/EasyRangerEnvironments/Bottom.env");
-
-
-#if NEW_DATASET
             _envLeft.Load(RootDir + "/EasyRangerEnvironments/Left.env");
             _envRight.Load(RootDir + "/EasyRangerEnvironments/Right.env");
-#else
-             _envLeft.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-             _envRight.Load(RootDir + "/EasyRangerEnvironments/Sides.env");
-#endif
             _envFront.Load(RootDir + "/EasyRangerEnvironments/Front.env");
             _envBack.Load(RootDir + "/EasyRangerEnvironments/Back.env");
 

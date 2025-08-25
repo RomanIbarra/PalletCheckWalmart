@@ -673,6 +673,15 @@ namespace PalletCheck {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server.
+        /// </summary>
+        internal static string Server {
+            get {
+                return ResourceManager.GetString("Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SideLength.
         /// </summary>
         internal static string SideLength {
@@ -759,6 +768,33 @@ namespace PalletCheck {
         internal static string StartX2 {
             get {
                 return ResourceManager.GetString("StartX2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TCPServerIP.
+        /// </summary>
+        internal static string TCPServerIP {
+            get {
+                return ResourceManager.GetString("TCPServerIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TCPServerPort.
+        /// </summary>
+        internal static string TCPServerPort {
+            get {
+                return ResourceManager.GetString("TCPServerPort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TCPServerPortForShortResult.
+        /// </summary>
+        internal static string TCPServerPortForShortResult {
+            get {
+                return ResourceManager.GetString("TCPServerPortForShortResult", resourceCulture);
             }
         }
         
