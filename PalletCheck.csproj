@@ -180,6 +180,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CaptureBuffer.cs" />
+    <Compile Include="Controls\ImageWindow.xaml.cs">
+      <DependentUpon>ImageWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DatasetExtraction.cs" />
     <Compile Include="DL.cs" />
     <Compile Include="FtpFluentUploader.cs" />
@@ -228,6 +231,10 @@
       <DependentUpon>Viewer3D.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\CaptureBufferBrowser.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ImageWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

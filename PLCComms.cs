@@ -4,8 +4,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-
+using System.Net;
+using System.Linq;
+using System.Windows;
+using System.Windows.Media;
 
 namespace PalletCheck
 {
@@ -19,6 +21,7 @@ namespace PalletCheck
         public int Port;
         public string IP;
         public TcpListener Listener;
+        public TcpListener CameraListener;
         public TcpClient Client;
         public Thread ListenerThread = null;
         public bool KillThread = false;
@@ -26,6 +29,12 @@ namespace PalletCheck
 
         // Jack Note: Store the connected clients
         private List<TcpClient> connectedClients = new List<TcpClient>();
+
+        public PLCComms(string ConnectIP, int ConnectPort)
+        {
+            this.IP = ConnectIP;
+            this.Port = ConnectPort;
+        }
 
         public PLCComms(string ConnectIP, int ConnectPort, bool isServer)
         {
@@ -36,7 +45,8 @@ namespace PalletCheck
             if (IsServerMode)
             {
                 // Jack Note: Initialize as server
-                Listener = new TcpListener(System.Net.IPAddress.Any, ConnectPort);
+                //Listener = new TcpListener(System.Net.IPAddress.Any, ConnectPort);
+                Listener = new TcpListener(IPAddress.Parse(ConnectIP), ConnectPort);
             }
             else
             {
@@ -72,7 +82,7 @@ namespace PalletCheck
             }
         }
 
-        // Jack Note: Server's listening thread
+        // Server's listening thread
         public void ListenerThreadFunc()
         {
             Listener.Start();
@@ -82,50 +92,78 @@ namespace PalletCheck
             {
                 if (Listener.Pending())
                 {
-                    // Jack Note: When a new client connects, accept the connection
+                    // When a new client connects, accept the connection
                     TcpClient client = Listener.AcceptTcpClient();
                     Logger.WriteLine("Client connected.");
 
-                    // Jack Note: Add the connected client to the list
+                    // Add the connected client to the list
                     lock (connectedClients)
                     {
                         connectedClients.Add(client);
                     }
 
-                    // Jack Note: Handle each client's connection logic here
-                    Task.Run(() => HandleClient(client)); // Jack Note: Asynchronously handle the client
+                    // Handle each client's connection logic here
+                    Task.Run(() => HandleClient(client)); // Asynchronously handle the client
                 }
                 Thread.Sleep(250);
             }
 
-            // Jack Note: If the thread exits, we do need to stop the server and call Stop()
+            // If the thread exits, we do need to stop the server and call Stop()
             Listener.Stop();
         }
 
-        // Jack Note: Handle client connections
+        // Handle client connections
         private void HandleClient(TcpClient client)
         {
             try
             {
-                NetworkStream stream = client.GetStream();
-                byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                string clientIP = client.Client.LocalEndPoint.ToString();
 
-                if (bytesRead > 0)
-                {
-                    string receivedMessage = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                    Logger.WriteLine($"Received message from client: {receivedMessage}");
-
-                    // Jack Note: Reply to the client
-                    byte[] replyMessage = Encoding.ASCII.GetBytes("Message received");
-                    stream.Write(replyMessage, 0, replyMessage.Length);
-                }
-
-                // Jack Note: Keep the connection with the client until they disconnect
+                // Keep the connection with the client
                 while (client.Connected)
                 {
-                    Thread.Sleep(1000); // Jack Note: Maintain a persistent connection
+                    
+                    NetworkStream stream = client.GetStream();
+                    byte[] buffer = new byte[1024];
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+                    if (bytesRead > 0)
+                    {
+                        string receivedMessage = Encoding.ASCII.GetString(buffer, 0, bytesRead); // Message structure: <CameraID>_<CrackBool>_<ImageName or 0>
+                    
+                        // Extract values
+                        string[] parts = receivedMessage.Split('_');
+                        string cameraNumber = parts[0];
+                        bool crackBool = parts[1] == "1"; // Set a boolean by comparison
+                        string imageName = parts[2];
+
+                        if (crackBool)
+                        {
+                            DateTime timeStamp = DateTime.Now;
+                            Logger.WriteLine($"Received message from client {clientIP}: {receivedMessage}, at: {timeStamp}");
+                            //IPEndPoint localIpEndPoint = (IPEndPoint)client.Client.LocalEndPoint; // Get the local endpoint of the client's socket       
+                            //int localPort = localIpEndPoint.Port; // Extract the local port number
+                            //ButtonChanger.Instance.ChangeBackground(Brushes.Red); // Crack Image received so change the background color of the button
+
+                            // If <ImageName> itself can contain underscores, join the rest back
+                            if (parts.Length > 3) { imageName = string.Join("_", parts.Skip(2)); }
+
+                            RemoteCameraCrackDetection detection = new RemoteCameraCrackDetection(cameraNumber, timeStamp, imageName);
+                            MainWindow.remoteCameraCrackDetectionList.Add(detection);                          
+                            MainWindow.tcpCrackExists = true;
+                            StorageWatchdog watchdog = new StorageWatchdog();
+                            watchdog.WatchFolder(imageName);
+                        } 
+
+                        Thread.Sleep(1000); // Maintain a persistent connection
+                    }
+
+                    //Reply to the client
+                    //byte[] replyMessage = Encoding.ASCII.GetBytes("Message received");
+                    //stream.Write(replyMessage, 0, replyMessage.Length);
                 }
+
+                
             }
             catch (Exception e)
             {
@@ -320,6 +358,109 @@ namespace PalletCheck
             }
 
             Logger.WriteLine("Software closed successfully.");
+        }
+
+        public void Listen()
+        {
+            Logger.WriteLine($"Starting TCP server for camera at IP: {IP}, Port: {Port}");
+            CameraListener = new TcpListener(IPAddress.Parse(IP), this.Port);
+            Thread TCPThread = new Thread(new ThreadStart(CameraListenerThreadFunc));
+            TCPThread.Start();
+        }
+
+        public void CameraListenerThreadFunc()
+        {
+            CameraListener.Start();
+            Logger.WriteLine("Server started, waiting for clients...");
+
+            while (!KillThread)
+            {
+                if (CameraListener.Pending())
+                {
+                    // When a new client connects, accept the connection
+                    TcpClient client = CameraListener.AcceptTcpClient();
+                    Logger.WriteLine("Client connected to CameraListener");
+
+                    // Add the connected client to the list
+                    lock (connectedClients)
+                    {
+                        connectedClients.Add(client);
+                    }
+
+                    // Handle each client's connection logic here
+                    Task.Run(() => HandleClient(client)); // Asynchronously handle the client
+                }
+                Thread.Sleep(250);
+            }
+
+            // If the thread exits, we do need to stop the server and call Stop()
+            Listener.Stop();
+        }
+    }
+
+    public sealed class ButtonChanger
+    {
+        // --- Singleton instance (lazy-loaded, thread-safe by CLR guarantees) ---
+        private static readonly ButtonChanger _instance = new ButtonChanger();
+        public static ButtonChanger Instance => _instance;
+
+        // Private constructor to enforce singleton
+        private ButtonChanger() { }
+
+        // Event for UI subscribers
+        public event Action<Brush> BackgroundChanged;
+        public event Action<bool> ButtonEnableChanged;
+
+        // Thread-safe trigger: back to UI thread
+        public void ChangeBackground(Brush brush)
+        {
+            var app = Application.Current;
+            if (app != null)
+            {
+                // Ensure raise happens on the UI thread
+                app.Dispatcher.Invoke(() =>
+                {
+                    BackgroundChanged?.Invoke(brush);
+                });
+            }
+        }
+
+        public void EnableButton(bool isEnable)
+        {
+            var app = Application.Current;
+            if (app != null)
+            {
+                // Ensure raise happens on the UI thread
+                app.Dispatcher.Invoke(() =>
+                {
+                    ButtonEnableChanged?.Invoke(isEnable);
+                });
+            }
+        }
+    }
+
+    public sealed class RemoteCameraCrackDetection
+    {
+        public DateTime timeStamp;
+        public PalletDefect.DefectLocation location;
+        public string imageName;
+
+        public RemoteCameraCrackDetection(string cameraNumber, DateTime timeStamp, string imageName)
+        {
+            this.timeStamp = timeStamp;
+            this.location = (PalletDefect.DefectLocation)Enum.Parse(typeof(PalletDefect.DefectLocation), GetLocation(cameraNumber));
+            this.imageName = imageName;
+        }
+
+        private string GetLocation(string cameraNumber) // Get the location based on the port number: specific port for each camera
+        {
+            switch (cameraNumber)
+            {
+                case "Cam1": return "SP_V1";
+                case "Cam2": return "SP_V2";
+                case "Cam3": return "SP_V3";
+                default: return "?";
+            }
         }
     }
 }

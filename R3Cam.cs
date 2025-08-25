@@ -1,39 +1,11 @@
 ﻿using Sick.GenIStream;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.IO;
 using static Sick.GenIStream.FrameGrabber;
 using static Sick.GenIStream.ICamera;
-using System.Net;
-
-//using System.Threading.Tasks;
-
-
-//public void ExportParameters(string filePath)
-//{
-//    genistreamPINVOKE.ICamera_ExportParameters(swigCPtr, filePath);
-//    if (genistreamPINVOKE.SWIGPendingException.Pending)
-//    {
-//        throw genistreamPINVOKE.SWIGPendingException.Retrieve();
-//    }
-//}
-
-//public ConfigurationResult ImportParameters(string filePath)
-//{
-//    ConfigurationResult result = new ConfigurationResult(genistreamPINVOKE.ICamera_ImportParameters(swigCPtr, filePath), cMemoryOwn: true);
-//    if (genistreamPINVOKE.SWIGPendingException.Pending)
-//    {
-//        throw genistreamPINVOKE.SWIGPendingException.Retrieve();
-//    }
-
-//    return result;
-//}
-
 
 namespace PalletCheck
 {
@@ -78,7 +50,6 @@ namespace PalletCheck
             }
         }
 
-
         public ICamera Camera { get; private set; }
         public string CameraName { get; private set; }
         public string IPAddressStr { get; private set; }
@@ -94,8 +65,6 @@ namespace PalletCheck
         private FileInfo[] SimModeFileList;
         private int SimModeFileIndex;
         private DateTime SimModeNextDT;
-
-
 
         public delegate void NewFrameReceivedCB(R3Cam Cam, R3Cam.Frame Frame);
         public delegate void ConnectionStateChangeCB(R3Cam Cam, ConnectionState NewState);
@@ -210,10 +179,6 @@ namespace PalletCheck
             }
         }
 
-
-
-
-
         public void Startup(string Name, string IPAddress, CameraDiscovery discovery,
                             NewFrameReceivedCB NewFrameReceivedCallback,
                             ConnectionStateChangeCB ConnectionStateChangeCallback,
@@ -279,6 +244,7 @@ namespace PalletCheck
         //        Console.WriteLine($"Error during reconnecting camera {cameraName}: {ex.Message}");
         //    }
         //}
+
         public void StartCapturingFrames()
         {
             if (frameGrabber == null)
@@ -316,7 +282,6 @@ namespace PalletCheck
             }
         }
 
-
         public void StopCapturingFrames()
         {
 
@@ -353,8 +318,6 @@ namespace PalletCheck
                 Logger.WriteLine($"[{CameraName}] Error while stopping FrameGrabber: {ex.Message}");
             }
         }
-
-
 
         public void Shutdown()
         {

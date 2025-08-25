@@ -95,6 +95,7 @@
                     <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Column="1" Orientation="Horizontal" OpacityMask="Black" >
+                    <Button x:Name="btnCrack" Click="Load_Crack_Click" Margin="10,10,0,0" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" IsEnabled="False" FontSize="15" Width="60" Content="Crack" />
                     <Button x:Name="btnLoad_Bottom" Click="Load_Bottom_Click" Margin="10,10,0,0" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top"   IsEnabled="False" FontSize="15" Width="120" OpacityMask="Black" Content="Process Bottom"/>
                     <Button x:Name="btnSetting_Bottom" Click="btnSettingEach_Click" Margin="10,10,0,0"  Content="Setting Bottom" Style="{StaticResource Transparent3DButtonStyle}" VerticalAlignment="Top" FontSize="15" Width="120" OpacityMask="Black"/>
                     <Button x:Name="btnShow_Bottom"  Click="btnShow3D_Click" Margin="10,10,0,0"  Content="Show 3D" Style="{StaticResource Transparent3DButtonStyle}"  FontSize="15" Width="120" />

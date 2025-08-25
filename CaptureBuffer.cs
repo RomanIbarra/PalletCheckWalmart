@@ -305,6 +305,7 @@ namespace PalletCheck
             return false;
 
         }
+
         public bool UploadPngToFtp(string ftpServer, string username, string password, string remoteFilePath)
         {
             try
@@ -401,7 +402,6 @@ namespace PalletCheck
             }
         }
 
-
         public bool UploadToFtp(string ftpServer, string username, string password, string remoteFilePath)
         {
             try
@@ -409,7 +409,7 @@ namespace PalletCheck
                 using (MemoryStream stream = new MemoryStream())
                 using (BinaryWriter BW = new BinaryWriter(stream))
                 {
-                    // 根据文件类型写入数据到内存流
+                    // Write data to memory stream based on file type
                     if (remoteFilePath.EndsWith(".r3"))
                     {
                         foreach (ushort V in Buf)
@@ -419,13 +419,13 @@ namespace PalletCheck
                     }
                     else if (remoteFilePath.EndsWith(".cap"))
                     {
-                        // 写入文件头部信息
+                        // Write header information to the file
                         BW.Write((char)'C');
                         BW.Write((char)'P');
                         BW.Write((char)'B');
                         BW.Write((char)'F');
 
-                        // 写入文件的详细信息
+                        // Detailed information written to the file
                         BW.Write((int)1000);    // Version
                         BW.Write((int)Width);   // Width in pixels
                         BW.Write((int)Height);  // Height in pixels
@@ -435,7 +435,7 @@ namespace PalletCheck
                         // Reserve space for 32 bytes of other info
                         for (int i = 0; i < 8; i++) BW.Write((UInt32)i);
 
-                        // 写入数据
+                        // Write data
                         byte[] byteArray = new byte[Buf.Length * 2];
                         unsafe
                         {
@@ -450,26 +450,26 @@ namespace PalletCheck
                     }
                     else
                     {
-                        // 非支持的文件格式
+                        // Unsupported file formats
                         return false;
                     }
 
                     BW.Flush();
-                    stream.Position = 0; // 重置内存流位置
+                    stream.Position = 0; // Reset memory stream position
 
-                    // 上传到 FTP（同步版本）
+                    // Upload to FTP (synchronized version)
                     using (var ftpClient = new FtpClient(ftpServer, username, password))
                     {
-                        ftpClient.Connect(); // 使用同步连接方法
+                        ftpClient.Connect(); // Use synchronous connection method
 
-                        // 获取远程目录并确保其存在
+                        // Get the remote directory and make sure it exists
                         string remoteDirectory = GetDirectoryFromPath(remoteFilePath);
                         if (!DirectoryExistsOnFtp(ftpClient, remoteDirectory))
                         {
                             CreateDirectoryOnFtp(ftpClient, remoteDirectory);
                         }
 
-                        // 上传文件
+                        // Upload files
                         ftpClient.UploadStream(stream, remoteFilePath, FtpRemoteExists.Overwrite);
                         ftpClient.Disconnect();
                     }

@@ -356,7 +356,7 @@ namespace PalletCheck
                             viewer.DrawText("MyText", green);
                         }*/
 
-                        //lock (LockObjectCombine)
+                        lock (LockObjectCombine)
                         {
                             CombinedBoards.Add(P.BList[i]);
                             CombinedDefects.AddRange(P.BList[i].AllDefects);
@@ -762,6 +762,8 @@ namespace PalletCheck
 
             System.IO.Directory.CreateDirectory(FullDirectory);
 
+            CopyCrackImagesToRecordings(FullDirectory, _FilenameDateTime);
+
             // Check if SickFrames is null or has a length of 0
             if (SickFrames == null || SickFrames.Length == 0)
             {
@@ -915,71 +917,37 @@ namespace PalletCheck
                 Console.WriteLine($"Directory created: {path}");
             }
         }
-    
 
-        /*
-        private void LoadFile(string buttonContent, Action<string> loadAction, TextBlock palletTextName, PositionOfPallet position)
+        private void CopyCrackImagesToRecordings(string destinationFolder, string imageNewName)
         {
-            Logger.ButtonPressed(buttonContent);
-            OpenFileDialog OFD = new OpenFileDialog
+            try
             {
-                Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*",
-                InitialDirectory = MainWindow.RecordingRootDir,       // Setting the initial catalog
-                Title = "Select an XML File"           
-            };
-
-            if (OFD.ShowDialog() == true)
-            {
-                try
+                foreach (var detection in remoteCameraCrackDetectionList)
                 {
-                    string filePath = OFD.FileName;
-                    loadAction(filePath);
-                    UpdateTextBlock(palletTextName, filePath);               
-                }
+                    // Find index of the matching imageName in crackImagesList
+                    int index = StorageWatchdog.crackImagesList.FindIndex(img => Path.GetFileName(img).Equals(detection.imageName, StringComparison.OrdinalIgnoreCase));
 
-                catch (Exception ex)
-                {
-                    Logger.WriteLine($"Error loading file: {ex.Message}");
-                }
-            }
-
-            else
-            {
-                Logger.ButtonPressed("File dialog cancelled by user.");
-            }
-
-            Task.Run(() => ProcessMeasurement((result) =>
-            {
-            }, position));
-        }*/
-
-        /*
-        public float GetMaxRangeInCircle2(int x, int y, int diameter, CaptureBuffer rangeBuffer, float[] floatArray)
-        {
-            int radius = diameter / 2;
-            float maxVal = 0;
-
-            for (int i = -radius; i <= radius; i++)
-            {
-                for (int j = -radius; j <= radius; j++)
-                {
-                    int newX = x + i;
-                    int newY = y + j;
-
-                    // Verificar si el punto está dentro del círculo y dentro de los límites de la imagen
-                    if (newX >= 0 && newX < rangeBuffer.Width && newY >= 0 && newY < rangeBuffer.Height &&
-                        (i * i + j * j) <= (radius * radius))
+                    if (index != -1)
                     {
-                        float value = GetRangeValueAt(newX, newY, rangeBuffer, floatArray);
-                        if (!float.IsNaN(value) && !float.IsInfinity(value) && value > maxVal)
-                        {
-                            maxVal = value;
-                        }
+                        string destinationFullPath = $"{destinationFolder}\\{imageNewName}_{detection.location}.jpg";
+                        File.Copy(StorageWatchdog.crackImagesList[index], destinationFullPath, true);
+                        Logger.WriteLine($"Image '{StorageWatchdog.crackImagesList[index]}' copied successfully to '{destinationFullPath}'.");
                     }
                 }
             }
 
-            return maxVal;
-        }*/
+            catch (IOException ex)
+            {
+                Logger.WriteLine($"Error copying image: {ex.Message}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Logger.WriteLine($"Access denied: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"An unexpected error occurred: {ex.Message}");
+            }
+        }
     }
 }

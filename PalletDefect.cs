@@ -32,7 +32,8 @@ namespace PalletCheck
             middle_board_missing_wood,       //added by HUB
             unsecured_horizontal_block,      //added by HUB
             puncture,                        //Added by HUB
-            buttedJoint
+            buttedJoint,
+            crack_support_board
         }
 
         public enum DefectLocation
@@ -66,6 +67,9 @@ namespace PalletCheck
             BK_B3,
             R_MB,
             L_MB,
+            SP_V1,
+            SP_V2,
+            SP_V3,
         }
 
         public DefectType Type { get; set; }
@@ -132,7 +136,7 @@ namespace PalletCheck
                 case DefectType.unsecured_horizontal_block: return "UHB";                //Added by HUB
                 case DefectType.puncture: return "PU";                                   //Added by HUB
                 case DefectType.buttedJoint: return "BJ";                           //Butted Joint
-
+                case DefectType.crack_support_board: return "CRSP";                 //Crack Support Board
                 default: return "?";
             }
         }
@@ -193,6 +197,7 @@ namespace PalletCheck
                 case DefectType.unsecured_horizontal_block: return "Unsecured Horizontal Block";         
                 case DefectType.puncture: return "Puncture";
                 case DefectType.buttedJoint: return "ButtedJoint";
+                case DefectType.crack_support_board: return "Crack Support Board";
                 default: return "?";
             }
         }
