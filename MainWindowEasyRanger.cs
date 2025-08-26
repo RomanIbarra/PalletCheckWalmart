@@ -929,7 +929,7 @@ namespace PalletCheck
 
                     if (index != -1)
                     {
-                        string destinationFullPath = $"{destinationFolder}\\{imageNewName}_{detection.location}.png";
+                        string destinationFullPath = $"{destinationFolder}\\{imageNewName}_{detection.location}.jpg";
                         File.Copy(StorageWatchdog.crackImagesList[index], destinationFullPath, true);
                         Logger.WriteLine($"Image '{StorageWatchdog.crackImagesList[index]}' copied successfully to '{destinationFullPath}'.");
                     }
