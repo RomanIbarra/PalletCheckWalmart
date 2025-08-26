@@ -609,9 +609,12 @@ namespace PalletCheck
             stopwatchProcess.Reset();
             stopwatchProcess.Start();
 
-            btnCrack.IsEnabled = false;
-            btnCrack.Background = Brushes.LightGreen;
-
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                btnCrack.IsEnabled = false;
+                btnCrack.Background = Brushes.LightGreen;
+            });
+            
             StorageWatchdog.crackImagesList.Clear();
             foreach (FileInfo file in new DirectoryInfo("C:\\PalletCheck\\CrackWatchFolder").GetFiles())
             {
@@ -1414,11 +1417,11 @@ namespace PalletCheck
                     Logger.WriteLine("Loaded file7");
                 }
 
-                List<string> jpgFiles = Directory.GetFiles(directory, "*.jpg").ToList();
-                if (jpgFiles.Any())
+                List<string> pngFiles = Directory.GetFiles(directory, "*.png").ToList();
+                if (pngFiles.Any())
                 {
                     tcpCrackExists = true;
-                    StorageWatchdog.crackImagesList = jpgFiles;
+                    StorageWatchdog.crackImagesList = pngFiles;
                 }
 
                 Logger.WriteLine("Load Offline Images Completed");

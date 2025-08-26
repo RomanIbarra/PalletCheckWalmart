@@ -456,9 +456,9 @@ namespace PalletCheck
         {
             switch (cameraNumber)
             {
-                case "Cam1": return "SP_V1";
-                case "Cam2": return "SP_V2";
-                case "Cam3": return "SP_V3";
+                case "Cam0": return "SP_V1";
+                case "Cam1": return "SP_V2";
+                case "Cam2": return "SP_V3";
                 default: return "?";
             }
         }
