@@ -395,7 +395,7 @@ namespace PalletCheck
             watcher = new FileSystemWatcher
             {
                 Path = watchPath,
-                Filter = "*.png",
+                Filter = "*.jpg",
                 NotifyFilter = NotifyFilters.FileName
                          | NotifyFilters.DirectoryName
                          | NotifyFilters.LastWrite
@@ -419,8 +419,6 @@ namespace PalletCheck
                 watcher.Dispose();
                 watcher = null;
             }
-            
         }
-
     }
 }

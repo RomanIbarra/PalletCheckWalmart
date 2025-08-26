@@ -1417,11 +1417,11 @@ namespace PalletCheck
                     Logger.WriteLine("Loaded file7");
                 }
 
-                List<string> pngFiles = Directory.GetFiles(directory, "*.png").ToList();
-                if (pngFiles.Any())
+                List<string> jpgFiles = Directory.GetFiles(directory, "*.jpg").ToList();
+                if (jpgFiles.Any())
                 {
                     tcpCrackExists = true;
-                    StorageWatchdog.crackImagesList = pngFiles;
+                    StorageWatchdog.crackImagesList = jpgFiles;
                 }
 
                 Logger.WriteLine("Load Offline Images Completed");
