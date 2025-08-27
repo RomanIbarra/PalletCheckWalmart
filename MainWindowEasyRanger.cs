@@ -937,6 +937,11 @@ namespace PalletCheck
                 }
 
                 StorageWatchdog.crackImagesList.Clear();
+
+                foreach (FileInfo file in new DirectoryInfo("C:\\PalletCheck\\CrackWatchFolder").GetFiles())
+                {
+                    file.Delete();
+                }
             }
 
             catch (IOException ex)

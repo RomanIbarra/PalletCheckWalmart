@@ -614,13 +614,7 @@ namespace PalletCheck
                 btnCrack.IsEnabled = false;
                 btnCrack.Background = Brushes.LightGreen;
             });
-            
-
-            /*foreach (FileInfo file in new DirectoryInfo("C:\\PalletCheck\\CrackWatchFolder").GetFiles())
-            {
-                file.Delete();
-            }*/
-
+                  
             /*ClearAnalysisResults(PositionOfPallet.Top);
             ClearAnalysisResults(PositionOfPallet.Bottom);
             ClearAnalysisResults(PositionOfPallet.Left);
