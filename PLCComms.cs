@@ -8,6 +8,7 @@ using System.Net;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Markup;
 
 namespace PalletCheck
 {
@@ -118,42 +119,40 @@ namespace PalletCheck
             try
             {
                 string clientIP = client.Client.LocalEndPoint.ToString();
+                TelegramStreamDecoder decoder = new TelegramStreamDecoder();
 
                 // Keep the connection with the client
                 while (client.Connected)
                 {
-                    
                     NetworkStream stream = client.GetStream();
                     byte[] buffer = new byte[1024];
                     int bytesRead = stream.Read(buffer, 0, buffer.Length);
 
                     if (bytesRead > 0)
                     {
-                        string receivedMessage = Encoding.ASCII.GetString(buffer, 0, bytesRead); // Message structure: <CameraID>_<CrackBool>_<ImageName or 0>
-                    
-                        // Extract values
-                        string[] parts = receivedMessage.Split('_');
-                        string cameraNumber = parts[0];
-                        bool crackBool = parts[1] == "1"; // Set a boolean by comparison
-                        string imageName = parts[2];
-
-                        if (crackBool)
+                        foreach (var receivedMessage in decoder.ProcessBytes(buffer, bytesRead))
                         {
-                            DateTime timeStamp = DateTime.Now;
-                            Logger.WriteLine($"Received message from client {clientIP}: {receivedMessage}, at: {timeStamp}");
-                            //IPEndPoint localIpEndPoint = (IPEndPoint)client.Client.LocalEndPoint; // Get the local endpoint of the client's socket       
-                            //int localPort = localIpEndPoint.Port; // Extract the local port number
-                            //ButtonChanger.Instance.ChangeBackground(Brushes.Red); // Crack Image received so change the background color of the button
+                            // Extract values
+                            string[] parts = receivedMessage.Split('_');
+                            string cameraNumber = parts[0];
+                            bool crackBool = parts[1] == "1"; // Set a boolean by comparison
+                            string imageName = parts[2];
 
-                            // If <ImageName> itself can contain underscores, join the rest back
-                            if (parts.Length > 3) { imageName = string.Join("_", parts.Skip(2)); }
+                            if (crackBool)
+                            {
+                                DateTime timeStamp = DateTime.Now;
+                                Logger.WriteLine($"Received message from client {clientIP}: {receivedMessage}, at: {timeStamp}");
 
-                            RemoteCameraCrackDetection detection = new RemoteCameraCrackDetection(cameraNumber, timeStamp, imageName);
-                            MainWindow.remoteCameraCrackDetectionList.Add(detection);                          
-                            MainWindow.tcpCrackExists = true;
-                            StorageWatchdog watchdog = new StorageWatchdog();
-                            watchdog.WatchFolder(imageName);
-                        } 
+                                // If <ImageName> itself can contain underscores, join the rest back
+                                if (parts.Length > 3) { imageName = string.Join("_", parts.Skip(2)); }
+
+                                RemoteCameraCrackDetection detection = new RemoteCameraCrackDetection(cameraNumber, timeStamp, imageName);
+                                MainWindow.remoteCameraCrackDetectionList.Add(detection);
+                                MainWindow.tcpCrackExists = true;
+                                StorageWatchdog watchdog = new StorageWatchdog();
+                                watchdog.WatchFolder(imageName);
+                            }
+                        }
 
                         Thread.Sleep(1000); // Maintain a persistent connection
                     }
@@ -460,6 +459,39 @@ namespace PalletCheck
                 case "Cam1": return "SP_V2";
                 case "Cam2": return "SP_V3";
                 default: return "?";
+            }
+        }
+    }
+
+    public class TelegramStreamDecoder
+    {
+        private bool inTelegram = false;
+        private List<byte> currentTelegram = new List<byte>();
+
+        public IEnumerable<string> ProcessBytes(byte[] buffer, int count) // Split the teelgrams by looking fot STX and ETX
+        {
+            for (int i = 0; i < count; i++)
+            {
+                byte b = buffer[i];
+
+                if (b == 0x02) // STX
+                {
+                    inTelegram = true;
+                    currentTelegram.Clear();
+                }
+                else if (b == 0x03 && inTelegram) // ETX
+                {
+                    // End of telegram → emit result
+                    string telegram = Encoding.UTF8.GetString(currentTelegram.ToArray());
+                    yield return telegram;
+
+                    inTelegram = false;
+                    currentTelegram.Clear();
+                }
+                else if (inTelegram)
+                {
+                    currentTelegram.Add(b);
+                }
             }
         }
     }
