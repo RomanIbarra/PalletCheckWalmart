@@ -615,11 +615,11 @@ namespace PalletCheck
                 btnCrack.Background = Brushes.LightGreen;
             });
             
-            StorageWatchdog.crackImagesList.Clear();
-            foreach (FileInfo file in new DirectoryInfo("C:\\PalletCheck\\CrackWatchFolder").GetFiles())
+
+            /*foreach (FileInfo file in new DirectoryInfo("C:\\PalletCheck\\CrackWatchFolder").GetFiles())
             {
                 file.Delete();
-            }
+            }*/
 
             /*ClearAnalysisResults(PositionOfPallet.Top);
             ClearAnalysisResults(PositionOfPallet.Bottom);
@@ -2089,21 +2089,28 @@ namespace PalletCheck
 
             //LoadAndProcessCaptureFileFrame(PositionOfPallet.Top, PalletName0);
         }
+
         private void Load_Crack_Click(object sender, RoutedEventArgs e)
         {
-            foreach(var item in StorageWatchdog.crackImagesList)    // Dictionary. Key: name; Value: fullPath
+            List<string> jpgFiles = Directory.GetFiles(recordingDir, "*.jpg").ToList();
+            if (jpgFiles.Any())
             {
-                try
+                foreach (var item in jpgFiles)    // Dictionary. Key: name; Value: fullPath
                 {
-                    var imgWindow = new ImageWindow(item);
-                    imgWindow.Title = System.IO.Path.GetFileName(item);
-                    imgWindow.Show();
-                }
-                catch (Exception) 
-                {
-                    MessageBox.Show("Image not found.");
+                    try
+                    {
+                        var imgWindow = new ImageWindow(item);
+                        imgWindow.Title = System.IO.Path.GetFileName(item);
+                        imgWindow.Show();
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Image not found.");
+                    }
                 }
             }
+
+            
         }
         private void Load_Bottom_Click(object sender, RoutedEventArgs e)
         {

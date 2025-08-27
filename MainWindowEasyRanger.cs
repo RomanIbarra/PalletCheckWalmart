@@ -27,6 +27,7 @@ namespace PalletCheck
         public static ProcessingEnvironment _envBottom { get; set; }
         public ProcessingEnvironment _envFront {  get; set; }
         public ProcessingEnvironment _envBack { get; set; }
+        public static string recordingDir { get; set; }
 
         System.Windows.Media.Color red = System.Windows.Media.Color.FromRgb(255, 0, 0);
         System.Windows.Media.Color green = System.Windows.Media.Color.FromRgb(0, 255, 0);
@@ -759,7 +760,7 @@ namespace PalletCheck
             isSaveFrames = true;
 
             string FullDirectory = RecordingRootDir + "\\" + _DirectoryDateHour + "\\" + _FilenameDateTime;
-
+            recordingDir = FullDirectory;
             System.IO.Directory.CreateDirectory(FullDirectory);
 
             CopyCrackImagesToRecordings(FullDirectory, _FilenameDateTime);
@@ -934,6 +935,8 @@ namespace PalletCheck
                         Logger.WriteLine($"Image '{StorageWatchdog.crackImagesList[index]}' copied successfully to '{destinationFullPath}'.");
                     }
                 }
+
+                StorageWatchdog.crackImagesList.Clear();
             }
 
             catch (IOException ex)
