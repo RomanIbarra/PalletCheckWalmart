@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace PalletCheck
 {
@@ -392,6 +393,15 @@ namespace PalletCheck
                 Directory.CreateDirectory(watchPath);
             }
 
+            //Check if file already exists
+            string fullPath = System.IO.Path.Combine(watchPath, imageName);
+            if (File.Exists(fullPath))
+            {
+                Logger.WriteLine($"Crack Image existing: {fullPath}");
+                crackImagesList.Add(fullPath);
+                return; // no need to start watcher
+            }
+
             watcher = new FileSystemWatcher
             {
                 Path = watchPath,
@@ -408,7 +418,7 @@ namespace PalletCheck
 
         private void OnCreated(object sender, FileSystemEventArgs e)
         {
-            if (string.Equals(Path.GetFileName(e.Name), _crackImageName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(System.IO.Path.GetFileName(e.Name), _crackImageName, StringComparison.OrdinalIgnoreCase))
             {
                 Logger.WriteLine($"Crack Image received: {e.FullPath}");
                 crackImagesList.Add(e.FullPath);
