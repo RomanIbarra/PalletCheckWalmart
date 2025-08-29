@@ -1888,6 +1888,7 @@ namespace PalletCheck
 
             try
             {
+                // Generate report header
                 string szTime = DateTime.Now.ToString("yyyyMMdd");
                 string path = RecordingRootDir + "\\" + szTime + ".csv";
                 string[] reportHeader = Enum.GetNames(typeof(DefectReport))
@@ -1895,9 +1896,6 @@ namespace PalletCheck
                             .ToArray();
                 reportHeader[0] = "Name";
                 reportHeader[1] = "Result";
-
-                //string strNewHeader = null;
-                //for (int i = 0; i < csvReportHeader.Length; i++) { strNewHeader += csvReportHeader[i] + ","; }
 
                 new System.Threading.Thread(() =>
                 {
@@ -2295,10 +2293,8 @@ namespace PalletCheck
                     InsertCrackDefect();
                 }
 
-                // Prepare string[] to save results in CSV
-                string[] reportHeader = Enum.GetNames(typeof(DefectReport));
+                // Build string[] to save results in CSV
                 string[] finalString = new string[Enum.GetNames(typeof(DefectReport)).Length];
-
                 finalString[0] = Pallet.folderName;
                 finalString[1] = finalResult.ToString();         
 
@@ -2313,8 +2309,7 @@ namespace PalletCheck
                     }
                 }
                 
-                SaveDataToFile(string.Join(",", finalString));
-                
+                SaveDataToFile(string.Join(",", finalString)); 
             });
             //lock (LockObjectCombine)
             {
@@ -2441,7 +2436,7 @@ namespace PalletCheck
             {
                 foreach (var detection in remoteCameraCrackDetectionList)
                 {
-                    PalletDefect df = new PalletDefect(detection.location, DefectType.crack_support_board, "Support Board Crack");
+                    PalletDefect df = new PalletDefect(detection.location, DefectType.broken_support_board, "Broken Suport Board Across Width");
                     Pallet.CombinedDefects.Add(df);
                 }
             }
@@ -2454,7 +2449,7 @@ namespace PalletCheck
                     string loc = imageName.Substring(imageName.Length - 5);
                     DefectLocation location = (DefectLocation)Enum.Parse(typeof(DefectLocation), loc);
 
-                    PalletDefect df = new PalletDefect(location, DefectType.crack_support_board, "Support Board Crack");
+                    PalletDefect df = new PalletDefect(location, DefectType.broken_support_board, "Support Board Crack");
                     Pallet.CombinedDefects.Add(df);
                 }
             }

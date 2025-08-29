@@ -184,7 +184,7 @@ namespace PalletCheck
 
                         else
                         {
-                            P.AddDefect(P.BList[0], PalletDefect.DefectType.middle_board_missing_wood, "Linear Suppport Missing Wood");
+                            P.AddDefect(P.BList[0], PalletDefect.DefectType.linear_support_missing_wood, "Linear Suppport Missing Wood");
                             viewer.DrawRoi("MB_ROI", -1, red, 100);
                         }
                     }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PalletCheck
 {
@@ -14,26 +13,25 @@ namespace PalletCheck
             raised_nail,
             missing_wood,
             broken_across_width,
-            //too_many_cracks,
             board_too_narrow,
             raised_board,
             possible_debris,
             board_too_short,
             missing_board,
             board_segmentation_error,
-            missing_blocks,  //Added by Jack
-            missing_chunks, //Added by Jack
-            excessive_angle, //Added by Jack
+            missing_blocks,
+            missing_chunks,
+            excessive_angle,
             clearance,
-            missing_wood_width_across_length,//added by HUB
-            missing_wood_width_at_one_point, //added by HUB
-            blocks_protuded_from_pallet,     //added by HUB
-            side_nails_protruding,           //added by HUB 
-            middle_board_missing_wood,       //added by HUB
-            unsecured_horizontal_block,      //added by HUB
-            puncture,                        //Added by HUB
+            missing_wood_width_across_length,
+            missing_wood_width_at_one_point, 
+            blocks_protuded_from_pallet,     
+            side_nails_protruding,          
+            linear_support_missing_wood,       
+            unsecured_horizontal_block,      
+            puncture,                        
             buttedJoint,
-            crack_support_board
+            broken_support_board
         }
 
         public enum DefectLocation
@@ -128,15 +126,15 @@ namespace PalletCheck
                 case DefectType.missing_chunks:return "MU";
                 case DefectType.excessive_angle:return "EA";
                 case DefectType.clearance: return "FC";
-                case DefectType.missing_wood_width_across_length: return "MWA";       //Added by HUB               
-                case DefectType.blocks_protuded_from_pallet: return "BPFP";         //Added by HUB 
-                case DefectType.side_nails_protruding: return "SNP";               //Added by HUB 
-                case DefectType.middle_board_missing_wood: return "MBMW";               //Added by HUB 
-                case DefectType.missing_wood_width_at_one_point: return "MWAOP";         //Added by HUB
-                case DefectType.unsecured_horizontal_block: return "UHB";                //Added by HUB
-                case DefectType.puncture: return "PU";                                   //Added by HUB
-                case DefectType.buttedJoint: return "BJ";                           //Butted Joint
-                case DefectType.crack_support_board: return "CRSP";                 //Crack Support Board
+                case DefectType.missing_wood_width_across_length: return "MWA";                     
+                case DefectType.blocks_protuded_from_pallet: return "BPFP";        
+                case DefectType.side_nails_protruding: return "SNP";                
+                case DefectType.linear_support_missing_wood: return "LSMW";                
+                case DefectType.missing_wood_width_at_one_point: return "MWAOP";         
+                case DefectType.unsecured_horizontal_block: return "UHB";                
+                case DefectType.puncture: return "PU";                                   
+                case DefectType.buttedJoint: return "BJ";                           
+                case DefectType.broken_support_board: return "BSP";                 
                 default: return "?";
             }
         }
@@ -162,11 +160,12 @@ namespace PalletCheck
                 case "MWA": return "Minimum Width Across Length";          
                 case "BPFP": return "Blocks Protruding From Pallet";    
                 case "SNP": return "Maximum Nails Protruding from Side";          
-                case "MBMW": return "Maximum Linear Support Board Missing Wood in %";
+                case "LSMW": return "Maximum Linear Support Board Missing Wood in %";
                 case "MWAOP": return "Missing Wood Width at One Point";    
                 case "UHB": return "Unsecured Horizontal Block";         
                 case "PU": return "Puncture";                                 
-                case "BJ": return "ButtedJoint";
+                case "BJ": return "Butted Joint";
+                case "BSP": return "Broken Suport Board Across Width";
                 default: return "?";
             }
         }
@@ -188,78 +187,49 @@ namespace PalletCheck
                 case DefectType.missing_blocks: return "Missing Blocks";
                 case DefectType.missing_chunks: return "Missing Chunks";
                 case DefectType.excessive_angle: return "Excessive Angle";
-                case DefectType.missing_wood_width_across_length: return "Missing Wood Width Across Length";  //Added by HUB 
-                case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";        //Added by HUB 
-                case DefectType.side_nails_protruding: return "Side Nails Protruding";                     //Added by HUB
-                case DefectType.clearance: return "Fork Clearance";                                        //added by HUB
-                case DefectType.middle_board_missing_wood: return "Linear Support Missing Wood";              
+                case DefectType.missing_wood_width_across_length: return "Missing Wood Width Across Length";   
+                case DefectType.blocks_protuded_from_pallet: return "Blocks Protruding From Pallet";         
+                case DefectType.side_nails_protruding: return "Side Nails Protruding";                     
+                case DefectType.clearance: return "Fork Clearance";                                        
+                case DefectType.linear_support_missing_wood: return "Linear Support Missing Wood";              
                 case DefectType.missing_wood_width_at_one_point: return "Missing Wood With at One Point";
                 case DefectType.unsecured_horizontal_block: return "Unsecured Horizontal Block";         
                 case DefectType.puncture: return "Puncture";
                 case DefectType.buttedJoint: return "ButtedJoint";
-                case DefectType.crack_support_board: return "Crack Support Board";
+                case DefectType.broken_support_board: return "Broken Support Board Across Width";
                 default: return "?";
             }
         }
 
         public static string[] GetCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW","MWAOP","UHB","PU", "BJ" };  //Last added by HUB 
+            string[] list = { "ND", "RN", "MW", "BW", "BN", "RB", "PD", "SH", "MB", "ER" ,"MO","MU","EA", "FC","MWA","RNFC","BPFP","SNP","MWMW","MWAOP","UHB","PU", "BJ" };  
             return list;
         }
 
         public static string[] GetPLCCodes()
         {
-            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU", "BJ" };//Last 4 added by HUB
+            string[] list = { "ND", "RN", "MW", "BW", "CK", "BN", "RB", "PD", "SH", "MB", "MO", "MU", "EA" , "FC", "MWA", "RNFC", "BPFP", "SNP","MWMW", "MWAOP","UHB","PU", "BJ" };
             return list;
         }
 
-        public enum DefectsCSV_Phase1A
-        {
-            T_MWA = 1,      // Top Missing Wood Across Lenght
-            T_RN = 2,       // Top Raised Nail Fastener Cut off
-            B_RN = 3,       // Bottom Raised Nail Fastener Cut off
-            R_FC = 4,       // Right Fork Clearance
-            R_BPFP = 5,     // Right Block Protruding From Pallet
-            R_RN = 6,       // Right Side Nail Protruding
-            L_FC = 7,       // Left Fork Clearance
-            L_BPFP = 8,     // Left Block Protruding From Pallet
-            L_RN = 9,       // Left Side Nail Protruding
-            F_RN = 10,      // Front Nail Protruding
-            F_MO= 11,       // Front Missing Block
-            BK_RN = 12,     // Back Nail Protruding
-            BK_MO = 13,     // Back Missing Block
-            R_MB = 14,      // Right Middle Board Missing Wood
-            L_MB = 15,       // Left Middle Board Missing Wood
-            B_MP = 46,      // Bottom Missing Wood Width at One Point
-            L_UB = 47,     // Left Unsecured Horizontal Block
-            R_UB = 48,     // Right Unsecured Horizontal Block
-            F_UB = 49,     // Front Unsecured Horizontal Block
-            B_UB = 50,     // Back Unsecured Horizontal Block
-            T_MWAOP = 51, // Top Missing Wood Width at One Point
-            B_MWAOP = 52, // Bottom Missing Wood Width at One Point
-            T_PU = 53,     // Top Puncture
-            B_PU = 54,     // Bottom Puncture
-            BJ= 55 // Butted Joint
-
-        }
-
-        public enum DefectReport //Still need to add new defects
+        public enum DefectReport
         {
             Name = 0,
             Result = 1,
-            BW = 2,
-            MW = 3,
-            MU = 4,
-            MWA = 5,    
-            RN = 6,
-            SNP = 7,
-            BPFP = 8,
-            MO = 9,
-            FC = 10,        
-            MBMW = 11,
-            PD = 12,
-            BJ = 13
+            BW = 2,         // Broken Across Width
+            MW = 3,         // Missing Wood
+            MU = 4,         // Missing Chunks
+            MWA = 5,        // Minimum Width Across Length
+            RN = 6,         // Raised Nail
+            SNP = 7,        // Side Nails Protruding
+            BPFP = 8,       // Block Protruding from Paller
+            MO = 9,         // Missing Block
+            FC = 10,        // Fork Clearance
+            LSMW = 11,      // Linear Support Missing Wood
+            PD = 12,        // Possible Debris
+            BJ = 13,         // Butted Joint
+            BSP = 14      // Broken Support Board Across Width
         }
     }
 }
